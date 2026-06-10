@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-inter: 'Inter', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-surface text-white antialiased;
+}
+
+@layer components {
+  .container-wide {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .btn-primary {
+    @apply bg-brand text-black font-semibold px-6 py-3 rounded-lg hover:bg-brand-light transition-colors duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-surface-elevated text-white font-medium px-6 py-3 rounded-lg border border-surface-border hover:bg-surface-card transition-colors duration-200;
+  }
+
+  .btn-ghost {
+    @apply text-white/70 font-medium px-6 py-3 rounded-lg hover:text-white hover:bg-surface-elevated transition-colors duration-200;
+  }
+
+  .card {
+    @apply bg-surface-card border border-surface-border rounded-xl overflow-hidden;
+  }
+
+  .input {
+    @apply w-full bg-surface-elevated border border-surface-border rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-brand/60 focus:ring-1 focus:ring-brand/40 transition-colors;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-white/70 mb-1.5;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full border;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-surface;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-surface-border rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-white/20;
+}
