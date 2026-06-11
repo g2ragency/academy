@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Trash2, ChevronDown, Save, Video, FileText, BookOpen, HelpCircle, Upload, Eye } from 'lucide-react'
+import { Plus, Trash2, ChevronDown, Save, Video, FileText, BookOpen, HelpCircle, Edit2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
@@ -182,6 +182,9 @@ function ModuleItem({ module, courseId, onDelete, onLessonsChange }: {
               <Plus className="w-3.5 h-3.5" />
             </Button>
           </div>
+          <p className="px-3 pb-3 text-xs text-white/30">
+            Dopo aver aggiunto la lezione, clicca la matita per inserire il contenuto (link o file video, testo, PDF).
+          </p>
         </div>
       )}
     </div>
@@ -192,6 +195,7 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [videoUrl, setVideoUrl] = useState(lesson.video_url ?? '')
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [content, setContent] = useState(lesson.content ?? '')
   const [isPreview, setIsPreview] = useState(lesson.is_preview)
@@ -199,37 +203,38 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
 
   const save = async () => {
     setSaving(true)
-    let video_url = lesson.video_url
-    let pdf_url = lesson.pdf_url
+    try {
+      let video_url = videoUrl.trim() || null
+      let pdf_url = lesson.pdf_url
 
-    if (videoFile) {
-      const path = `courses/${courseId}/lessons/${lesson.id}/video.${videoFile.name.split('.').pop()}`
-      const { error } = await supabase.storage.from('academy').upload(path, videoFile, { upsert: true })
-      if (!error) {
+      if (videoFile) {
+        const path = `courses/${courseId}/lessons/${lesson.id}/video.${videoFile.name.split('.').pop()}`
+        const { error } = await supabase.storage.from('academy').upload(path, videoFile, { upsert: true })
+        if (error) { toast.error(`Errore upload video: ${error.message}`); return }
         const { data: { publicUrl } } = supabase.storage.from('academy').getPublicUrl(path)
         video_url = publicUrl
       }
-    }
 
-    if (pdfFile) {
-      const path = `courses/${courseId}/lessons/${lesson.id}/doc.pdf`
-      const { error } = await supabase.storage.from('academy').upload(path, pdfFile, { upsert: true })
-      if (!error) {
+      if (pdfFile) {
+        const path = `courses/${courseId}/lessons/${lesson.id}/doc.pdf`
+        const { error } = await supabase.storage.from('academy').upload(path, pdfFile, { upsert: true })
+        if (error) { toast.error(`Errore upload PDF: ${error.message}`); return }
         const { data: { publicUrl } } = supabase.storage.from('academy').getPublicUrl(path)
         pdf_url = publicUrl
       }
-    }
 
-    const { error } = await supabase.from('lessons').update({ content, video_url, pdf_url, is_preview: isPreview }).eq('id', lesson.id)
-    if (error) toast.error(error.message)
-    else { toast.success('Lezione salvata!'); setOpen(false) }
-    setSaving(false)
+      const { error } = await supabase.from('lessons').update({ content, video_url, pdf_url, is_preview: isPreview }).eq('id', lesson.id)
+      if (error) toast.error(error.message)
+      else { toast.success('Lezione salvata!'); setOpen(false) }
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
     <>
-      <button onClick={() => setOpen(true)} className="p-1 text-white/20 hover:text-brand transition-colors">
-        <Eye className="w-3.5 h-3.5" />
+      <button onClick={() => setOpen(true)} title="Modifica contenuto" className="p-1 text-white/20 hover:text-brand transition-colors">
+        <Edit2 className="w-3.5 h-3.5" />
       </button>
 
       {open && (
@@ -238,11 +243,23 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
             <h3 className="font-semibold text-white">Modifica lezione: {lesson.title}</h3>
 
             {lesson.type === 'video' && (
-              <div>
-                <label className="label">Video (carica file)</label>
-                <input type="file" accept="video/*" onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)} className="input text-xs py-2" />
-                {lesson.video_url && <p className="text-xs text-white/30 mt-1">File attuale: {lesson.video_url.split('/').pop()}</p>}
-              </div>
+              <>
+                <div>
+                  <label className="label">Link video (YouTube, Vimeo o URL diretto)</label>
+                  <input
+                    type="url"
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="input text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="label">oppure carica un file video</label>
+                  <input type="file" accept="video/*" onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)} className="input text-xs py-2" />
+                  {videoFile && <p className="text-xs text-white/30 mt-1">Il file caricato sostituirà il link inserito sopra</p>}
+                </div>
+              </>
             )}
 
             {lesson.type === 'pdf' && (
@@ -258,6 +275,12 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
                 <label className="label">Contenuto testuale</label>
                 <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={8} className="input resize-none text-sm" />
               </div>
+            )}
+
+            {lesson.type === 'quiz' && (
+              <p className="text-sm text-white/40">
+                Le domande del quiz vanno inserite nella tabella <code className="text-white/60">quiz_questions</code> — l&apos;editor visuale non è ancora disponibile.
+              </p>
             )}
 
             <label className="flex items-center gap-2 cursor-pointer">

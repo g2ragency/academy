@@ -29,7 +29,8 @@ export default function Navbar() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
+  // Istanza stabile: se ricreato a ogni render, lo useEffect con dep [supabase] rifetcha in loop
+  const [supabase] = useState(() => createClient())
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -53,6 +54,16 @@ export default function Navbar() {
     })
     return () => listener.subscription.unsubscribe()
   }, [supabase])
+
+  // Aggiorna il tondo in tempo reale quando l'utente cambia foto da /dashboard/profilo
+  useEffect(() => {
+    const onAvatarUpdated = (e: Event) => {
+      const url = (e as CustomEvent<string | null>).detail
+      setProfile((p) => (p ? { ...p, avatar_url: url } : p))
+    }
+    window.addEventListener('avatar-updated', onAvatarUpdated)
+    return () => window.removeEventListener('avatar-updated', onAvatarUpdated)
+  }, [])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -117,15 +128,20 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-elevated transition-colors"
+                  className="block rounded-full hover:ring-2 hover:ring-white/20 transition-shadow"
+                  aria-label="Menu profilo"
                 >
-                  <div className="w-8 h-8 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center text-brand font-semibold text-sm">
-                    {profile.full_name?.[0]?.toUpperCase() ?? profile.email[0].toUpperCase()}
-                  </div>
-                  <span className="text-sm font-medium text-white/80 max-w-[120px] truncate">
-                    {profile.full_name ?? profile.email}
-                  </span>
-                  <ChevronDown className={cn('w-3.5 h-3.5 text-white/50 transition-transform', profileOpen && 'rotate-180')} />
+                  {profile.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt={profile.full_name ?? profile.email}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-neutral-600 flex items-center justify-center text-white font-semibold text-lg">
+                      {profile.full_name?.[0]?.toUpperCase() ?? profile.email[0].toUpperCase()}
+                    </div>
+                  )}
                 </button>
 
                 {profileOpen && (

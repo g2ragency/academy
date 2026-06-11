@@ -13,13 +13,14 @@ export const dynamic = 'force-dynamic'
 
 interface Props { params: { slug: string } }
 
+// Nessun filtro su status: la RLS mostra le bozze solo agli admin,
+// così l'anteprima da /admin/corsi funziona anche prima della pubblicazione
 async function getCourse(slug: string) {
   const supabase = createServerClient()
   const { data } = await supabase
     .from('courses')
     .select('*, instructor:instructors(*)')
     .eq('slug', slug)
-    .eq('status', 'published')
     .single()
   return data
 }
@@ -66,6 +67,11 @@ export default async function CourseDetailPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-surface pt-24 pb-20">
       <div className="container-wide">
+        {course.status !== 'published' && (
+          <div className="mb-8 px-4 py-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-sm">
+            Anteprima {course.status === 'draft' ? 'bozza' : 'corso archiviato'} — questa pagina è visibile solo agli admin finché il corso non è pubblicato.
+          </div>
+        )}
         <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-8">

@@ -23,16 +23,21 @@ const schema = z.object({
 })
 type FormData = z.infer<typeof schema>
 
-interface Props { instructor?: Instructor }
+interface Props {
+  instructor?: Instructor
+  /** Trigger ridotto a link testuale, per l'uso inline nel form corso */
+  compact?: boolean
+  onCreated?: (instructor: Instructor) => void
+}
 
-export default function InstructorFormModal({ instructor }: Props) {
+export default function InstructorFormModal({ instructor, compact, onCreated }: Props) {
   const [open, setOpen] = useState(false)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const router = useRouter()
   const supabase = createClient()
   const isEditing = !!instructor
 
-  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, setValue, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: instructor ? {
       full_name: instructor.full_name,
@@ -63,8 +68,11 @@ export default function InstructorFormModal({ instructor }: Props) {
       const { error } = await supabase.from('instructors').update(payload).eq('id', instructor.id)
       if (error) { toast.error(error.message); return }
     } else {
-      const { error } = await supabase.from('instructors').insert(payload)
+      const { data: created, error } = await supabase.from('instructors').insert(payload).select().single()
       if (error) { toast.error(error.message); return }
+      onCreated?.(created as Instructor)
+      reset({ sort_order: 0 })
+      setAvatarFile(null)
     }
 
     toast.success(isEditing ? 'Docente aggiornato!' : 'Docente creato!')
@@ -77,6 +85,10 @@ export default function InstructorFormModal({ instructor }: Props) {
       {isEditing ? (
         <button onClick={() => setOpen(true)} className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-surface-elevated transition-colors">
           <Edit2 className="w-4 h-4" />
+        </button>
+      ) : compact ? (
+        <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-1 text-xs text-brand hover:text-brand-light transition-colors">
+          <Plus className="w-3 h-3" /> Nuovo docente
         </button>
       ) : (
         <button onClick={() => setOpen(true)} className="btn-primary text-sm gap-2 inline-flex items-center">

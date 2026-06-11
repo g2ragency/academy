@@ -10,6 +10,7 @@ import { Save, Upload } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import InstructorFormModal from '../docenti/InstructorFormModal'
 import { slugify } from '@/lib/utils'
 import type { Course, CourseType } from '@/types'
 import { COURSE_TYPE_LABELS } from '@/types'
@@ -21,7 +22,7 @@ const schema = z.object({
   description: z.string().optional(),
   type: z.enum(['webinar', 'masterclass', 'fast_focus', 'short_master', 'executive_master']),
   status: z.enum(['draft', 'published', 'archived']),
-  price_cents: z.coerce.number().min(0),
+  price_euros: z.coerce.number().min(0),
   instructor_id: z.string().optional(),
   duration_minutes: z.coerce.number().optional(),
   level: z.enum(['base', 'intermedio', 'avanzato']).optional(),
@@ -37,6 +38,7 @@ interface Props {
 
 export default function CourseForm({ course, instructors }: Props) {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
+  const [instructorList, setInstructorList] = useState(instructors)
   const router = useRouter()
   const supabase = createClient()
   const isEditing = !!course
@@ -50,7 +52,7 @@ export default function CourseForm({ course, instructors }: Props) {
       description: course.description ?? '',
       type: course.type,
       status: course.status,
-      price_cents: course.price_cents,
+      price_euros: course.price_cents / 100,
       instructor_id: course.instructor_id ?? '',
       duration_minutes: course.duration_minutes ?? undefined,
       level: course.level ?? undefined,
@@ -58,7 +60,7 @@ export default function CourseForm({ course, instructors }: Props) {
     } : {
       type: 'webinar',
       status: 'draft',
-      price_cents: 0,
+      price_euros: 0,
       featured: false,
     },
   })
@@ -84,8 +86,10 @@ export default function CourseForm({ course, instructors }: Props) {
       thumbnail_url = publicUrl
     }
 
+    const { price_euros, ...fields } = data
     const payload = {
-      ...data,
+      ...fields,
+      price_cents: Math.round(price_euros * 100),
       thumbnail_url,
       instructor_id: data.instructor_id || null,
       duration_minutes: data.duration_minutes || null,
@@ -178,19 +182,30 @@ export default function CourseForm({ course, instructors }: Props) {
 
         <div className="grid grid-cols-2 gap-4">
           <Input
-            {...register('price_cents')}
+            {...register('price_euros')}
             id="price"
             type="number"
-            label="Prezzo (centesimi)"
-            placeholder="0 = gratuito, 9700 = 97€"
-            error={errors.price_cents?.message}
+            step="0.01"
+            min="0"
+            label="Prezzo (€)"
+            placeholder="0 = gratuito, 97 = 97€"
+            error={errors.price_euros?.message}
           />
 
           <div>
-            <label className="label">Docente</label>
+            <div className="flex items-center justify-between">
+              <label className="label">Docente</label>
+              <InstructorFormModal
+                compact
+                onCreated={(i) => {
+                  setInstructorList((prev) => [...prev, { id: i.id, full_name: i.full_name }])
+                  setValue('instructor_id', i.id)
+                }}
+              />
+            </div>
             <select {...register('instructor_id')} className="input">
               <option value="">— Nessuno —</option>
-              {instructors.map((i) => (
+              {instructorList.map((i) => (
                 <option key={i.id} value={i.id}>{i.full_name}</option>
               ))}
             </select>

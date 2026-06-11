@@ -251,32 +251,36 @@ ALTER TABLE enrollments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lesson_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quiz_attempts ENABLE ROW LEVEL SECURITY;
 
+-- Helper SECURITY DEFINER: legge profiles bypassando la RLS,
+-- altrimenti le policy admin su profiles causano ricorsione infinita (42P17)
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+  SELECT EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin');
+$$;
+
 -- Profiles
 CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Admins can view all profiles" ON profiles FOR SELECT USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can view all profiles" ON profiles FOR SELECT USING (is_admin());
 
 -- Instructors - public read
 CREATE POLICY "Anyone can view instructors" ON instructors FOR SELECT USING (TRUE);
-CREATE POLICY "Admins can manage instructors" ON instructors FOR ALL USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can manage instructors" ON instructors FOR ALL USING (is_admin());
 
 -- Courses - public read for published
 CREATE POLICY "Anyone can view published courses" ON courses FOR SELECT USING (status = 'published');
-CREATE POLICY "Admins can manage courses" ON courses FOR ALL USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can manage courses" ON courses FOR ALL USING (is_admin());
 
 -- Modules - visible for enrolled users
 CREATE POLICY "Anyone can view modules of published courses" ON modules FOR SELECT USING (
   EXISTS (SELECT 1 FROM courses WHERE id = modules.course_id AND status = 'published')
 );
-CREATE POLICY "Admins can manage modules" ON modules FOR ALL USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can manage modules" ON modules FOR ALL USING (is_admin());
 
 -- Lessons - preview visible to all, full content for enrolled
 CREATE POLICY "Anyone can view preview lessons" ON lessons FOR SELECT USING (is_preview = TRUE);
@@ -286,9 +290,7 @@ CREATE POLICY "Enrolled users can view lessons" ON lessons FOR SELECT USING (
     WHERE user_id = auth.uid() AND course_id = lessons.course_id AND status = 'active'
   )
 );
-CREATE POLICY "Admins can manage lessons" ON lessons FOR ALL USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can manage lessons" ON lessons FOR ALL USING (is_admin());
 
 -- Quiz questions - same as lessons
 CREATE POLICY "Enrolled users can view quiz questions" ON quiz_questions FOR SELECT USING (
@@ -298,30 +300,20 @@ CREATE POLICY "Enrolled users can view quiz questions" ON quiz_questions FOR SEL
     WHERE l.id = quiz_questions.lesson_id AND e.user_id = auth.uid() AND e.status = 'active'
   )
 );
-CREATE POLICY "Admins can manage quiz questions" ON quiz_questions FOR ALL USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can manage quiz questions" ON quiz_questions FOR ALL USING (is_admin());
 
 -- Enrollments
 CREATE POLICY "Users can view own enrollments" ON enrollments FOR SELECT USING (user_id = auth.uid());
-CREATE POLICY "Admins can view all enrollments" ON enrollments FOR SELECT USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-);
-CREATE POLICY "Admins can manage enrollments" ON enrollments FOR ALL USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can view all enrollments" ON enrollments FOR SELECT USING (is_admin());
+CREATE POLICY "Admins can manage enrollments" ON enrollments FOR ALL USING (is_admin());
 
 -- Lesson progress
 CREATE POLICY "Users can manage own progress" ON lesson_progress FOR ALL USING (user_id = auth.uid());
-CREATE POLICY "Admins can view all progress" ON lesson_progress FOR SELECT USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can view all progress" ON lesson_progress FOR SELECT USING (is_admin());
 
 -- Quiz attempts
 CREATE POLICY "Users can manage own quiz attempts" ON quiz_attempts FOR ALL USING (user_id = auth.uid());
-CREATE POLICY "Admins can view all quiz attempts" ON quiz_attempts FOR SELECT USING (
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
-);
+CREATE POLICY "Admins can view all quiz attempts" ON quiz_attempts FOR SELECT USING (is_admin());
 
 -- ============================================================
 -- VIEWS
