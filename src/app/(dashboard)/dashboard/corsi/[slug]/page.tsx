@@ -75,7 +75,7 @@ export default async function CoursePlayerPage({ params }: Props) {
           <div className="flex items-start justify-between gap-4">
             <div>
               <CourseTypeBadge type={course.type} />
-              <h1 className="text-xl lg:text-2xl font-bold text-white mt-2">{course.title}</h1>
+              <h1 className="font-bold text-white mt-2">{course.title}</h1>
             </div>
           </div>
 

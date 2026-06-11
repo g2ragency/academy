@@ -31,7 +31,7 @@ export default function AvatarCropModal({ imageSrc, uploading, onCancel, onConfi
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
       <div className="w-full max-w-md bg-surface-card border border-surface-border rounded-2xl overflow-hidden">
         <div className="p-5 border-b border-surface-border">
-          <h2 className="text-base font-semibold text-white">Ritaglia la foto profilo</h2>
+          <h2 className="font-semibold text-white">Ritaglia la foto profilo</h2>
           <p className="text-xs text-white/40 mt-1">Trascina per riposizionare, usa lo slider per lo zoom</p>
         </div>
 

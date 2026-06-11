@@ -13,8 +13,8 @@ export default async function AdminUtentiPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold text-white mb-8">Gestione Utenti</h1>
+    <div className="px-10 py-8">
+      <h1 className="font-bold text-white mb-8">Gestione Utenti</h1>
 
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">

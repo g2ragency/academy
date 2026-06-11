@@ -78,7 +78,7 @@ export default async function CourseDetailPage({ params }: Props) {
             {/* Header */}
             <div>
               <CourseTypeBadge type={course.type} />
-              <h1 className="text-2xl lg:text-3xl font-bold text-white mt-3 mb-4 leading-tight">
+              <h1 className="font-bold text-white mt-3 mb-4 leading-tight">
                 {course.title}
               </h1>
               {course.short_description && (
@@ -126,7 +126,7 @@ export default async function CourseDetailPage({ params }: Props) {
             {/* Description */}
             {course.description && (
               <div>
-                <h2 className="text-xl font-semibold text-white mb-4">Descrizione del corso</h2>
+                <h2 className="font-semibold text-white mb-4">Descrizione del corso</h2>
                 <div className="text-white/60 leading-relaxed whitespace-pre-line">{course.description}</div>
               </div>
             )}
@@ -134,7 +134,7 @@ export default async function CourseDetailPage({ params }: Props) {
             {/* Curriculum */}
             {modules.length > 0 && (
               <div>
-                <h2 className="text-xl font-semibold text-white mb-4">Programma del corso</h2>
+                <h2 className="font-semibold text-white mb-4">Programma del corso</h2>
                 <div className="space-y-3">
                   {modules.map((module) => (
                     <ModuleAccordion key={module.id} module={module} isEnrolled={isEnrolled} />
@@ -146,7 +146,7 @@ export default async function CourseDetailPage({ params }: Props) {
             {/* Instructor */}
             {course.instructor && (
               <div>
-                <h2 className="text-xl font-semibold text-white mb-4">Il docente</h2>
+                <h2 className="font-semibold text-white mb-4">Il docente</h2>
                 <Link href={`/docenti/${course.instructor.slug}`} className="flex items-start gap-4 card p-5 hover:border-white/10 transition-colors">
                   <div className="w-14 h-14 rounded-full bg-surface-elevated border border-surface-border shrink-0 overflow-hidden relative">
                     {course.instructor.avatar_url ? (

@@ -37,7 +37,7 @@ export default async function CorsiPage({ searchParams }: Props) {
       <div className="container-wide">
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">Tutti i corsi</h1>
+          <h1 className="font-bold text-white mb-3">Tutti i corsi</h1>
           <p className="text-white/50">
             {courses.length} corso{courses.length !== 1 ? 'i' : ''} disponibil{courses.length !== 1 ? 'i' : 'e'}
           </p>
@@ -63,7 +63,7 @@ export default async function CorsiPage({ searchParams }: Props) {
 
               {/* Type filter */}
               <div>
-                <h3 className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">Tipo</h3>
+                <h3 className="font-semibold text-white/40 uppercase tracking-widest mb-3">Tipo</h3>
                 <div className="space-y-1">
                   <a href="/corsi" className={`block px-3 py-2 rounded-lg text-sm transition-colors ${!activeTipo ? 'bg-brand/15 text-white font-medium' : 'text-white/60 hover:text-white hover:bg-surface-elevated'}`}>
                     Tutti
@@ -82,7 +82,7 @@ export default async function CorsiPage({ searchParams }: Props) {
 
               {/* Level filter */}
               <div>
-                <h3 className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">Livello</h3>
+                <h3 className="font-semibold text-white/40 uppercase tracking-widest mb-3">Livello</h3>
                 <div className="space-y-1">
                   {(['base', 'intermedio', 'avanzato'] as const).map((level) => (
                     <a

@@ -9,8 +9,8 @@ export default async function NuovoCorsoPage() {
   const { data: instructors } = await supabase.from('instructors').select('id, full_name').order('full_name')
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold text-white mb-8">Nuovo corso</h1>
+    <div className="px-10 py-8">
+      <h1 className="font-bold text-white mb-8">Nuovo corso</h1>
       <CourseForm instructors={instructors ?? []} />
     </div>
   )

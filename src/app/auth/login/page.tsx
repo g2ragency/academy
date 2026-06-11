@@ -50,7 +50,7 @@ export default function LoginPage() {
   return (
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-white mb-2">Bentornato</h1>
+        <h1 className="font-bold text-white mb-2">Bentornato</h1>
         <p className="text-white/50 text-sm">Accedi al tuo account Academy</p>
       </div>
 

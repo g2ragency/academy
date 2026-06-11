@@ -46,7 +46,7 @@ export default async function DashboardPage() {
       <div className="container-wide">
         {/* Welcome */}
         <div className="mb-10">
-          <h1 className="text-2xl lg:text-3xl font-bold text-white">
+          <h1 className="font-bold text-white">
             Ciao, {profile.full_name?.split(' ')[0] ?? 'utente'} 👋
           </h1>
           <p className="text-white/50 mt-1">Continua il tuo percorso formativo.</p>
@@ -74,7 +74,7 @@ export default async function DashboardPage() {
         {/* My courses */}
         <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-white">I miei corsi</h2>
+            <h2 className="font-semibold text-white">I miei corsi</h2>
             <Link href="/corsi" className="text-sm text-brand hover:text-brand-light transition-colors">
               Scopri altri corsi →
             </Link>
@@ -113,7 +113,7 @@ export default async function DashboardPage() {
                       </div>
                     </div>
                     <div className="p-4 flex flex-col flex-1">
-                      <h3 className="font-semibold text-white text-sm leading-snug mb-3 group-hover:text-brand transition-colors flex-1 line-clamp-2">
+                      <h3 className="font-semibold text-white leading-snug mb-3 group-hover:text-brand transition-colors flex-1 line-clamp-2">
                         {course.title}
                       </h3>
                       <div className="space-y-1.5">

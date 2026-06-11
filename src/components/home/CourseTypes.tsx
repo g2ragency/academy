@@ -31,7 +31,7 @@ export default function CourseTypes() {
     <section className="py-20 bg-surface">
       <div className="container-wide">
         <div className="text-center mb-12">
-          <h2 className="text-2xl lg:text-3xl font-bold text-white mb-3">I nostri corsi</h2>
+          <h2 className="font-bold text-white mb-3">I nostri corsi</h2>
           <p className="text-white/50 max-w-xl mx-auto">
             Cinque format pensati per ogni esigenza formativa, dal rapido aggiornamento al percorso executive completo.
           </p>

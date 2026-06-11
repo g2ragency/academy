@@ -63,7 +63,7 @@ export default function RegistratiPage() {
         <div className="w-16 h-16 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center mx-auto mb-6">
           <span className="text-brand text-2xl">✓</span>
         </div>
-        <h1 className="text-2xl font-bold text-white mb-3">Controlla la tua email</h1>
+        <h1 className="font-bold text-white mb-3">Controlla la tua email</h1>
         <p className="text-white/50 mb-6">
           Ti abbiamo inviato un link di conferma. Clicca sul link per attivare il tuo account.
         </p>
@@ -77,7 +77,7 @@ export default function RegistratiPage() {
   return (
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-white mb-2">Crea il tuo account</h1>
+        <h1 className="font-bold text-white mb-2">Crea il tuo account</h1>
         <p className="text-white/50 text-sm">Inizia a imparare dai migliori esperti</p>
       </div>
 

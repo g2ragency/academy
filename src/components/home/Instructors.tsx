@@ -9,11 +9,11 @@ interface Props {
 
 export default function Instructors({ instructors }: Props) {
   return (
-    <section className="py-20 bg-surface-card">
+    <section className="py-20 bg-surface">
       <div className="container-wide">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-white">I nostri docenti</h2>
+            <h2 className="font-bold text-white">I nostri docenti</h2>
             <p className="text-white/50 mt-2">L&apos;autorità formativa dedicata al network delle Holding italiane.</p>
           </div>
           <Link href="/docenti" className="hidden sm:flex items-center gap-1 text-sm text-brand hover:text-brand-light transition-colors">

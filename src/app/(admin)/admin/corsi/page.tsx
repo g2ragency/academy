@@ -16,9 +16,9 @@ export default async function AdminCorsiPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="p-8">
+    <div className="px-10 py-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold text-white">Gestione Corsi</h1>
+        <h1 className="font-bold text-white">Gestione Corsi</h1>
         <Link href="/admin/corsi/nuovo" className="btn-primary text-sm gap-2 inline-flex items-center">
           <Plus className="w-4 h-4" />
           Nuovo corso

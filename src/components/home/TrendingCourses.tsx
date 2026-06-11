@@ -30,7 +30,7 @@ export default function TrendingCourses({ courses }: Props) {
     <section className="py-20 bg-surface">
       <div className="container-wide">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl lg:text-3xl font-bold text-white">Di tendenza in Academy</h2>
+          <h2 className="font-bold text-white">Di tendenza in Academy</h2>
           <Link href="/corsi" className="text-sm text-brand hover:text-brand-light transition-colors flex items-center gap-1">
             Carica di più <ChevronRight className="w-4 h-4" />
           </Link>
@@ -88,7 +88,7 @@ function CourseCard({ course }: { course: Course }) {
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="font-semibold text-white text-sm leading-snug mb-2 line-clamp-2 group-hover:text-brand transition-colors">
+        <h3 className="font-semibold text-white leading-snug mb-2 line-clamp-2 group-hover:text-brand transition-colors">
           {course.title}
         </h3>
 

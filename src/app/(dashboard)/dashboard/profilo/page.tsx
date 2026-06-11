@@ -166,8 +166,8 @@ export default function ProfiloPage() {
   if (!profile) return null
 
   return (
-    <div className="p-8 max-w-3xl">
-      <h1 className="text-2xl font-bold text-white mb-8">Account</h1>
+    <div className="px-10 py-8 max-w-3xl">
+      <h1 className="font-bold text-white mb-8">Account</h1>
 
       <div className="border-b border-surface-border pb-8 mb-8">
         <p className="text-sm font-medium text-white/60 mb-4">Foto profilo</p>

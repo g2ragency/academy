@@ -1,9 +1,17 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 import { Toaster } from 'sonner'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+// Regola cliente: tutto il sito a font-weight 400 → carichiamo solo Regular.
+// Gli altri pesi sono in src/fonts/, da riaggiungere qui se la regola cambia.
+const aeonik = localFont({
+  variable: '--font-aeonik',
+  src: [
+    { path: '../fonts/AeonikSoftTRIAL-Regular.woff2', weight: '400', style: 'normal' },
+    { path: '../fonts/AeonikSoftTRIAL-RegularItalic.woff2', weight: '400', style: 'italic' },
+  ],
+})
 
 export const metadata: Metadata = {
   title: {
@@ -18,16 +26,16 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it" className="dark">
-      <body className={`${inter.variable} font-sans`}>
+      <body className={`${aeonik.variable} font-sans`}>
         {children}
         <Toaster
           position="top-right"
           theme="dark"
           toastOptions={{
             style: {
-              background: '#1C1C1C',
-              border: '1px solid #2A2A2A',
-              color: '#fff',
+              background: '#000000',
+              border: '1px solid rgba(152, 152, 152, 0.25)',
+              color: '#F4F3F3',
             },
           }}
         />

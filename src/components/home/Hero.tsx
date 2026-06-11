@@ -30,7 +30,7 @@ export default function Hero() {
               <span className="text-xs font-medium text-brand">La formazione per le Holding Italiane</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
+            <h1 className="font-bold text-white leading-tight mb-6">
               Impara dai migliori,
               <br />
               <span className="text-brand">dai il meglio</span> di te.

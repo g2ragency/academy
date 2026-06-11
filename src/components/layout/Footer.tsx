@@ -52,7 +52,7 @@ export default function Footer() {
           {/* Links */}
           {Object.entries(FOOTER_LINKS).map(([title, links]) => (
             <div key={title}>
-              <h3 className="text-sm font-semibold text-white mb-4">{title}</h3>
+              <h3 className="font-semibold text-white mb-4">{title}</h3>
               <ul className="space-y-2.5">
                 {links.map((link) => (
                   <li key={link.href}>

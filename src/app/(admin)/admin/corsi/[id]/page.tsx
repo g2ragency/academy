@@ -19,14 +19,14 @@ export default async function EditCorsoPage({ params }: Props) {
   if (!course) notFound()
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="px-10 py-8 space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-white mb-8">Modifica corso</h1>
+        <h1 className="font-bold text-white mb-8">Modifica corso</h1>
         <CourseForm instructors={instructors ?? []} course={course} />
       </div>
 
       <div>
-        <h2 className="text-xl font-bold text-white mb-6">Moduli e lezioni</h2>
+        <h2 className="font-bold text-white mb-6">Moduli e lezioni</h2>
         <ModulesManager courseId={course.id} initialModules={modules ?? []} />
       </div>
     </div>

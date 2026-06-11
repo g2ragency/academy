@@ -79,14 +79,14 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 export default function FAQ() {
   return (
-    <section className="py-20 bg-surface-card">
+    <section className="py-20 bg-surface">
       <div className="container-wide">
-        <h2 className="text-2xl lg:text-3xl font-bold text-white text-center mb-12">FAQ</h2>
+        <h2 className="font-bold text-white text-center mb-12">FAQ</h2>
 
         <div className="max-w-3xl mx-auto space-y-8">
           {FAQ_SECTIONS.map((section) => (
             <div key={section.title}>
-              <h3 className="text-sm font-semibold text-white/40 uppercase tracking-widest mb-4">
+              <h3 className="font-semibold text-white/40 uppercase tracking-widest mb-4">
                 {section.title}
               </h3>
               <div className="space-y-2">

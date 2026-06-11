@@ -79,7 +79,7 @@ export default function LessonPlayer({ lesson, courseId, courseSlug, userId, isC
     <div className="flex-1 flex flex-col">
       {/* Video/content area */}
       <div className="flex-1 p-6 lg:p-8 max-w-4xl w-full mx-auto">
-        <h1 className="text-xl lg:text-2xl font-bold text-white mb-6">{lesson.title}</h1>
+        <h1 className="font-bold text-white mb-6">{lesson.title}</h1>
 
         {/* Video */}
         {lesson.type === 'video' && lesson.video_url && (

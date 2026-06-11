@@ -37,8 +37,8 @@ export default async function AdminDashboard() {
   ]
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold text-white mb-8">Dashboard Admin</h1>
+    <div className="px-10 py-8">
+      <h1 className="font-bold text-white mb-8">Dashboard Admin</h1>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

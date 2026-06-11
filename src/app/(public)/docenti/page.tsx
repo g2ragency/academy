@@ -17,7 +17,7 @@ export default async function DocentiPage() {
     <div className="min-h-screen bg-surface pt-24 pb-20">
       <div className="container-wide">
         <div className="mb-10">
-          <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">I nostri docenti</h1>
+          <h1 className="font-bold text-white mb-3">I nostri docenti</h1>
           <p className="text-white/50">
             L&apos;autorità formativa dedicata al network delle Holding italiane.
           </p>

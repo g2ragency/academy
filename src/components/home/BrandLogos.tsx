@@ -11,7 +11,7 @@ const BRANDS = [
 
 export default function BrandLogos() {
   return (
-    <section className="py-10 border-y border-surface-border bg-surface-card overflow-hidden">
+    <section className="py-10 border-y border-surface-border bg-surface overflow-hidden">
       <div className="container-wide">
         <div className="flex items-center gap-12 overflow-x-auto pb-2 scrollbar-hide">
           {BRANDS.map((brand) => (

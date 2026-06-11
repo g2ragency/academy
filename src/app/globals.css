@@ -2,8 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-inter: 'Inter', sans-serif;
+/* Scala tipografica cliente (CLAUDE.md) — dimensioni fisse, weight sempre 400 */
+@layer base {
+  h1, h2 { font-size: 64px; }
+  h3 { font-size: 46px; }
+  h4 { font-size: 32px; }
+  h5 { font-size: 26px; }
+  h6 { font-size: 22px; }
+  p { font-size: 24px; }
 }
 
 html {
@@ -12,15 +18,26 @@ html {
 
 body {
   @apply bg-surface text-white antialiased;
+  font-weight: 400;
+}
+
+/* Regola cliente: tutto il sito a font-weight 400, anche dove
+   il browser applicherebbe il grassetto di default */
+strong,
+b,
+th,
+optgroup {
+  font-weight: 400;
 }
 
 @layer components {
+  /* Full width su tutto il sito, padding laterale fisso 40px (vedi CLAUDE.md) */
   .container-wide {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply w-full px-10;
   }
 
   .btn-primary {
-    @apply bg-brand text-black font-semibold px-6 py-3 rounded-lg hover:bg-brand-light transition-colors duration-200;
+    @apply bg-white text-black font-semibold px-6 py-3 rounded-lg hover:bg-white/80 transition-colors duration-200;
   }
 
   .btn-secondary {

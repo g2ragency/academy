@@ -36,7 +36,7 @@ export default function CourseCard({ course, enrolled, progress }: Props) {
 
       {/* Content */}
       <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-semibold text-white text-sm leading-snug mb-2 line-clamp-2 group-hover:text-brand transition-colors flex-1">
+        <h3 className="font-semibold text-white leading-snug mb-2 line-clamp-2 group-hover:text-brand transition-colors flex-1">
           {course.title}
         </h3>
 

@@ -42,7 +42,7 @@ export default async function InstructorPage({ params }: Props) {
                   </div>
                 )}
               </div>
-              <h1 className="text-xl font-bold text-white mb-1">{instructor.full_name}</h1>
+              <h1 className="font-bold text-white mb-1">{instructor.full_name}</h1>
               {instructor.title && <p className="text-sm text-white/50 mb-4">{instructor.title}</p>}
               {instructor.linkedin_url && (
                 <a href={instructor.linkedin_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-brand hover:text-brand-light transition-colors">
@@ -57,7 +57,7 @@ export default async function InstructorPage({ params }: Props) {
 
           {/* Courses */}
           <div className="lg:col-span-2">
-            <h2 className="text-xl font-bold text-white mb-6">
+            <h2 className="font-bold text-white mb-6">
               Corsi di {instructor.full_name} ({(courses ?? []).length})
             </h2>
             {(courses ?? []).length === 0 ? (

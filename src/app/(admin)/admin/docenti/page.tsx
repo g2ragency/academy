@@ -15,9 +15,9 @@ export default async function AdminDocentiPage() {
     .order('sort_order')
 
   return (
-    <div className="p-8">
+    <div className="px-10 py-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold text-white">Gestione Docenti</h1>
+        <h1 className="font-bold text-white">Gestione Docenti</h1>
         <InstructorFormModal />
       </div>
 
