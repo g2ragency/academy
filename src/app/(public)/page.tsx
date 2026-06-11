@@ -34,8 +34,8 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
-      <BrandLogos />
       <TrendingCourses courses={courses} />
+      <BrandLogos />
       <Instructors instructors={instructors} />
       <CourseTypes />
       <FAQ />

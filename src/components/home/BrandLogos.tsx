@@ -1,26 +1,28 @@
+/* eslint-disable @next/next/no-img-element */
+
+// Loghi esportati dal file Figma (già in grigio #989898)
 const BRANDS = [
-  'Ampari Group',
-  'Pirelli',
-  'Ferrero',
-  'Bulgari',
-  'Coca-Cola',
-  'Flextra',
-  'Mapei',
-  'Brembo',
+  { name: 'Campari Group', src: '/images/brands/campari.svg', height: 48 },
+  { name: 'Pirelli', src: '/images/brands/pirelli.svg', height: 28 },
+  { name: 'Ferrero', src: '/images/brands/ferrero.svg', height: 26 },
+  { name: 'Bulgari', src: '/images/brands/bulgari.svg', height: 23 },
+  { name: 'Coca-Cola', src: '/images/brands/cocacola.svg', height: 54 },
+  { name: 'Flextronics', src: '/images/brands/flextronics.svg', height: 25 },
 ]
 
 export default function BrandLogos() {
   return (
-    <section className="py-10 border-y border-surface-border bg-surface overflow-hidden">
-      <div className="container-wide">
-        <div className="flex items-center gap-12 overflow-x-auto pb-2 scrollbar-hide">
+    <section className="bg-surface">
+      <div className="bg-surface-card">
+        <div className="container-wide flex items-center justify-between gap-12 overflow-x-auto h-[169px] scrollbar-hide">
           {BRANDS.map((brand) => (
-            <div
-              key={brand}
-              className="shrink-0 text-lg font-bold text-white/20 hover:text-white/40 transition-colors select-none tracking-tight"
-            >
-              {brand}
-            </div>
+            <img
+              key={brand.name}
+              src={brand.src}
+              alt={brand.name}
+              style={{ height: brand.height }}
+              className="shrink-0 w-auto select-none"
+            />
           ))}
         </div>
       </div>
