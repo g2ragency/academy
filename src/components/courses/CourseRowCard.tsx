@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { Clock, Play } from 'lucide-react'
 import { CourseTypeBadge } from '@/components/ui/Badge'
 import { getMediaUrl } from '@/lib/media'
-import { formatDuration } from '@/lib/utils'
+import { formatHours } from '@/lib/utils'
 import type { Course } from '@/types'
 
 interface Props {
@@ -43,7 +43,7 @@ export default function CourseRowCard({ course, href, progress }: Props) {
           {course.duration_minutes ? (
             <span className="flex items-center gap-1 text-xs text-muted">
               <Clock className="w-3.5 h-3.5" />
-              {formatDuration(course.duration_minutes)}
+              {formatHours(course.duration_minutes)}
             </span>
           ) : null}
         </div>
