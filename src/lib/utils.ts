@@ -20,6 +20,13 @@ export function formatDuration(minutes: number): string {
   return m > 0 ? `${h}h ${m}min` : `${h}h`
 }
 
+/** Durata stile card ("2 ore", "1 ora"); sotto l'ora restano i minuti */
+export function formatHours(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`
+  const h = Math.round(minutes / 60)
+  return `${h} ${h === 1 ? 'ora' : 'ore'}`
+}
+
 export function formatSeconds(seconds: number): string {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60

@@ -54,20 +54,12 @@ export default async function CorsiPage({ searchParams }: Props) {
   return (
     <div className="min-h-screen bg-surface pt-24 pb-20">
       <div className="container-wide">
-        {/* Header */}
-        <div className="mb-10">
-          <h1 className="font-bold text-white mb-3">Tutti i corsi</h1>
-          <p className="text-white/50">
-            {courses.length} corso{courses.length !== 1 ? 'i' : ''} disponibil{courses.length !== 1 ? 'i' : 'e'}
-          </p>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar filters */}
-          <aside className="lg:w-56 shrink-0">
-            <div className="sticky top-24 space-y-6">
+        <div className="flex flex-col lg:flex-row gap-10">
+          {/* Sidebar filtri (sticky) */}
+          <aside className="lg:w-60 shrink-0">
+            <div className="sticky top-24">
               {/* Search */}
-              <form method="get">
+              <form method="get" className="mb-5">
                 {Object.entries(searchParams).map(([k, v]) =>
                   v && k !== 'q' ? <input key={k} type="hidden" name={k} value={v} /> : null
                 )}
@@ -82,64 +74,62 @@ export default async function CorsiPage({ searchParams }: Props) {
                 </div>
               </form>
 
-              {/* Type filter */}
-              <div>
-                <h3 className="font-semibold text-white/40 uppercase tracking-widest mb-3">Tipo</h3>
-                <div className="space-y-1">
-                  <a href={buildFilterHref(searchParams, 'tipo', null)} className={`block px-3 py-2 rounded-lg text-sm transition-colors ${!activeTipo ? 'bg-brand/15 text-white font-medium' : 'text-white/60 hover:text-white hover:bg-surface-elevated'}`}>
-                    Tutti
-                  </a>
+              <div className="divide-y divide-surface-border">
+                {/* Gruppo "Corsi" (tipo) */}
+                <FilterGroup title="Corsi">
+                  <FilterItem href={buildFilterHref(searchParams, 'tipo', null)} active={!activeTipo}>
+                    Tutti i corsi
+                  </FilterItem>
                   {COURSE_TYPES.map(([type, label]) => (
-                    <a
+                    <FilterItem
                       key={type}
-                      href={buildFilterHref(searchParams, 'tipo', type)}
-                      className={`block px-3 py-2 rounded-lg text-sm transition-colors ${activeTipo === type ? 'bg-brand/15 text-white font-medium' : 'text-white/60 hover:text-white hover:bg-surface-elevated'}`}
+                      href={buildFilterHref(searchParams, 'tipo', activeTipo === type ? null : type)}
+                      active={activeTipo === type}
                     >
                       {label}
-                    </a>
+                    </FilterItem>
                   ))}
-                </div>
-              </div>
+                </FilterGroup>
 
-              {/* Level filter */}
-              <div>
-                <h3 className="font-semibold text-white/40 uppercase tracking-widest mb-3">Livello</h3>
-                <div className="space-y-1">
+                {/* Livello */}
+                <FilterGroup title="Livello">
                   {(['base', 'intermedio', 'avanzato'] as const).map((level) => {
                     const isActive = searchParams.livello === level
                     return (
-                      <a
+                      <FilterItem
                         key={level}
                         href={buildFilterHref(searchParams, 'livello', isActive ? null : level)}
-                        className={`block px-3 py-2 rounded-lg text-sm capitalize transition-colors ${isActive ? 'bg-brand/15 text-white font-medium' : 'text-white/60 hover:text-white hover:bg-surface-elevated'}`}
+                        active={isActive}
+                        className="capitalize"
                       >
                         {level}
-                      </a>
+                      </FilterItem>
                     )
                   })}
-                </div>
-              </div>
+                </FilterGroup>
 
-              {/* Filtri dinamici dalle tassonomie create dall'admin */}
-              {taxonomies.map((taxonomy) => (
-                <TaxonomyFilterGroup
-                  key={taxonomy.id}
-                  taxonomy={taxonomy}
-                  searchParams={searchParams}
-                />
-              ))}
+                {/* Filtri dinamici dalle tassonomie create dall'admin */}
+                {taxonomies.map((taxonomy) => (
+                  <TaxonomyFilterGroup
+                    key={taxonomy.id}
+                    taxonomy={taxonomy}
+                    searchParams={searchParams}
+                  />
+                ))}
+              </div>
             </div>
           </aside>
 
-          {/* Course grid */}
+          {/* Colonna corsi */}
           <div className="flex-1">
+            <h5 className="text-white mb-8">I nostri corsi</h5>
             {courses.length === 0 ? (
               <div className="text-center py-20">
                 <p className="text-white/30 text-lg mb-2">Nessun corso trovato</p>
                 <a href="/corsi" className="text-brand text-sm hover:underline">Rimuovi i filtri</a>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {courses.map((course) => (
                   <CourseCard key={course.id} course={course} />
                 ))}
@@ -149,6 +139,35 @@ export default async function CorsiPage({ searchParams }: Props) {
         </div>
       </div>
     </div>
+  )
+}
+
+/** Gruppo della sidebar filtri: titolo + voci, separato dagli altri da un divisore */
+function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="py-5 first:pt-0">
+      <p className="text-sm text-white mb-2.5">{title}</p>
+      <div className="space-y-0.5">{children}</div>
+    </div>
+  )
+}
+
+/** Voce filtro: barretta verticale a sinistra quando attiva (come da design) */
+function FilterItem({ href, active, className = '', children }: {
+  href: string
+  active: boolean
+  className?: string
+  children: React.ReactNode
+}) {
+  return (
+    <a
+      href={href}
+      className={`block border-l-2 pl-2.5 py-1 text-sm transition-colors ${
+        active ? 'border-white text-white' : 'border-transparent text-muted hover:text-white'
+      } ${className}`}
+    >
+      {children}
+    </a>
   )
 }
 
@@ -166,11 +185,11 @@ function TaxonomyFilterGroup({ taxonomy, searchParams }: {
   const renderTerm = (term: Term, depth: number) => {
     const isActive = activeSlug === term.slug
     return (
-      <div key={term.id}>
+      <div key={term.id} className={depth ? 'ml-3' : ''}>
         <a
           href={buildFilterHref(searchParams, paramKey, isActive ? null : term.slug)}
-          className={`block px-3 py-2 rounded-lg text-sm transition-colors ${depth ? 'ml-3' : ''} ${
-            isActive ? 'bg-brand/15 text-white font-medium' : 'text-white/60 hover:text-white hover:bg-surface-elevated'
+          className={`block border-l-2 pl-2.5 py-1 text-sm transition-colors ${
+            isActive ? 'border-white text-white' : 'border-transparent text-muted hover:text-white'
           }`}
         >
           {term.name}
@@ -181,9 +200,9 @@ function TaxonomyFilterGroup({ taxonomy, searchParams }: {
   }
 
   return (
-    <div>
-      <h3 className="font-semibold text-white/40 uppercase tracking-widest mb-3">{taxonomy.name}</h3>
-      <div className="space-y-1">
+    <div className="py-5 first:pt-0">
+      <p className="text-sm text-white mb-2.5">{taxonomy.name}</p>
+      <div className="space-y-0.5">
         {tree.map((term) => renderTerm(term, 0))}
       </div>
     </div>

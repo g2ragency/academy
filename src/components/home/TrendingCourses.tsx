@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { ChevronDown, Clock, GraduationCap, Presentation, ShieldCheck, Zap, Briefcase } from 'lucide-react'
+import { ChevronDown, GraduationCap, Presentation, ShieldCheck, Zap, Briefcase } from 'lucide-react'
+import CourseCard from '@/components/courses/CourseCard'
 import type { Course, CourseType } from '@/types'
 
 const FILTER_TABS: { label: string; value: CourseType | 'all' }[] = [
@@ -21,11 +21,6 @@ const TYPE_CHIPS: { label: string; value: CourseType; icon: React.ElementType }[
   { label: 'Short Master', value: 'short_master', icon: Briefcase },
   { label: 'Executive Master', value: 'executive_master', icon: ShieldCheck },
 ]
-
-function formatOre(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`
-  return `${Math.round(minutes / 60)} ore`
-}
 
 interface Props {
   courses: Course[]
@@ -108,29 +103,3 @@ export default function TrendingCourses({ courses }: Props) {
   )
 }
 
-function CourseCard({ course }: { course: Course }) {
-  return (
-    <Link
-      href={`/corsi/${course.slug}`}
-      className="group relative aspect-[343/450] rounded-3xl overflow-hidden bg-surface-card"
-    >
-      {course.thumbnail_url && (
-        <Image
-          src={course.thumbnail_url}
-          alt={course.title}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-      )}
-
-      {/* Pannello informazioni in sovraimpressione */}
-      <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-muted p-6">
-        <h5 className="text-black leading-snug line-clamp-2 mb-4">{course.title}</h5>
-        <div className="border-t border-black/40 pt-3 flex items-center gap-1.5 text-black text-sm">
-          <Clock className="w-3.5 h-3.5" />
-          {course.duration_minutes ? formatOre(course.duration_minutes) : 'On demand'}
-        </div>
-      </div>
-    </Link>
-  )
-}
