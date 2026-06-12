@@ -6,13 +6,21 @@ import { getMediaUrl } from '@/lib/media'
 import { formatDuration } from '@/lib/utils'
 import type { Course } from '@/types'
 
-/** Card corso orizzontale (sezione "Gli altri utenti hanno seguito anche") */
-export default function CourseRowCard({ course }: { course: Course }) {
+interface Props {
+  course: Course
+  /** Destinazione custom (default: pagina pubblica del corso) */
+  href?: string
+  /** Percentuale completamento: mostra la barra sulla thumbnail (dashboard) */
+  progress?: number
+}
+
+/** Card corso orizzontale ("Gli altri utenti hanno seguito anche", tab Corsi dashboard) */
+export default function CourseRowCard({ course, href, progress }: Props) {
   const thumb = getMediaUrl(course.thumbnail_url)
 
   return (
     <Link
-      href={`/corsi/${course.slug}`}
+      href={href ?? `/corsi/${course.slug}`}
       className="card flex flex-col sm:flex-row gap-5 p-4 hover:border-white/10 transition-colors"
     >
       <div className="sm:w-56 shrink-0 aspect-video rounded-lg overflow-hidden relative bg-surface-elevated">
@@ -21,6 +29,11 @@ export default function CourseRowCard({ course }: { course: Course }) {
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <Play className="w-8 h-8 text-white/20" />
+          </div>
+        )}
+        {typeof progress === 'number' && (
+          <div className="absolute bottom-0 inset-x-0 h-1 bg-black/50">
+            <div className="h-full bg-white transition-all" style={{ width: `${progress}%` }} />
           </div>
         )}
       </div>

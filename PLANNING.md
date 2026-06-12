@@ -30,6 +30,9 @@
 | 5 | Acquisti/fatture + Impostazioni | 007 | ✅ |
 | 6 | Rifiniture (popolarità, revenue reale, rimborsi) | — | ✅ |
 | A1 | Allineamento design Figma: pagina Corso (da screenshot) | 008 | ✅ |
+| A2 | Allineamento design: Corsi (listing) + CourseCard unificata | — | ✅ |
+| A3 | Allineamento design: pagina Professore + CourseCarousel | — | ✅ |
+| A4 | Allineamento design: Login/Iscriviti (+ flusso recupero password, prima mancante) + tab Corsi dashboard | — | ✅ |
 
 ## Criticità aperte
 
@@ -42,6 +45,8 @@
 | Prezzi Stripe creati a mano in dashboard (`stripe_price_id`) | Ok per MVP; il checkout supporta anche price_data ad-hoc |
 | Editor quiz admin mancante (domande inserite a mano in `quiz_questions`) | Candidato prossima iterazione |
 | Pagamento Stripe da testare end-to-end in test mode (carta 4242…) | Richiede webhook configurato + service role key |
+| OAuth Google/Apple: bottoni presenti nelle pagine auth ma i provider vanno abilitati nel dashboard Supabase (Google: client ID/secret; Apple: account developer a pagamento) | In caso di errore l'utente vede un toast "non disponibile" |
+| Checkbox "Ricorda" nel login: cosmetica (Supabase mantiene comunque la sessione) | Da design; innocua |
 
 ## Rimandati (tenere a mente)
 

@@ -2,15 +2,15 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Eye, EyeOff, UserPlus } from 'lucide-react'
+import { Briefcase, Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
+import AuthField from '../AuthField'
+import SocialButtons from '../SocialButtons'
 
 const schema = z.object({
   full_name: z.string().min(2, 'Inserisci il tuo nome completo'),
@@ -18,6 +18,7 @@ const schema = z.object({
   company: z.string().optional(),
   password: z.string().min(8, 'La password deve avere almeno 8 caratteri'),
   confirm_password: z.string(),
+  accept_terms: z.boolean().refine((v) => v, 'Devi accettare i Termini e la Privacy Policy'),
 }).refine((d) => d.password === d.confirm_password, {
   message: 'Le password non coincidono',
   path: ['confirm_password'],
@@ -28,7 +29,6 @@ type FormData = z.infer<typeof schema>
 export default function RegistratiPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [done, setDone] = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -60,11 +60,11 @@ export default function RegistratiPage() {
   if (done) {
     return (
       <div className="w-full max-w-md text-center">
-        <div className="w-16 h-16 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center mx-auto mb-6">
-          <span className="text-brand text-2xl">✓</span>
+        <div className="w-16 h-16 rounded-full bg-surface-elevated border border-surface-border flex items-center justify-center mx-auto mb-6">
+          <span className="text-white text-2xl">✓</span>
         </div>
-        <h1 className="font-bold text-white mb-3">Controlla la tua email</h1>
-        <p className="text-white/50 mb-6">
+        <h5 className="text-white mb-3">Controlla la tua email</h5>
+        <p className="text-base text-muted mb-8">
           Ti abbiamo inviato un link di conferma. Clicca sul link per attivare il tuo account.
         </p>
         <Link href="/auth/login" className="btn-primary inline-flex">
@@ -76,82 +76,87 @@ export default function RegistratiPage() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="text-center mb-8">
-        <h1 className="font-bold text-white mb-2">Crea il tuo account</h1>
-        <p className="text-white/50 text-sm">Inizia a imparare dai migliori esperti</p>
+      <div className="text-center mb-10">
+        <h5 className="text-white mb-2">Crea il tuo account</h5>
+        <p className="text-base text-muted">Inserisci i tuoi dati per registrarti.</p>
       </div>
 
-      <div className="card p-8">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <Input
-            {...register('full_name')}
-            id="full_name"
-            label="Nome completo"
-            placeholder="Mario Rossi"
-            error={errors.full_name?.message}
-            autoComplete="name"
-          />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <AuthField
+          {...register('full_name')}
+          icon={<User />}
+          placeholder="Nome e cognome*"
+          autoComplete="name"
+          error={errors.full_name?.message}
+        />
 
-          <Input
-            {...register('email')}
-            id="email"
-            type="email"
-            label="Email aziendale"
-            placeholder="mario@holding.it"
-            error={errors.email?.message}
-            autoComplete="email"
-          />
+        <AuthField
+          {...register('email')}
+          icon={<Mail />}
+          type="email"
+          placeholder="Inserisci la tua Email*"
+          autoComplete="email"
+          error={errors.email?.message}
+        />
 
-          <Input
-            {...register('company')}
-            id="company"
-            label="Azienda / Holding (opzionale)"
-            placeholder="Rossi Holding S.p.A."
-            autoComplete="organization"
-          />
+        <AuthField
+          {...register('company')}
+          icon={<Briefcase />}
+          placeholder="Azienda / Holding (opzionale)"
+          autoComplete="organization"
+        />
 
-          <div className="relative">
-            <Input
-              {...register('password')}
-              id="password"
-              type={showPassword ? 'text' : 'password'}
-              label="Password"
-              placeholder="Minimo 8 caratteri"
-              error={errors.password?.message}
-              autoComplete="new-password"
-            />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-[38px] text-white/30 hover:text-white/60">
+        <AuthField
+          {...register('password')}
+          icon={<Lock />}
+          type={showPassword ? 'text' : 'password'}
+          placeholder="Crea una password*"
+          autoComplete="new-password"
+          error={errors.password?.message}
+          rightSlot={
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Nascondi password' : 'Mostra password'}
+              className="text-white/40 hover:text-white transition-colors shrink-0"
+            >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
-          </div>
+          }
+        />
 
-          <Input
-            {...register('confirm_password')}
-            id="confirm_password"
-            type={showPassword ? 'text' : 'password'}
-            label="Conferma password"
-            placeholder="Ripeti la password"
-            error={errors.confirm_password?.message}
-            autoComplete="new-password"
-          />
+        <AuthField
+          {...register('confirm_password')}
+          icon={<Lock />}
+          type={showPassword ? 'text' : 'password'}
+          placeholder="Conferma password*"
+          autoComplete="new-password"
+          error={errors.confirm_password?.message}
+        />
 
-          <p className="text-xs text-white/30">
-            Registrandoti accetti i{' '}
-            <Link href="/termini" className="text-brand hover:underline">Termini di servizio</Link>
-            {' '}e la{' '}
-            <Link href="/privacy" className="text-brand hover:underline">Privacy Policy</Link>.
-          </p>
+        <div className="pt-1">
+          <label className="flex items-start gap-2.5 text-sm text-muted cursor-pointer">
+            <input type="checkbox" {...register('accept_terms')} className="w-4 h-4 accent-brand rounded mt-0.5" />
+            <span>
+              Accetto i{' '}
+              <Link href="/termini" className="text-white underline underline-offset-4 hover:text-white/70">Termini e Condizioni</Link>
+              {' '}e la{' '}
+              <Link href="/privacy" className="text-white underline underline-offset-4 hover:text-white/70">Privacy Policy</Link>*
+            </span>
+          </label>
+          {errors.accept_terms && <p className="text-xs text-red-400 mt-1.5">{errors.accept_terms.message}</p>}
+        </div>
 
-          <Button type="submit" loading={isSubmitting} className="w-full" size="lg">
-            <UserPlus className="w-4 h-4" />
-            Crea account
-          </Button>
-        </form>
-      </div>
+        <Button type="submit" loading={isSubmitting} className="w-full mt-2" size="lg">
+          Registrati
+        </Button>
+      </form>
 
-      <p className="text-center text-sm text-white/40 mt-6">
+      <SocialButtons label="Oppure registrati con" />
+
+      <p className="text-center text-sm text-muted mt-10">
         Hai già un account?{' '}
-        <Link href="/auth/login" className="text-brand hover:text-brand-light transition-colors font-medium">
+        <Link href="/auth/login" className="text-white underline underline-offset-4 hover:text-white/70 transition-colors">
           Accedi
         </Link>
       </p>
