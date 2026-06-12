@@ -33,6 +33,7 @@
 | A2 | Allineamento design: Corsi (listing) + CourseCard unificata | — | ✅ |
 | A3 | Allineamento design: pagina Professore + CourseCarousel | — | ✅ |
 | A4 | Allineamento design: Login/Iscriviti (+ flusso recupero password, prima mancante) + tab Corsi dashboard | — | ✅ |
+| A5 | Allineamento design: pagina Checkout `/checkout/[slug]` (form fatturazione → Stripe; carrello multi-corso rimandato) | — | ✅ |
 
 ## Criticità aperte
 
@@ -50,6 +51,7 @@
 
 ## Rimandati (tenere a mente)
 
+- **Carrello multi-corso nel checkout** (il design "Riepilogo del carrello" mostra più item con X di rimozione): oggi il checkout è per singolo corso (`/checkout/[slug]`); servirebbe stato carrello + checkout Stripe multi line-item. I wallet (Apple/Google Pay) compaiono nella pagina Stripe, non in quella interna (richiederebbero Stripe Elements).
 - **"Segui" docente + campanellino notifiche** (design pagina professore, deciso 2026-06-12 di ometterli): servirà tabella `instructor_followers` + sistema notifiche (email su nuovo corso pubblicato)
 - Calendario lezioni / eventi live (tabella `live_sessions` con data/ora e link partecipazione)
 - Materiali didattici (sezione dedicata; oggi i PDF vivono dentro le lezioni)

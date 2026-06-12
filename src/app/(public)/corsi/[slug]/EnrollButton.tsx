@@ -37,15 +37,8 @@ export default function EnrollButton({ course, isLoggedIn }: Props) {
         router.push(`/dashboard/corsi/${course.slug}`)
         router.refresh()
       } else {
-        // Paid course - go to Stripe checkout
-        const res = await fetch('/api/stripe/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ courseId: course.id }),
-        })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error)
-        window.location.href = data.url
+        // Corso a pagamento: pagina checkout interna (dati fatturazione), poi Stripe
+        router.push(`/checkout/${course.slug}`)
       }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Si è verificato un errore')

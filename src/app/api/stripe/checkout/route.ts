@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    const { courseId } = await request.json()
+    const { courseId, orderNotes } = await request.json()
 
     const { data: course } = await supabase
       .from('courses')
@@ -61,6 +61,7 @@ export async function POST(request: Request) {
       metadata: {
         course_id: courseId,
         user_id: user.id,
+        ...(orderNotes ? { order_notes: String(orderNotes).slice(0, 450) } : {}),
       },
     })
 
