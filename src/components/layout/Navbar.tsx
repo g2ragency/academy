@@ -375,20 +375,24 @@ function NavDropdown({ label, items, open, onOpen, active }: {
         {label} <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-2 w-60 bg-surface-card backdrop-blur-md border border-surface-border rounded-2xl shadow-2xl overflow-hidden">
-          <div className="p-2">
-            {items.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-3 px-3 py-2 text-sm text-white/60 hover:text-white rounded-xl transition-colors group"
-              >
-                <span className="w-8 h-8 rounded-lg bg-surface-elevated border border-surface-border flex items-center justify-center shrink-0 group-hover:bg-white group-hover:text-black transition-colors">
-                  <item.icon className="w-4 h-4" />
-                </span>
-                {item.label}
-              </Link>
-            ))}
+        // pt-2 (non mt-2): il padding fa da "ponte" hoverable tra bottone e
+        // pannello, così muovendo il mouse sulle voci il menu non si chiude
+        <div className="absolute top-full left-0 pt-2 w-60">
+          <div className="bg-surface-card backdrop-blur-md border border-surface-border rounded-2xl shadow-2xl overflow-hidden">
+            <div className="p-2">
+              {items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-3 px-3 py-2 text-sm text-white/60 hover:text-white rounded-xl transition-colors group"
+                >
+                  <span className="w-8 h-8 rounded-lg bg-surface-elevated border border-surface-border flex items-center justify-center shrink-0 group-hover:bg-white group-hover:text-black transition-colors">
+                    <item.icon className="w-4 h-4" />
+                  </span>
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )}
