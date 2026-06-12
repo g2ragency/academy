@@ -32,7 +32,7 @@ export default function TrendingCourses({ courses }: Props) {
   const filtered = activeFilter === 'all' ? courses : courses.filter((c) => c.type === activeFilter)
 
   return (
-    <section className="py-16 bg-surface border-t border-surface-border">
+    <section id="trending" className="py-16 bg-surface border-t border-surface-border scroll-mt-16">
       <div className="container-wide">
         <h3 className="text-white text-center mb-12">Di tendenza in Academy</h3>
 
