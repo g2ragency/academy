@@ -2,7 +2,10 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { Linkedin, User } from 'lucide-react'
 import { createServerClient } from '@/lib/supabase/server'
-import CourseCard from '@/components/courses/CourseCard'
+import { getMediaUrl } from '@/lib/media'
+import CourseCarousel from '@/components/courses/CourseCarousel'
+import CourseRowCard from '@/components/courses/CourseRowCard'
+import type { Course } from '@/types'
 
 interface Props { params: { slug: string } }
 
@@ -19,13 +22,23 @@ export default async function InstructorPage({ params }: Props) {
 
   if (!instructor) notFound()
 
+  // I corsi del docente passano dalla junction course_instructors (multi-relatore);
+  // il backfill della 008 copre anche i corsi creati col solo instructor_id.
+  const { data: courseLinks } = await supabase
+    .from('course_instructors')
+    .select('course_id')
+    .eq('instructor_id', instructor.id)
+  const ownCourseIds = (courseLinks ?? []).map((r) => r.course_id as string)
+
   const [{ data: courses }, { data: popularity }] = await Promise.all([
-    supabase
-      .from('courses')
-      .select('*, instructor:instructors!courses_instructor_id_fkey(*)')
-      .eq('instructor_id', instructor.id)
-      .eq('status', 'published')
-      .order('sort_order'),
+    ownCourseIds.length > 0
+      ? supabase
+          .from('courses')
+          .select('*')
+          .in('id', ownCourseIds)
+          .eq('status', 'published')
+          .order('sort_order')
+      : Promise.resolve({ data: [] as Course[] }),
     supabase
       .from('course_popularity')
       .select('course_id, enrollment_count')
@@ -33,88 +46,99 @@ export default async function InstructorPage({ params }: Props) {
       .limit(20),
   ])
 
-  // "I corsi più seguiti dagli utenti": top per iscrizioni, esclusi quelli del
-  // docente corrente; fallback sui corsi in evidenza se non ci sono iscrizioni.
+  // "Gli altri utenti hanno seguito anche": top per iscrizioni, esclusi i corsi
+  // del docente corrente; fallback sui corsi in evidenza se non ci sono iscrizioni.
   const popularIds = (popularity ?? []).map((p) => p.course_id)
-  let otherCourses: typeof courses = []
+  let otherCourses: Course[] = []
   if (popularIds.length > 0) {
     const { data } = await supabase
       .from('courses')
-      .select('*, instructor:instructors!courses_instructor_id_fkey(*)')
+      .select('*')
       .in('id', popularIds)
       .eq('status', 'published')
-      .neq('instructor_id', instructor.id)
     const rank = new Map(popularIds.map((id, i) => [id, i]))
-    otherCourses = (data ?? []).sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99)).slice(0, 4)
+    otherCourses = ((data ?? []) as Course[])
+      .filter((c) => !ownCourseIds.includes(c.id))
+      .sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99))
+      .slice(0, 4)
   }
-  if (!otherCourses || otherCourses.length === 0) {
+  if (otherCourses.length === 0) {
     const { data } = await supabase
       .from('courses')
-      .select('*, instructor:instructors!courses_instructor_id_fkey(*)')
+      .select('*')
       .eq('status', 'published')
       .eq('featured', true)
-      .neq('instructor_id', instructor.id)
       .order('sort_order')
-      .limit(4)
-    otherCourses = data ?? []
+      .limit(8)
+    otherCourses = ((data ?? []) as Course[]).filter((c) => !ownCourseIds.includes(c.id)).slice(0, 4)
   }
+
+  const avatar = getMediaUrl(instructor.avatar_url)
 
   return (
     <div className="min-h-screen bg-surface pt-24 pb-20">
       <div className="container-wide">
-        <div className="grid lg:grid-cols-3 gap-12">
-          {/* Instructor profile */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 card p-6 text-center">
-              <div className="w-32 h-32 rounded-full overflow-hidden relative mx-auto mb-4 bg-surface-elevated border border-surface-border">
-                {instructor.avatar_url ? (
-                  <Image src={instructor.avatar_url} alt={instructor.full_name} fill className="object-cover" />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <User className="w-16 h-16 text-white/20" />
-                  </div>
-                )}
-              </div>
-              <h1 className="font-bold text-white mb-1">{instructor.full_name}</h1>
-              {instructor.title && <p className="text-sm text-white/50 mb-4">{instructor.title}</p>}
-              {instructor.linkedin_url && (
-                <a href={instructor.linkedin_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-brand hover:text-brand-light transition-colors">
-                  <Linkedin className="w-4 h-4" /> LinkedIn
-                </a>
-              )}
-              {instructor.bio && (
-                <p className="text-sm text-white/50 leading-relaxed mt-4 text-left">{instructor.bio}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Courses */}
-          <div className="lg:col-span-2">
-            <h2 className="font-bold text-white mb-6">
-              Corsi di {instructor.full_name} ({(courses ?? []).length})
-            </h2>
-            {(courses ?? []).length === 0 ? (
-              <p className="text-white/40">Nessun corso disponibile al momento.</p>
+        {/* Header: avatar + nome + ruolo */}
+        <div className="flex flex-wrap items-center gap-6">
+          <div className="w-24 h-24 rounded-full overflow-hidden relative bg-surface-elevated border border-surface-border shrink-0">
+            {avatar ? (
+              <Image src={avatar} alt={instructor.full_name} fill className="object-cover" />
             ) : (
-              <div className="grid sm:grid-cols-2 gap-4">
-                {(courses ?? []).map((course) => (
-                  <CourseCard key={course.id} course={course} />
-                ))}
-              </div>
-            )}
-
-            {(otherCourses ?? []).length > 0 && (
-              <div className="mt-14">
-                <h2 className="font-bold text-white mb-6">I corsi più seguiti dagli utenti</h2>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {(otherCourses ?? []).map((course) => (
-                    <CourseCard key={course.id} course={course} />
-                  ))}
-                </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <User className="w-10 h-10 text-white/20" />
               </div>
             )}
           </div>
+          <div className="min-w-0">
+            <h5 className="text-white">{instructor.full_name}</h5>
+            {instructor.title && <p className="text-base text-muted mt-1">{instructor.title}</p>}
+          </div>
+          {instructor.linkedin_url && (
+            <a
+              href={instructor.linkedin_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`LinkedIn di ${instructor.full_name}`}
+              className="ml-auto w-10 h-10 rounded-full border border-surface-border text-white/60 hover:text-white hover:border-white/30 transition-colors flex items-center justify-center"
+            >
+              <Linkedin className="w-4 h-4" />
+            </a>
+          )}
         </div>
+
+        {/* Informazioni */}
+        {instructor.bio && (
+          <section className="border-t border-surface-border mt-10 pt-10">
+            <h5 className="text-white mb-6">Informazioni</h5>
+            <div className="text-white/60 leading-relaxed whitespace-pre-line max-w-5xl">
+              {instructor.bio}
+            </div>
+          </section>
+        )}
+
+        {/* Corsi del docente */}
+        <section className="border-t border-surface-border mt-12 pt-10">
+          {((courses ?? []) as Course[]).length === 0 ? (
+            <>
+              <h5 className="text-white mb-6">Corsi</h5>
+              <p className="text-white/40">Nessun corso disponibile al momento.</p>
+            </>
+          ) : (
+            <CourseCarousel title="Corsi" courses={(courses ?? []) as Course[]} />
+          )}
+        </section>
+
+        {/* Gli altri utenti hanno seguito anche */}
+        {otherCourses.length > 0 && (
+          <section className="border-t border-surface-border mt-12 pt-10">
+            <h5 className="text-white mb-8">Gli altri utenti hanno seguito anche</h5>
+            <div className="space-y-4">
+              {otherCourses.map((course) => (
+                <CourseRowCard key={course.id} course={course} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   )

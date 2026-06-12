@@ -45,6 +45,7 @@
 
 ## Rimandati (tenere a mente)
 
+- **"Segui" docente + campanellino notifiche** (design pagina professore, deciso 2026-06-12 di ometterli): servirà tabella `instructor_followers` + sistema notifiche (email su nuovo corso pubblicato)
 - Calendario lezioni / eventi live (tabella `live_sessions` con data/ora e link partecipazione)
 - Materiali didattici (sezione dedicata; oggi i PDF vivono dentro le lezioni)
 - Preferenze email / notifiche
