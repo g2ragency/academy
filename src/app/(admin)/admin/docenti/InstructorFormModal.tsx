@@ -6,12 +6,14 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { Plus, Edit2, X, Save, Upload } from 'lucide-react'
+import { Plus, Edit2, X, Save } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import FileUpload from '@/components/admin/FileUpload'
+import TermsPicker from '@/components/admin/TermsPicker'
 import { slugify } from '@/lib/utils'
-import type { Instructor } from '@/types'
+import type { Instructor, Taxonomy } from '@/types'
 
 const schema = z.object({
   full_name: z.string().min(2),
@@ -28,16 +30,20 @@ interface Props {
   /** Trigger ridotto a link testuale, per l'uso inline nel form corso */
   compact?: boolean
   onCreated?: (instructor: Instructor) => void
+  /** Taxonomies associabili ai docenti: se assenti, il picker non viene mostrato */
+  taxonomies?: Taxonomy[]
+  initialTermIds?: string[]
 }
 
-export default function InstructorFormModal({ instructor, compact, onCreated }: Props) {
+export default function InstructorFormModal({ instructor, compact, onCreated, taxonomies, initialTermIds }: Props) {
   const [open, setOpen] = useState(false)
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(instructor?.avatar_url ?? null)
+  const [termIds, setTermIds] = useState<string[]>(initialTermIds ?? [])
   const router = useRouter()
   const supabase = createClient()
   const isEditing = !!instructor
 
-  const { register, handleSubmit, setValue, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: instructor ? {
       full_name: instructor.full_name,
@@ -50,29 +56,32 @@ export default function InstructorFormModal({ instructor, compact, onCreated }: 
   })
 
   const onSubmit = async (data: FormData) => {
-    let avatar_url = instructor?.avatar_url ?? null
+    const payload = { ...data, avatar_url: avatarUrl, linkedin_url: data.linkedin_url || null, title: data.title || null, bio: data.bio || null }
 
-    if (avatarFile) {
-      const ext = avatarFile.name.split('.').pop()
-      const path = `instructors/${data.slug}/avatar.${ext}`
-      const { error } = await supabase.storage.from('academy').upload(path, avatarFile, { upsert: true })
-      if (!error) {
-        const { data: { publicUrl } } = supabase.storage.from('academy').getPublicUrl(path)
-        avatar_url = publicUrl
-      }
-    }
-
-    const payload = { ...data, avatar_url, linkedin_url: data.linkedin_url || null, title: data.title || null, bio: data.bio || null }
-
+    let instructorId = instructor?.id
     if (isEditing) {
       const { error } = await supabase.from('instructors').update(payload).eq('id', instructor.id)
       if (error) { toast.error(error.message); return }
     } else {
       const { data: created, error } = await supabase.from('instructors').insert(payload).select().single()
       if (error) { toast.error(error.message); return }
+      instructorId = created.id
       onCreated?.(created as Instructor)
       reset({ sort_order: 0 })
-      setAvatarFile(null)
+      setAvatarUrl(null)
+    }
+
+    // Sync classificazioni docente, solo se il picker è attivo
+    if (taxonomies && instructorId) {
+      const { error: deleteError } = await supabase.from('instructor_terms').delete().eq('instructor_id', instructorId)
+      if (deleteError) { toast.error(`Errore classificazioni: ${deleteError.message}`); return }
+      if (termIds.length > 0) {
+        const { error: insertError } = await supabase
+          .from('instructor_terms')
+          .insert(termIds.map((term_id) => ({ instructor_id: instructorId, term_id })))
+        if (insertError) { toast.error(`Errore classificazioni: ${insertError.message}`); return }
+      }
+      if (!isEditing) setTermIds([])
     }
 
     toast.success(isEditing ? 'Docente aggiornato!' : 'Docente creato!')
@@ -116,13 +125,30 @@ export default function InstructorFormModal({ instructor, compact, onCreated }: 
               <Input {...register('linkedin_url')} id="li" label="LinkedIn URL" placeholder="https://linkedin.com/in/..." error={errors.linkedin_url?.message} />
               <Input {...register('sort_order')} id="ord" type="number" label="Ordine (0 = primo)" />
 
+              {taxonomies && taxonomies.length > 0 && (
+                <div>
+                  <label className="label">Classificazioni</label>
+                  <TermsPicker taxonomies={taxonomies} value={termIds} onChange={setTermIds} />
+                </div>
+              )}
+
               <div>
                 <label className="label">Foto profilo</label>
-                <label className="flex items-center gap-3 border border-dashed border-surface-border rounded-xl p-4 cursor-pointer hover:border-brand/40">
-                  <Upload className="w-5 h-5 text-white/30" />
-                  <span className="text-sm text-white/40">{avatarFile ? avatarFile.name : 'Carica immagine'}</span>
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => setAvatarFile(e.target.files?.[0] ?? null)} />
-                </label>
+                <FileUpload
+                  accept="image/*"
+                  maxSizeMB={2}
+                  label="Carica immagine"
+                  currentName={avatarUrl ? avatarUrl.split('/').pop() : null}
+                  buildPath={(file) => {
+                    const slug = watch('slug')
+                    if (!slug) {
+                      toast.error('Inserisci prima il nome del docente')
+                      return null
+                    }
+                    return `instructors/${slug}/avatar.${file.name.split('.').pop()}`
+                  }}
+                  onUploaded={({ publicUrl }) => setAvatarUrl(publicUrl)}
+                />
               </div>
 
               <div className="flex gap-3 pt-2">

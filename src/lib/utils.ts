@@ -26,6 +26,10 @@ export function formatSeconds(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
+export function formatDate(iso: string): string {
+  return new Intl.DateTimeFormat('it-IT', { dateStyle: 'long' }).format(new Date(iso))
+}
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()

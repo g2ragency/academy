@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2, ChevronLeft, ChevronRight, FileText, BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { getProtectedMediaUrl } from '@/lib/media'
 import { Button } from '@/components/ui/Button'
 import type { Lesson, QuizQuestion } from '@/types'
 
@@ -24,8 +25,23 @@ export default function LessonPlayer({ lesson, courseId, courseSlug, userId, isC
   const [marking, setMarking] = useState(false)
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({})
   const [quizSubmitted, setQuizSubmitted] = useState(false)
+  // URL risolti dei media protetti (signed URL per i path nel bucket privato)
+  const [videoSrc, setVideoSrc] = useState<string | null>(null)
+  const [pdfHref, setPdfHref] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    let cancelled = false
+    if (lesson.video_url) {
+      getProtectedMediaUrl(supabase, lesson.video_url).then((url) => !cancelled && setVideoSrc(url))
+    }
+    if (lesson.pdf_url) {
+      getProtectedMediaUrl(supabase, lesson.pdf_url).then((url) => !cancelled && setPdfHref(url))
+    }
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lesson.id, lesson.video_url, lesson.pdf_url])
 
   const markComplete = async () => {
     setMarking(true)
@@ -84,12 +100,18 @@ export default function LessonPlayer({ lesson, courseId, courseSlug, userId, isC
         {/* Video */}
         {lesson.type === 'video' && lesson.video_url && (
           <div className="aspect-video bg-surface-card rounded-2xl overflow-hidden mb-6 relative">
-            <video
-              src={lesson.video_url}
-              controls
-              className="w-full h-full"
-              onEnded={() => !completed && markComplete()}
-            />
+            {videoSrc ? (
+              <video
+                src={videoSrc}
+                controls
+                className="w-full h-full"
+                onEnded={() => !completed && markComplete()}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-white/30 text-sm">
+                Caricamento video…
+              </div>
+            )}
           </div>
         )}
 
@@ -113,15 +135,19 @@ export default function LessonPlayer({ lesson, courseId, courseSlug, userId, isC
               <FileText className="w-4 h-4 text-brand" />
               <span className="text-sm font-medium text-white">Documento PDF</span>
             </div>
-            <a
-              href={lesson.pdf_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-secondary inline-flex text-sm gap-2"
-            >
-              <FileText className="w-4 h-4" />
-              Apri PDF
-            </a>
+            {pdfHref ? (
+              <a
+                href={pdfHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary inline-flex text-sm gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                Apri PDF
+              </a>
+            ) : (
+              <span className="text-sm text-white/30">Caricamento…</span>
+            )}
           </div>
         )}
 

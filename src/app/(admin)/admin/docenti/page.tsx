@@ -1,7 +1,7 @@
-import Link from 'next/link'
 import Image from 'next/image'
-import { Plus, Edit2, User } from 'lucide-react'
+import { User } from 'lucide-react'
 import { createServerClient } from '@/lib/supabase/server'
+import { getTaxonomiesWithTerms } from '@/lib/taxonomy.server'
 import InstructorFormModal from './InstructorFormModal'
 
 export const dynamic = 'force-dynamic'
@@ -9,16 +9,24 @@ export const metadata = { title: 'Gestione Docenti' }
 
 export default async function AdminDocentiPage() {
   const supabase = createServerClient()
-  const { data: instructors } = await supabase
-    .from('instructors')
-    .select('*')
-    .order('sort_order')
+  const [{ data: instructors }, taxonomies, { data: instructorTerms }] = await Promise.all([
+    supabase.from('instructors').select('*').order('sort_order'),
+    getTaxonomiesWithTerms({ appliesToInstructors: true }),
+    supabase.from('instructor_terms').select('instructor_id, term_id'),
+  ])
+
+  const termIdsByInstructor = new Map<string, string[]>()
+  for (const row of instructorTerms ?? []) {
+    const list = termIdsByInstructor.get(row.instructor_id) ?? []
+    list.push(row.term_id)
+    termIdsByInstructor.set(row.instructor_id, list)
+  }
 
   return (
     <div className="px-10 py-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="font-bold text-white">Gestione Docenti</h1>
-        <InstructorFormModal />
+        <InstructorFormModal taxonomies={taxonomies} />
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -39,7 +47,11 @@ export default async function AdminDocentiPage() {
               </div>
             </div>
             <div className="p-3 flex justify-end">
-              <InstructorFormModal instructor={instructor} />
+              <InstructorFormModal
+                instructor={instructor}
+                taxonomies={taxonomies}
+                initialTermIds={termIdsByInstructor.get(instructor.id) ?? []}
+              />
             </div>
           </div>
         ))}

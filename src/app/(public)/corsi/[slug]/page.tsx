@@ -3,10 +3,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Clock, BarChart2, BookOpen, Lock, Play, CheckCircle2, User } from 'lucide-react'
 import { createServerClient, getProfile } from '@/lib/supabase/server'
+import { TAXONOMY_PARAM_PREFIX } from '@/lib/taxonomy'
 import { CourseTypeBadge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { formatPrice, formatDuration, formatSeconds } from '@/lib/utils'
-import type { Module, Lesson } from '@/types'
+import type { Module, Lesson, Term } from '@/types'
 import EnrollButton from './EnrollButton'
 
 export const dynamic = 'force-dynamic'
@@ -35,6 +36,18 @@ async function getModules(courseId: string) {
   return (data ?? []) as (Module & { lessons: Lesson[] })[]
 }
 
+/** Terms del corso con lo slug della tassonomia di appartenenza, per i badge linkabili */
+async function getCourseTerms(courseId: string) {
+  const supabase = createServerClient()
+  const { data } = await supabase
+    .from('course_terms')
+    .select('term:terms(*, taxonomy:taxonomies(slug))')
+    .eq('course_id', courseId)
+  return (data ?? [])
+    .map((row: any) => row.term)
+    .filter(Boolean) as (Term & { taxonomy: { slug: string } })[]
+}
+
 async function getEnrollment(userId: string, courseId: string) {
   const supabase = createServerClient()
   const { data } = await supabase
@@ -55,9 +68,10 @@ export default async function CourseDetailPage({ params }: Props) {
   const course = await getCourse(params.slug)
   if (!course) notFound()
 
-  const [modules, profile] = await Promise.all([
+  const [modules, profile, courseTerms] = await Promise.all([
     getModules(course.id),
     getProfile(),
+    getCourseTerms(course.id),
   ])
 
   const enrollment = profile ? await getEnrollment(profile.id, course.id) : null
@@ -110,6 +124,21 @@ export default async function CourseDetailPage({ params }: Props) {
                   {totalLessons} lezioni
                 </span>
               </div>
+
+              {/* Classificazioni (tassonomia dinamica), linkate al filtro corsi */}
+              {courseTerms.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-5">
+                  {courseTerms.map((term) => (
+                    <Link
+                      key={term.id}
+                      href={`/corsi?${TAXONOMY_PARAM_PREFIX}${term.taxonomy.slug}=${term.slug}`}
+                      className="px-3 py-1 rounded-full border border-surface-border text-xs text-white/60 hover:text-white hover:border-white/30 transition-colors"
+                    >
+                      {term.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Preview video */}

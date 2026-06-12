@@ -1,6 +1,8 @@
 import { createServerClient } from '@/lib/supabase/server'
+import { getTaxonomiesWithTerms, getFilteredCourseIds } from '@/lib/taxonomy.server'
+import { buildTermTree, TAXONOMY_PARAM_PREFIX } from '@/lib/taxonomy'
 import CourseCard from '@/components/courses/CourseCard'
-import { COURSE_TYPE_LABELS, type CourseType } from '@/types'
+import { COURSE_TYPE_LABELS, type CourseType, type Taxonomy, type Term } from '@/types'
 import { Search } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -9,10 +11,10 @@ export const metadata = { title: 'Corsi' }
 const COURSE_TYPES = Object.entries(COURSE_TYPE_LABELS) as [CourseType, string][]
 
 interface Props {
-  searchParams: { tipo?: string; livello?: string; q?: string }
+  searchParams: Record<string, string | undefined> & { tipo?: string; livello?: string; q?: string }
 }
 
-async function getCourses(searchParams: Props['searchParams']) {
+async function getCourses(searchParams: Props['searchParams'], taxonomyCourseIds: string[] | null) {
   const supabase = createServerClient()
   let query = supabase
     .from('courses')
@@ -23,13 +25,30 @@ async function getCourses(searchParams: Props['searchParams']) {
   if (searchParams.tipo) query = query.eq('type', searchParams.tipo)
   if (searchParams.livello) query = query.eq('level', searchParams.livello)
   if (searchParams.q) query = query.ilike('title', `%${searchParams.q}%`)
+  if (taxonomyCourseIds !== null) {
+    if (taxonomyCourseIds.length === 0) return []
+    query = query.in('id', taxonomyCourseIds)
+  }
 
   const { data } = await query
   return data ?? []
 }
 
+/** Ricostruisce la querystring preservando gli altri filtri attivi */
+function buildFilterHref(searchParams: Props['searchParams'], key: string, value: string | null) {
+  const params = new URLSearchParams()
+  for (const [k, v] of Object.entries(searchParams)) {
+    if (v && k !== key) params.set(k, v)
+  }
+  if (value) params.set(key, value)
+  const qs = params.toString()
+  return `/corsi${qs ? `?${qs}` : ''}`
+}
+
 export default async function CorsiPage({ searchParams }: Props) {
-  const courses = await getCourses(searchParams)
+  const taxonomies = await getTaxonomiesWithTerms({ showInFilters: true, appliesToCourses: true })
+  const taxonomyCourseIds = await getFilteredCourseIds(taxonomies, searchParams)
+  const courses = await getCourses(searchParams, taxonomyCourseIds)
   const activeTipo = searchParams.tipo
 
   return (
@@ -49,7 +68,9 @@ export default async function CorsiPage({ searchParams }: Props) {
             <div className="sticky top-24 space-y-6">
               {/* Search */}
               <form method="get">
-                {activeTipo && <input type="hidden" name="tipo" value={activeTipo} />}
+                {Object.entries(searchParams).map(([k, v]) =>
+                  v && k !== 'q' ? <input key={k} type="hidden" name={k} value={v} /> : null
+                )}
                 <div className="relative">
                   <input
                     name="q"
@@ -65,13 +86,13 @@ export default async function CorsiPage({ searchParams }: Props) {
               <div>
                 <h3 className="font-semibold text-white/40 uppercase tracking-widest mb-3">Tipo</h3>
                 <div className="space-y-1">
-                  <a href="/corsi" className={`block px-3 py-2 rounded-lg text-sm transition-colors ${!activeTipo ? 'bg-brand/15 text-white font-medium' : 'text-white/60 hover:text-white hover:bg-surface-elevated'}`}>
+                  <a href={buildFilterHref(searchParams, 'tipo', null)} className={`block px-3 py-2 rounded-lg text-sm transition-colors ${!activeTipo ? 'bg-brand/15 text-white font-medium' : 'text-white/60 hover:text-white hover:bg-surface-elevated'}`}>
                     Tutti
                   </a>
                   {COURSE_TYPES.map(([type, label]) => (
                     <a
                       key={type}
-                      href={`/corsi?tipo=${type}`}
+                      href={buildFilterHref(searchParams, 'tipo', type)}
                       className={`block px-3 py-2 rounded-lg text-sm transition-colors ${activeTipo === type ? 'bg-brand/15 text-white font-medium' : 'text-white/60 hover:text-white hover:bg-surface-elevated'}`}
                     >
                       {label}
@@ -84,17 +105,29 @@ export default async function CorsiPage({ searchParams }: Props) {
               <div>
                 <h3 className="font-semibold text-white/40 uppercase tracking-widest mb-3">Livello</h3>
                 <div className="space-y-1">
-                  {(['base', 'intermedio', 'avanzato'] as const).map((level) => (
-                    <a
-                      key={level}
-                      href={`/corsi?livello=${level}${activeTipo ? `&tipo=${activeTipo}` : ''}`}
-                      className={`block px-3 py-2 rounded-lg text-sm capitalize transition-colors ${searchParams.livello === level ? 'bg-brand/15 text-white font-medium' : 'text-white/60 hover:text-white hover:bg-surface-elevated'}`}
-                    >
-                      {level}
-                    </a>
-                  ))}
+                  {(['base', 'intermedio', 'avanzato'] as const).map((level) => {
+                    const isActive = searchParams.livello === level
+                    return (
+                      <a
+                        key={level}
+                        href={buildFilterHref(searchParams, 'livello', isActive ? null : level)}
+                        className={`block px-3 py-2 rounded-lg text-sm capitalize transition-colors ${isActive ? 'bg-brand/15 text-white font-medium' : 'text-white/60 hover:text-white hover:bg-surface-elevated'}`}
+                      >
+                        {level}
+                      </a>
+                    )
+                  })}
                 </div>
               </div>
+
+              {/* Filtri dinamici dalle tassonomie create dall'admin */}
+              {taxonomies.map((taxonomy) => (
+                <TaxonomyFilterGroup
+                  key={taxonomy.id}
+                  taxonomy={taxonomy}
+                  searchParams={searchParams}
+                />
+              ))}
             </div>
           </aside>
 
@@ -114,6 +147,44 @@ export default async function CorsiPage({ searchParams }: Props) {
             )}
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+/** Gruppo di filtri generato da una tassonomia creata dall'admin */
+function TaxonomyFilterGroup({ taxonomy, searchParams }: {
+  taxonomy: Taxonomy
+  searchParams: Props['searchParams']
+}) {
+  const tree = buildTermTree(taxonomy.terms ?? [])
+  if (tree.length === 0) return null
+
+  const paramKey = `${TAXONOMY_PARAM_PREFIX}${taxonomy.slug}`
+  const activeSlug = searchParams[paramKey]
+
+  const renderTerm = (term: Term, depth: number) => {
+    const isActive = activeSlug === term.slug
+    return (
+      <div key={term.id}>
+        <a
+          href={buildFilterHref(searchParams, paramKey, isActive ? null : term.slug)}
+          className={`block px-3 py-2 rounded-lg text-sm transition-colors ${depth ? 'ml-3' : ''} ${
+            isActive ? 'bg-brand/15 text-white font-medium' : 'text-white/60 hover:text-white hover:bg-surface-elevated'
+          }`}
+        >
+          {term.name}
+        </a>
+        {term.children?.map((child) => renderTerm(child, depth + 1))}
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <h3 className="font-semibold text-white/40 uppercase tracking-widest mb-3">{taxonomy.name}</h3>
+      <div className="space-y-1">
+        {tree.map((term) => renderTerm(term, 0))}
       </div>
     </div>
   )

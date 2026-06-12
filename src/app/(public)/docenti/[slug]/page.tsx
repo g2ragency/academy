@@ -19,12 +19,45 @@ export default async function InstructorPage({ params }: Props) {
 
   if (!instructor) notFound()
 
-  const { data: courses } = await supabase
-    .from('courses')
-    .select('*, instructor:instructors(*)')
-    .eq('instructor_id', instructor.id)
-    .eq('status', 'published')
-    .order('sort_order')
+  const [{ data: courses }, { data: popularity }] = await Promise.all([
+    supabase
+      .from('courses')
+      .select('*, instructor:instructors(*)')
+      .eq('instructor_id', instructor.id)
+      .eq('status', 'published')
+      .order('sort_order'),
+    supabase
+      .from('course_popularity')
+      .select('course_id, enrollment_count')
+      .order('enrollment_count', { ascending: false })
+      .limit(20),
+  ])
+
+  // "I corsi più seguiti dagli utenti": top per iscrizioni, esclusi quelli del
+  // docente corrente; fallback sui corsi in evidenza se non ci sono iscrizioni.
+  const popularIds = (popularity ?? []).map((p) => p.course_id)
+  let otherCourses: typeof courses = []
+  if (popularIds.length > 0) {
+    const { data } = await supabase
+      .from('courses')
+      .select('*, instructor:instructors(*)')
+      .in('id', popularIds)
+      .eq('status', 'published')
+      .neq('instructor_id', instructor.id)
+    const rank = new Map(popularIds.map((id, i) => [id, i]))
+    otherCourses = (data ?? []).sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99)).slice(0, 4)
+  }
+  if (!otherCourses || otherCourses.length === 0) {
+    const { data } = await supabase
+      .from('courses')
+      .select('*, instructor:instructors(*)')
+      .eq('status', 'published')
+      .eq('featured', true)
+      .neq('instructor_id', instructor.id)
+      .order('sort_order')
+      .limit(4)
+    otherCourses = data ?? []
+  }
 
   return (
     <div className="min-h-screen bg-surface pt-24 pb-20">
@@ -67,6 +100,17 @@ export default async function InstructorPage({ params }: Props) {
                 {(courses ?? []).map((course) => (
                   <CourseCard key={course.id} course={course} />
                 ))}
+              </div>
+            )}
+
+            {(otherCourses ?? []).length > 0 && (
+              <div className="mt-14">
+                <h2 className="font-bold text-white mb-6">I corsi più seguiti dagli utenti</h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {(otherCourses ?? []).map((course) => (
+                    <CourseCard key={course.id} course={course} />
+                  ))}
+                </div>
               </div>
             )}
           </div>

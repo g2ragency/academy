@@ -16,6 +16,10 @@ export interface Profile {
   bio: string | null
   website: string | null
   stripe_customer_id: string | null
+  tax_code: string | null
+  vat_number: string | null
+  sdi_code: string | null
+  billing_address: string | null
   created_at: string
   updated_at: string
 }
@@ -47,12 +51,23 @@ export interface Course {
   instructor_id: string | null
   duration_minutes: number | null
   level: 'base' | 'intermedio' | 'avanzato' | null
+  /** @deprecated sostituito dalla tassonomia dinamica (course_terms) */
   tags: string[] | null
   featured: boolean
+  issues_certificate: boolean
   sort_order: number
   created_at: string
   updated_at: string
   instructor?: Instructor
+}
+
+export interface Certificate {
+  id: string
+  user_id: string
+  course_id: string
+  certificate_number: string
+  issued_at: string
+  course?: Course
 }
 
 export interface Module {
@@ -79,6 +94,31 @@ export interface Lesson {
   created_at: string
   updated_at: string
   quiz_questions?: QuizQuestion[]
+}
+
+export interface Taxonomy {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  applies_to_courses: boolean
+  applies_to_instructors: boolean
+  show_in_filters: boolean
+  show_in_home: boolean
+  sort_order: number
+  created_at: string
+  terms?: Term[]
+}
+
+export interface Term {
+  id: string
+  taxonomy_id: string
+  parent_id: string | null
+  name: string
+  slug: string
+  sort_order: number
+  created_at: string
+  children?: Term[]
 }
 
 export interface QuizQuestion {

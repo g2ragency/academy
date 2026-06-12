@@ -7,6 +7,8 @@ import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import FileUpload from '@/components/admin/FileUpload'
+import { PROTECTED_BUCKET } from '@/lib/media'
 import type { Module, Lesson, LessonType } from '@/types'
 
 interface Props {
@@ -194,9 +196,9 @@ function ModuleItem({ module, courseId, onDelete, onLessonsChange }: {
 function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: string }) {
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [videoFile, setVideoFile] = useState<File | null>(null)
+  // video_url/pdf_url contengono un URL esterno oppure un path nel bucket (risolto da getMediaUrl)
   const [videoUrl, setVideoUrl] = useState(lesson.video_url ?? '')
-  const [pdfFile, setPdfFile] = useState<File | null>(null)
+  const [pdfPath, setPdfPath] = useState(lesson.pdf_url ?? '')
   const [content, setContent] = useState(lesson.content ?? '')
   const [isPreview, setIsPreview] = useState(lesson.is_preview)
   const supabase = createClient()
@@ -204,26 +206,12 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
   const save = async () => {
     setSaving(true)
     try {
-      let video_url = videoUrl.trim() || null
-      let pdf_url = lesson.pdf_url
-
-      if (videoFile) {
-        const path = `courses/${courseId}/lessons/${lesson.id}/video.${videoFile.name.split('.').pop()}`
-        const { error } = await supabase.storage.from('academy').upload(path, videoFile, { upsert: true })
-        if (error) { toast.error(`Errore upload video: ${error.message}`); return }
-        const { data: { publicUrl } } = supabase.storage.from('academy').getPublicUrl(path)
-        video_url = publicUrl
-      }
-
-      if (pdfFile) {
-        const path = `courses/${courseId}/lessons/${lesson.id}/doc.pdf`
-        const { error } = await supabase.storage.from('academy').upload(path, pdfFile, { upsert: true })
-        if (error) { toast.error(`Errore upload PDF: ${error.message}`); return }
-        const { data: { publicUrl } } = supabase.storage.from('academy').getPublicUrl(path)
-        pdf_url = publicUrl
-      }
-
-      const { error } = await supabase.from('lessons').update({ content, video_url, pdf_url, is_preview: isPreview }).eq('id', lesson.id)
+      const { error } = await supabase.from('lessons').update({
+        content,
+        video_url: videoUrl.trim() || null,
+        pdf_url: pdfPath.trim() || null,
+        is_preview: isPreview,
+      }).eq('id', lesson.id)
       if (error) toast.error(error.message)
       else { toast.success('Lezione salvata!'); setOpen(false) }
     } finally {
@@ -247,7 +235,7 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
                 <div>
                   <label className="label">Link video (YouTube, Vimeo o URL diretto)</label>
                   <input
-                    type="url"
+                    type="text"
                     value={videoUrl}
                     onChange={(e) => setVideoUrl(e.target.value)}
                     placeholder="https://www.youtube.com/watch?v=..."
@@ -256,8 +244,17 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
                 </div>
                 <div>
                   <label className="label">oppure carica un file video</label>
-                  <input type="file" accept="video/*" onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)} className="input text-xs py-2" />
-                  {videoFile && <p className="text-xs text-white/30 mt-1">Il file caricato sostituirà il link inserito sopra</p>}
+                  <FileUpload
+                    accept="video/*"
+                    maxSizeMB={50}
+                    label="Carica file video (max 50 MB)"
+                    bucket={PROTECTED_BUCKET}
+                    buildPath={(file) => `courses/${courseId}/lessons/${lesson.id}/video.${file.name.split('.').pop()}`}
+                    onUploaded={({ path }) => {
+                      setVideoUrl(path)
+                      toast.success('Video caricato — ricordati di salvare')
+                    }}
+                  />
                 </div>
               </>
             )}
@@ -265,8 +262,18 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
             {lesson.type === 'pdf' && (
               <div>
                 <label className="label">PDF</label>
-                <input type="file" accept=".pdf" onChange={(e) => setPdfFile(e.target.files?.[0] ?? null)} className="input text-xs py-2" />
-                {lesson.pdf_url && <p className="text-xs text-white/30 mt-1">File attuale: {lesson.pdf_url.split('/').pop()}</p>}
+                <FileUpload
+                  accept=".pdf,application/pdf"
+                  maxSizeMB={10}
+                  label="Carica PDF (max 10 MB)"
+                  bucket={PROTECTED_BUCKET}
+                  currentName={pdfPath ? pdfPath.split('/').pop() : null}
+                  buildPath={() => `courses/${courseId}/lessons/${lesson.id}/doc.pdf`}
+                  onUploaded={({ path }) => {
+                    setPdfPath(path)
+                    toast.success('PDF caricato — ricordati di salvare')
+                  }}
+                />
               </div>
             )}
 

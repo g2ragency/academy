@@ -53,6 +53,11 @@ export async function POST(request: Request) {
       success_url: `${siteUrl}/dashboard/corsi?enrolled=${courseId}`,
       cancel_url: `${siteUrl}/corsi`,
       customer_email: user.email,
+      // Fatturazione: Stripe genera la fattura PDF e raccoglie indirizzo + P.IVA.
+      // La fattura elettronica SDI resta fuori scope (gestione via export Stripe).
+      invoice_creation: { enabled: true },
+      billing_address_collection: 'required',
+      tax_id_collection: { enabled: true },
       metadata: {
         course_id: courseId,
         user_id: user.id,

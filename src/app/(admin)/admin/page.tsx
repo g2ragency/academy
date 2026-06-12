@@ -1,4 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server'
+import { formatPrice } from '@/lib/utils'
 import { Users, BookOpen, TrendingUp, DollarSign } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -12,7 +13,8 @@ export default async function AdminDashboard() {
     { count: totalCourses },
     { count: totalEnrollments },
     { data: recentEnrollments },
-    { data: popularCourses },
+    { data: popularity },
+    { data: payments },
   ] = await Promise.all([
     supabase.from('profiles').select('id', { count: 'exact', head: true }),
     supabase.from('courses').select('id', { count: 'exact', head: true }),
@@ -23,17 +25,35 @@ export default async function AdminDashboard() {
       .order('enrolled_at', { ascending: false })
       .limit(10),
     supabase
-      .from('enrollments')
-      .select('course_id, course:courses(title, type)', { count: 'exact' })
-      .order('enrolled_at', { ascending: false })
+      .from('course_popularity')
+      .select('course_id, enrollment_count')
+      .order('enrollment_count', { ascending: false })
       .limit(5),
+    supabase
+      .from('enrollments')
+      .select('amount_paid_cents')
+      .gt('amount_paid_cents', 0),
   ])
+
+  // Top corsi per numero di iscrizioni (dalla view course_popularity)
+  const popularIds = (popularity ?? []).map((p: any) => p.course_id)
+  const { data: popularCourseRows } = popularIds.length
+    ? await supabase.from('courses').select('id, title').in('id', popularIds)
+    : { data: [] }
+  const titleById = new Map((popularCourseRows ?? []).map((c: any) => [c.id, c.title]))
+  const popularCourses = (popularity ?? []).map((p: any) => ({
+    course_id: p.course_id,
+    title: titleById.get(p.course_id) ?? '—',
+    enrollment_count: p.enrollment_count,
+  }))
+
+  const revenueCents = (payments ?? []).reduce((acc: number, p: any) => acc + (p.amount_paid_cents ?? 0), 0)
 
   const stats = [
     { icon: Users, label: 'Utenti registrati', value: totalUsers ?? 0, color: 'text-blue-400' },
     { icon: BookOpen, label: 'Corsi pubblicati', value: totalCourses ?? 0, color: 'text-brand' },
     { icon: TrendingUp, label: 'Iscrizioni totali', value: totalEnrollments ?? 0, color: 'text-green-400' },
-    { icon: DollarSign, label: 'Revenue (stime)', value: '—', color: 'text-purple-400' },
+    { icon: DollarSign, label: 'Revenue', value: revenueCents > 0 ? formatPrice(revenueCents) : '0,00 €', color: 'text-purple-400' },
   ]
 
   return (
@@ -89,7 +109,8 @@ export default async function AdminDashboard() {
             {(popularCourses ?? []).map((e: any, i: number) => (
               <div key={e.course_id ?? i} className="flex items-center gap-3 px-5 py-3">
                 <span className="text-sm font-bold text-white/20 w-5 shrink-0">#{i + 1}</span>
-                <p className="text-sm text-white/70 flex-1 truncate">{e.course?.title ?? '—'}</p>
+                <p className="text-sm text-white/70 flex-1 truncate">{e.title}</p>
+                <span className="text-xs text-white/30 shrink-0">{e.enrollment_count} iscritti</span>
               </div>
             ))}
             {!(popularCourses?.length) && (

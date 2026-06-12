@@ -6,13 +6,15 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Save, Upload } from 'lucide-react'
+import { Save } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import FileUpload from '@/components/admin/FileUpload'
+import TermsPicker from '@/components/admin/TermsPicker'
 import InstructorFormModal from '../docenti/InstructorFormModal'
 import { slugify } from '@/lib/utils'
-import type { Course, CourseType } from '@/types'
+import type { Course, CourseType, Taxonomy } from '@/types'
 import { COURSE_TYPE_LABELS } from '@/types'
 
 const schema = z.object({
@@ -27,6 +29,7 @@ const schema = z.object({
   duration_minutes: z.coerce.number().optional(),
   level: z.enum(['base', 'intermedio', 'avanzato']).optional(),
   featured: z.boolean().optional(),
+  issues_certificate: z.boolean().optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -34,10 +37,13 @@ type FormData = z.infer<typeof schema>
 interface Props {
   course?: Course
   instructors: { id: string; full_name: string }[]
+  taxonomies: Taxonomy[]
+  initialTermIds: string[]
 }
 
-export default function CourseForm({ course, instructors }: Props) {
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
+export default function CourseForm({ course, instructors, taxonomies, initialTermIds }: Props) {
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(course?.thumbnail_url ?? null)
+  const [termIds, setTermIds] = useState<string[]>(initialTermIds)
   const [instructorList, setInstructorList] = useState(instructors)
   const router = useRouter()
   const supabase = createClient()
@@ -57,55 +63,51 @@ export default function CourseForm({ course, instructors }: Props) {
       duration_minutes: course.duration_minutes ?? undefined,
       level: course.level ?? undefined,
       featured: course.featured,
+      issues_certificate: course.issues_certificate,
     } : {
       type: 'webinar',
       status: 'draft',
       price_euros: 0,
       featured: false,
+      issues_certificate: false,
     },
   })
 
   const titleValue = watch('title')
 
   const onSubmit = async (data: FormData) => {
-    let thumbnail_url = course?.thumbnail_url ?? null
-
-    if (thumbnailFile) {
-      const ext = thumbnailFile.name.split('.').pop()
-      const path = `courses/${data.slug}/thumbnail.${ext}`
-      const { error: uploadError } = await supabase.storage
-        .from('academy')
-        .upload(path, thumbnailFile, { upsert: true })
-
-      if (uploadError) {
-        toast.error('Errore upload immagine')
-        return
-      }
-
-      const { data: { publicUrl } } = supabase.storage.from('academy').getPublicUrl(path)
-      thumbnail_url = publicUrl
-    }
-
     const { price_euros, ...fields } = data
     const payload = {
       ...fields,
       price_cents: Math.round(price_euros * 100),
-      thumbnail_url,
+      thumbnail_url: thumbnailUrl,
       instructor_id: data.instructor_id || null,
       duration_minutes: data.duration_minutes || null,
       level: data.level || null,
     }
 
+    let courseId = course?.id
     if (isEditing) {
       const { error } = await supabase.from('courses').update(payload).eq('id', course.id)
       if (error) { toast.error(error.message); return }
-      toast.success('Corso aggiornato!')
     } else {
       const { data: newCourse, error } = await supabase.from('courses').insert(payload).select().single()
       if (error) { toast.error(error.message); return }
-      toast.success('Corso creato!')
-      router.push(`/admin/corsi/${newCourse.id}`)
+      courseId = newCourse.id
     }
+
+    // Sync classificazioni (course_terms): delete + insert batch
+    const { error: deleteError } = await supabase.from('course_terms').delete().eq('course_id', courseId)
+    if (deleteError) { toast.error(`Errore classificazioni: ${deleteError.message}`); return }
+    if (termIds.length > 0) {
+      const { error: insertError } = await supabase
+        .from('course_terms')
+        .insert(termIds.map((term_id) => ({ course_id: courseId, term_id })))
+      if (insertError) { toast.error(`Errore classificazioni: ${insertError.message}`); return }
+    }
+
+    toast.success(isEditing ? 'Corso aggiornato!' : 'Corso creato!')
+    if (!isEditing) router.push(`/admin/corsi/${courseId}`)
     router.refresh()
   }
 
@@ -236,23 +238,37 @@ export default function CourseForm({ course, instructors }: Props) {
           <input type="checkbox" {...register('featured')} className="w-4 h-4 accent-brand rounded" />
           <span className="text-sm text-white/70">Corso in evidenza (mostrato in homepage)</span>
         </label>
+
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" {...register('issues_certificate')} className="w-4 h-4 accent-brand rounded" />
+          <span className="text-sm text-white/70">Rilascia attestato al completamento del corso</span>
+        </label>
+      </div>
+
+      {/* Classificazioni */}
+      <div className="card p-6">
+        <h3 className="font-semibold text-white border-b border-surface-border pb-3 mb-4">Classificazioni</h3>
+        <TermsPicker taxonomies={taxonomies} value={termIds} onChange={setTermIds} />
       </div>
 
       {/* Thumbnail */}
       <div className="card p-6">
         <h3 className="font-semibold text-white border-b border-surface-border pb-3 mb-4">Immagine copertina</h3>
-        <label className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-surface-border rounded-xl p-8 cursor-pointer hover:border-brand/40 transition-colors">
-          <Upload className="w-8 h-8 text-white/30" />
-          <span className="text-sm text-white/40">
-            {thumbnailFile ? thumbnailFile.name : 'Clicca per caricare un\'immagine (JPG, PNG, WebP)'}
-          </span>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => setThumbnailFile(e.target.files?.[0] ?? null)}
-          />
-        </label>
+        <FileUpload
+          accept="image/*"
+          maxSizeMB={2}
+          label="Clicca per caricare un'immagine (JPG, PNG, WebP)"
+          currentName={thumbnailUrl ? thumbnailUrl.split('/').pop() : null}
+          buildPath={(file) => {
+            const slug = watch('slug')
+            if (!slug) {
+              toast.error('Inserisci prima il titolo del corso')
+              return null
+            }
+            return `courses/${slug}/thumbnail.${file.name.split('.').pop()}`
+          }}
+          onUploaded={({ publicUrl }) => setThumbnailUrl(publicUrl)}
+        />
       </div>
 
       <Button type="submit" loading={isSubmitting} size="lg" className="gap-2">
