@@ -29,6 +29,7 @@
 | 4 | Attestati | 006 | ✅ |
 | 5 | Acquisti/fatture + Impostazioni | 007 | ✅ |
 | 6 | Rifiniture (popolarità, revenue reale, rimborsi) | — | ✅ |
+| A1 | Allineamento design Figma: pagina Corso (da screenshot) | 008 | ✅ |
 
 ## Criticità aperte
 
@@ -181,6 +182,22 @@ Thumbnail e avatar restano nel bucket pubblico `academy` (non sono contenuto a p
 - `/admin` → revenue reale (`SUM(amount_paid_cents)` su enrollment pagati) + classifica corsi per iscrizioni effettive.
 
 > Nota: `formatPrice(0)` restituisce "Gratuito" by design; in admin la revenue a 0 è forzata a `0,00 €` per non confondere.
+
+## 8. Pagina corso — design Figma (migration 008)
+
+**Lavoro da screenshot** (accesso MCP Figma bloccato: seat View). Struttura: 2 colonne con "Riepilogo del corso" sticky a destra; sezioni sinistra divise da `border-t`: per-chi chips → argomenti → descrizione espandibile → programma (accordion) → carosello Relatori; full-width sotto: "Gli altri utenti hanno seguito anche".
+
+**Nuovi dati**:
+- `course_instructors (course_id, instructor_id, sort_order)` — **multi-relatore**; `courses.instructor_id` resta come campo legacy/fallback e la pagina docente lo usa ancora. Il CourseForm scrive il primo relatore selezionato anche in `instructor_id`. Sync: delete+insert come course_terms.
+- `courses.topics TEXT[]` — "Gli argomenti trattati", textarea admin un-argomento-per-riga.
+- `courses.program_pdf_url` — PDF programma nel bucket PUBBLICO (materiale marketing), link nel riepilogo solo se presente.
+- Taxonomy **`per-chi`** (slug riservato, costante `PER_CHI_SLUG` in `corsi/[slug]/page.tsx`): i suoi terms NON compaiono tra le targhette in alto ma nella sezione chips dedicata. Seed: Professionisti/Avvocati/Commercialisti/Imprenditori.
+
+> ⚠️ **GOTCHA — embed PostgREST ambiguo**: da quando esiste `course_instructors`, courses→instructors ha DUE percorsi. Ogni embed `instructor:instructors(...)` da courses DEVE usare l'hint `instructors!courses_instructor_id_fkey(...)`, altrimenti la query fallisce silenziosamente (data null → 404). Già corretto in 7 file; vale per ogni query futura.
+
+**Componenti nuovi**: `ExpandableText` (clamp+fade+Mostra di più, client), `InstructorCarousel` (scroll nativo + frecce, client), `CourseRowCard` (card orizzontale per i correlati). Correlati = corsi published ordinati per `course_popularity`, max 4, sezione nascosta se vuota. Checklist riepilogo statica, "Certificato di completamento" solo se `issues_certificate`. Targhette tipo corso rese neutre (3 colori, COURSE_TYPE_COLORS).
+
+**Demo data nel DB**: docenti "Paolo Neri" e "Roberto Bianchi" + topics sul corso PEX (creati per la verifica visiva — sostituire/eliminare quando arrivano i contenuti reali).
 
 ## Mappa file rapida
 
