@@ -19,7 +19,7 @@ export default async function AttestatoPage({ params }: Props) {
   // La RLS limita la lettura ai propri attestati (o admin)
   const { data } = await supabase
     .from('certificates')
-    .select('*, course:courses(*, instructor:instructors(*))')
+    .select('*, course:courses(*, instructor:instructors!courses_instructor_id_fkey(*))')
     .eq('id', params.id)
     .single()
 

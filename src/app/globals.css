@@ -65,6 +65,15 @@ optgroup {
   }
 }
 
+/* Nasconde la scrollbar mantenendo lo scroll (caroselli, righe di chip) */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

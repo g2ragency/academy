@@ -12,7 +12,7 @@ export default async function AdminCorsiPage() {
   const supabase = createServerClient()
   const { data: courses } = await supabase
     .from('courses')
-    .select('*, instructor:instructors(full_name)')
+    .select('*, instructor:instructors!courses_instructor_id_fkey(full_name)')
     .order('created_at', { ascending: false })
 
   return (

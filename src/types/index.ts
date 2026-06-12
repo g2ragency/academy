@@ -55,10 +55,17 @@ export interface Course {
   tags: string[] | null
   featured: boolean
   issues_certificate: boolean
+  /** "Gli argomenti trattati": un elemento per bullet */
+  topics: string[] | null
+  /** PDF programma scaricabile (path nel bucket pubblico) */
+  program_pdf_url: string | null
   sort_order: number
   created_at: string
   updated_at: string
+  /** @deprecated primo relatore, mantenuto per compatibilità: usare course_instructors */
   instructor?: Instructor
+  /** Relatori del corso (da course_instructors, ordinati per sort_order) */
+  instructors?: Instructor[]
 }
 
 export interface Certificate {
@@ -181,10 +188,11 @@ export const COURSE_TYPE_LABELS: Record<CourseType, string> = {
   executive_master: 'Executive Master',
 }
 
+// Palette a 3 colori (CLAUDE.md): targhette neutre, nessun colore per tipo
 export const COURSE_TYPE_COLORS: Record<CourseType, string> = {
-  webinar: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  masterclass: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  fast_focus: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  short_master: 'bg-green-500/20 text-green-400 border-green-500/30',
-  executive_master: 'bg-brand/20 text-brand border-brand/30',
+  webinar: 'bg-surface-elevated text-white border-surface-border',
+  masterclass: 'bg-surface-elevated text-white border-surface-border',
+  fast_focus: 'bg-surface-elevated text-white border-surface-border',
+  short_master: 'bg-surface-elevated text-white border-surface-border',
+  executive_master: 'bg-surface-elevated text-white border-surface-border',
 }

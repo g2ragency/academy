@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   const [{ data: enrollments }, { data: progress }] = await Promise.all([
     supabase
       .from('enrollments')
-      .select('*, course:courses(*, instructor:instructors(*))')
+      .select('*, course:courses(*, instructor:instructors!courses_instructor_id_fkey(*))')
       .eq('user_id', profile.id)
       .eq('status', 'active')
       .order('enrolled_at', { ascending: false }),

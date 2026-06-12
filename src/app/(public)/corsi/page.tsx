@@ -18,7 +18,7 @@ async function getCourses(searchParams: Props['searchParams'], taxonomyCourseIds
   const supabase = createServerClient()
   let query = supabase
     .from('courses')
-    .select('*, instructor:instructors(*)')
+    .select('*, instructor:instructors!courses_instructor_id_fkey(*)')
     .eq('status', 'published')
     .order('sort_order', { ascending: true })
 

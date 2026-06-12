@@ -19,7 +19,7 @@ export default async function CoursePlayerPage({ params }: Props) {
 
   const { data: course } = await supabase
     .from('courses')
-    .select('*, instructor:instructors(*)')
+    .select('*, instructor:instructors!courses_instructor_id_fkey(*)')
     .eq('slug', params.slug)
     .single()
 

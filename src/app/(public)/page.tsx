@@ -16,7 +16,7 @@ async function getHomeData() {
   const [{ data: courses }, { data: instructors }, homeTaxonomies, { data: popularity }] = await Promise.all([
     supabase
       .from('courses')
-      .select('*, instructor:instructors(*)')
+      .select('*, instructor:instructors!courses_instructor_id_fkey(*)')
       .eq('status', 'published')
       .order('sort_order', { ascending: true })
       .limit(12),

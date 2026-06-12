@@ -22,7 +22,7 @@ export default async function InstructorPage({ params }: Props) {
   const [{ data: courses }, { data: popularity }] = await Promise.all([
     supabase
       .from('courses')
-      .select('*, instructor:instructors(*)')
+      .select('*, instructor:instructors!courses_instructor_id_fkey(*)')
       .eq('instructor_id', instructor.id)
       .eq('status', 'published')
       .order('sort_order'),
@@ -40,7 +40,7 @@ export default async function InstructorPage({ params }: Props) {
   if (popularIds.length > 0) {
     const { data } = await supabase
       .from('courses')
-      .select('*, instructor:instructors(*)')
+      .select('*, instructor:instructors!courses_instructor_id_fkey(*)')
       .in('id', popularIds)
       .eq('status', 'published')
       .neq('instructor_id', instructor.id)
@@ -50,7 +50,7 @@ export default async function InstructorPage({ params }: Props) {
   if (!otherCourses || otherCourses.length === 0) {
     const { data } = await supabase
       .from('courses')
-      .select('*, instructor:instructors(*)')
+      .select('*, instructor:instructors!courses_instructor_id_fkey(*)')
       .eq('status', 'published')
       .eq('featured', true)
       .neq('instructor_id', instructor.id)

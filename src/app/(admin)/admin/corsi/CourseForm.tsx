@@ -22,10 +22,11 @@ const schema = z.object({
   slug: z.string().min(2, 'Slug obbligatorio').regex(/^[a-z0-9-]+$/, 'Solo lettere minuscole, numeri e trattini'),
   short_description: z.string().optional(),
   description: z.string().optional(),
+  /** "Gli argomenti trattati": un argomento per riga */
+  topics_text: z.string().optional(),
   type: z.enum(['webinar', 'masterclass', 'fast_focus', 'short_master', 'executive_master']),
   status: z.enum(['draft', 'published', 'archived']),
   price_euros: z.coerce.number().min(0),
-  instructor_id: z.string().optional(),
   duration_minutes: z.coerce.number().optional(),
   level: z.enum(['base', 'intermedio', 'avanzato']).optional(),
   featured: z.boolean().optional(),
@@ -39,15 +40,25 @@ interface Props {
   instructors: { id: string; full_name: string }[]
   taxonomies: Taxonomy[]
   initialTermIds: string[]
+  /** Relatori del corso (course_instructors), in ordine */
+  initialInstructorIds?: string[]
 }
 
-export default function CourseForm({ course, instructors, taxonomies, initialTermIds }: Props) {
+export default function CourseForm({ course, instructors, taxonomies, initialTermIds, initialInstructorIds = [] }: Props) {
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(course?.thumbnail_url ?? null)
+  const [programPdfUrl, setProgramPdfUrl] = useState<string | null>(course?.program_pdf_url ?? null)
   const [termIds, setTermIds] = useState<string[]>(initialTermIds)
+  const [instructorIds, setInstructorIds] = useState<string[]>(initialInstructorIds)
   const [instructorList, setInstructorList] = useState(instructors)
   const router = useRouter()
   const supabase = createClient()
   const isEditing = !!course
+
+  const toggleInstructor = (id: string) => {
+    setInstructorIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    )
+  }
 
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -56,10 +67,10 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
       slug: course.slug,
       short_description: course.short_description ?? '',
       description: course.description ?? '',
+      topics_text: (course.topics ?? []).join('\n'),
       type: course.type,
       status: course.status,
       price_euros: course.price_cents / 100,
-      instructor_id: course.instructor_id ?? '',
       duration_minutes: course.duration_minutes ?? undefined,
       level: course.level ?? undefined,
       featured: course.featured,
@@ -76,12 +87,19 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
   const titleValue = watch('title')
 
   const onSubmit = async (data: FormData) => {
-    const { price_euros, ...fields } = data
+    const { price_euros, topics_text, ...fields } = data
+    const topics = (topics_text ?? '')
+      .split('\n')
+      .map((t) => t.trim())
+      .filter(Boolean)
     const payload = {
       ...fields,
       price_cents: Math.round(price_euros * 100),
       thumbnail_url: thumbnailUrl,
-      instructor_id: data.instructor_id || null,
+      program_pdf_url: programPdfUrl,
+      topics: topics.length > 0 ? topics : null,
+      // Compat: il primo relatore resta anche nel campo legacy instructor_id
+      instructor_id: instructorIds[0] ?? null,
       duration_minutes: data.duration_minutes || null,
       level: data.level || null,
     }
@@ -104,6 +122,19 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
         .from('course_terms')
         .insert(termIds.map((term_id) => ({ course_id: courseId, term_id })))
       if (insertError) { toast.error(`Errore classificazioni: ${insertError.message}`); return }
+    }
+
+    // Sync relatori (course_instructors): delete + insert batch, sort_order = posizione
+    const { error: deleteInstructorsError } = await supabase
+      .from('course_instructors')
+      .delete()
+      .eq('course_id', courseId)
+    if (deleteInstructorsError) { toast.error(`Errore relatori: ${deleteInstructorsError.message}`); return }
+    if (instructorIds.length > 0) {
+      const { error: insertInstructorsError } = await supabase
+        .from('course_instructors')
+        .insert(instructorIds.map((instructor_id, index) => ({ course_id: courseId, instructor_id, sort_order: index })))
+      if (insertInstructorsError) { toast.error(`Errore relatori: ${insertInstructorsError.message}`); return }
     }
 
     toast.success(isEditing ? 'Corso aggiornato!' : 'Corso creato!')
@@ -156,6 +187,19 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
             className="input resize-none"
           />
         </div>
+
+        <div>
+          <label className="label">Argomenti trattati (uno per riga)</label>
+          <textarea
+            {...register('topics_text')}
+            rows={5}
+            placeholder={'Contesto della riforma e soggetti interessati\nIl nuovo regime dei dividendi e delle plusvalenze\n...'}
+            className="input resize-none"
+          />
+          <p className="text-xs text-white/40 mt-1.5">
+            Compare come elenco puntato nella sezione &quot;Gli argomenti trattati&quot; della pagina corso.
+          </p>
+        </div>
       </div>
 
       {/* Settings */}
@@ -194,27 +238,6 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
             error={errors.price_euros?.message}
           />
 
-          <div>
-            <div className="flex items-center justify-between">
-              <label className="label">Docente</label>
-              <InstructorFormModal
-                compact
-                onCreated={(i) => {
-                  setInstructorList((prev) => [...prev, { id: i.id, full_name: i.full_name }])
-                  setValue('instructor_id', i.id)
-                }}
-              />
-            </div>
-            <select {...register('instructor_id')} className="input">
-              <option value="">— Nessuno —</option>
-              {instructorList.map((i) => (
-                <option key={i.id} value={i.id}>{i.full_name}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
           <Input
             {...register('duration_minutes')}
             id="duration"
@@ -222,7 +245,9 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
             label="Durata (minuti)"
             placeholder="60"
           />
+        </div>
 
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="label">Livello</label>
             <select {...register('level')} className="input">
@@ -243,6 +268,40 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
           <input type="checkbox" {...register('issues_certificate')} className="w-4 h-4 accent-brand rounded" />
           <span className="text-sm text-white/70">Rilascia attestato al completamento del corso</span>
         </label>
+      </div>
+
+      {/* Relatori */}
+      <div className="card p-6">
+        <div className="flex items-center justify-between border-b border-surface-border pb-3 mb-4">
+          <h3 className="font-semibold text-white">Relatori</h3>
+          <InstructorFormModal
+            compact
+            onCreated={(i) => {
+              setInstructorList((prev) => [...prev, { id: i.id, full_name: i.full_name }])
+              setInstructorIds((prev) => [...prev, i.id])
+            }}
+          />
+        </div>
+        {instructorList.length === 0 ? (
+          <p className="text-sm text-white/40">Nessun docente disponibile: creane uno con il bottone qui sopra.</p>
+        ) : (
+          <div className="space-y-2">
+            {instructorList.map((i) => (
+              <label key={i.id} className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={instructorIds.includes(i.id)}
+                  onChange={() => toggleInstructor(i.id)}
+                  className="w-4 h-4 accent-brand rounded"
+                />
+                <span className="text-sm text-white/70">{i.full_name}</span>
+              </label>
+            ))}
+          </div>
+        )}
+        <p className="text-xs text-white/40 mt-3">
+          Compaiono nel carosello &quot;Relatori&quot; della pagina corso, nell&apos;ordine di selezione.
+        </p>
       </div>
 
       {/* Classificazioni */}
@@ -269,6 +328,29 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
           }}
           onUploaded={({ publicUrl }) => setThumbnailUrl(publicUrl)}
         />
+      </div>
+
+      {/* PDF programma */}
+      <div className="card p-6">
+        <h3 className="font-semibold text-white border-b border-surface-border pb-3 mb-4">Programma (PDF)</h3>
+        <FileUpload
+          accept="application/pdf"
+          maxSizeMB={10}
+          label="Clicca per caricare il PDF del programma"
+          currentName={programPdfUrl ? programPdfUrl.split('/').pop() : null}
+          buildPath={(file) => {
+            const slug = watch('slug')
+            if (!slug) {
+              toast.error('Inserisci prima il titolo del corso')
+              return null
+            }
+            return `courses/${slug}/programma.pdf`
+          }}
+          onUploaded={({ publicUrl }) => setProgramPdfUrl(publicUrl)}
+        />
+        <p className="text-xs text-white/40 mt-3">
+          Link &quot;Scarica il programma&quot; nel riepilogo della pagina corso. Materiale pubblico (no contenuti riservati).
+        </p>
       </div>
 
       <Button type="submit" loading={isSubmitting} size="lg" className="gap-2">
