@@ -53,7 +53,7 @@ export default function TrendingCourses({ courses }: Props) {
           ))}
         </div>
 
-        {/* Chip filtro per tipologia */}
+        {/* Chip filtro per tipologia (valori Figma: radius 15, gap 12, padding 10/8) */}
         <div className="flex items-center gap-3 overflow-x-auto pb-2 mb-10 scrollbar-hide">
           {TYPE_CHIPS.map((chip) => {
             const Icon = chip.icon
@@ -62,13 +62,13 @@ export default function TrendingCourses({ courses }: Props) {
               <button
                 key={chip.value}
                 onClick={() => setActiveFilter(active ? 'all' : chip.value)}
-                className={`shrink-0 flex items-center gap-3 pl-2 pr-5 h-[50px] rounded-xl transition-colors ${
-                  active ? 'bg-white text-black' : 'bg-surface-card text-white hover:bg-surface-elevated'
+                className={`shrink-0 inline-flex items-center gap-2.5 px-2 py-2.5 rounded-[15px] transition-colors ${
+                  active ? 'bg-[#F4F3F3] text-black' : 'bg-[#1B1B1B] backdrop-blur-[20px] text-muted'
                 }`}
               >
                 <span
-                  className={`w-[35px] h-[35px] rounded-lg flex items-center justify-center ${
-                    active ? 'bg-black/80 text-white' : 'bg-surface-elevated text-white'
+                  className={`w-8 h-8 rounded-[10px] flex items-center justify-center text-white ${
+                    active ? 'bg-[#989898]' : 'bg-[#888888]'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
