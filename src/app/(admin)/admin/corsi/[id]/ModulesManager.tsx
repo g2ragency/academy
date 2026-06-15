@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import FileUpload from '@/components/admin/FileUpload'
+import QuizEditor from './QuizEditor'
 import { PROTECTED_BUCKET } from '@/lib/media'
 import type { Module, Lesson, LessonType } from '@/types'
 
@@ -227,7 +228,7 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
 
       {open && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setOpen(false)}>
-          <div className="bg-surface-card border border-surface-border rounded-2xl p-6 w-full max-w-lg space-y-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface-card border border-surface-border rounded-2xl p-6 w-full max-w-2xl space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-semibold text-white">Modifica lezione: {lesson.title}</h3>
 
             {lesson.type === 'video' && (
@@ -284,11 +285,7 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
               </div>
             )}
 
-            {lesson.type === 'quiz' && (
-              <p className="text-sm text-white/40">
-                Le domande del quiz vanno inserite nella tabella <code className="text-white/60">quiz_questions</code> — l&apos;editor visuale non è ancora disponibile.
-              </p>
-            )}
+            {lesson.type === 'quiz' && <QuizEditor lessonId={lesson.id} />}
 
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={isPreview} onChange={(e) => setIsPreview(e.target.checked)} className="accent-brand w-4 h-4" />

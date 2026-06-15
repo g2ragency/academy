@@ -46,6 +46,7 @@ interface Props {
 
 export default function CourseForm({ course, instructors, taxonomies, initialTermIds, initialInstructorIds = [] }: Props) {
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(course?.thumbnail_url ?? null)
+  const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(course?.preview_video_url ?? null)
   const [programPdfUrl, setProgramPdfUrl] = useState<string | null>(course?.program_pdf_url ?? null)
   const [termIds, setTermIds] = useState<string[]>(initialTermIds)
   const [instructorIds, setInstructorIds] = useState<string[]>(initialInstructorIds)
@@ -96,6 +97,7 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
       ...fields,
       price_cents: Math.round(price_euros * 100),
       thumbnail_url: thumbnailUrl,
+      preview_video_url: previewVideoUrl,
       program_pdf_url: programPdfUrl,
       topics: topics.length > 0 ? topics : null,
       // Compat: il primo relatore resta anche nel campo legacy instructor_id
@@ -328,6 +330,41 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
           }}
           onUploaded={({ publicUrl }) => setThumbnailUrl(publicUrl)}
         />
+      </div>
+
+      {/* Video anteprima */}
+      <div className="card p-6 space-y-4">
+        <h3 className="font-semibold text-white border-b border-surface-border pb-3">Video anteprima</h3>
+        <div>
+          <label className="label">Link video (YouTube, Vimeo o URL diretto)</label>
+          <input
+            type="text"
+            value={previewVideoUrl ?? ''}
+            onChange={(e) => setPreviewVideoUrl(e.target.value || null)}
+            placeholder="https://www.youtube.com/watch?v=..."
+            className="input text-sm"
+          />
+        </div>
+        <div>
+          <label className="label">oppure carica un file video</label>
+          <FileUpload
+            accept="video/*"
+            maxSizeMB={50}
+            label="Carica file video (max 50 MB)"
+            buildPath={(file) => {
+              const slug = watch('slug')
+              if (!slug) {
+                toast.error('Inserisci prima il titolo del corso')
+                return null
+              }
+              return `courses/${slug}/preview.${file.name.split('.').pop()}`
+            }}
+            onUploaded={({ publicUrl }) => setPreviewVideoUrl(publicUrl)}
+          />
+        </div>
+        <p className="text-xs text-white/40">
+          Mostrato in cima alla pagina del corso. Pubblico, visibile anche a chi non è iscritto.
+        </p>
       </div>
 
       {/* PDF programma */}

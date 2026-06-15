@@ -35,6 +35,7 @@
 | A4 | Allineamento design: Login/Iscriviti (+ flusso recupero password, prima mancante) + tab Corsi dashboard | — | ✅ |
 | A5 | Allineamento design: pagina Checkout (form fatturazione → Stripe) | — | ✅ |
 | B1 | Carrello multi-corso (sidecart + checkout dal carrello + webhook multi-iscrizione) | — | ✅ codice (Stripe da testare) |
+| B2 | Completamenti admin: editor quiz, campo video anteprima, gestione ruoli, elimina docente | 009 | ✅ |
 
 ## Criticità aperte
 
@@ -45,7 +46,7 @@
 | Font Aeonik Soft in versione TRIAL | Sostituire i file in `src/fonts/` con licenza definitiva prima della produzione |
 | Fatturazione elettronica SDI non inclusa nell'MVP | Decisione cliente post-lancio; intanto fatture Stripe + export per commercialista |
 | Prezzi Stripe creati a mano in dashboard (`stripe_price_id`) | Ok per MVP; il checkout supporta anche price_data ad-hoc |
-| Editor quiz admin mancante (domande inserite a mano in `quiz_questions`) | Candidato prossima iterazione |
+| ~~Editor quiz admin mancante~~ | ✅ Fatto (B2): `QuizEditor` nel modal lezione di `ModulesManager` |
 | Pagamento Stripe da testare end-to-end in test mode (carta 4242…) | Richiede webhook configurato + service role key |
 | OAuth Google/Apple: bottoni presenti nelle pagine auth ma i provider vanno abilitati nel dashboard Supabase (Google: client ID/secret; Apple: account developer a pagamento) | In caso di errore l'utente vede un toast "non disponibile" |
 | Checkbox "Ricorda" nel login: cosmetica (Supabase mantiene comunque la sessione) | Da design; innocua |
@@ -220,6 +221,13 @@ Thumbnail e avatar restano nel bucket pubblico `academy` (non sono contenuto a p
 > - Webhook `checkout.session.completed`: legge `course_ids` (fallback legacy `course_id`), itera e crea un enrollment per corso con `amount_paid_cents` riletto dal DB per ciascuno.
 > - `success_url` = `/dashboard?enrolled=1` → `ClearCartOnSuccess` svuota il carrello. `cancel_url` = `/checkout` (carrello preservato).
 > - Edge: un `charge.refunded` annulla **tutti** gli enrollment con quel payment_intent (rimborso totale ok; il parziale andrebbe gestito a parte).
+
+## 10. Completamenti admin (migration 009)
+
+- **Editor quiz** (`src/app/(admin)/admin/corsi/[id]/QuizEditor.tsx`): nel modal di modifica di una lezione `quiz` (in `ModulesManager`). Carica `quiz_questions` della lezione, permette aggiungi/modifica/elimina/riordina domande (testo, opzioni dinamiche min 2, radio risposta corretta, spiegazione). Scrive dal client (RLS `quiz_questions` ha `FOR ALL is_admin()`). Salvataggio per-domanda.
+- **Video anteprima corso**: campo aggiunto in `CourseForm` (link YouTube/Vimeo o upload file nel bucket **pubblico** `academy`, path `courses/{slug}/preview.{ext}`) → `courses.preview_video_url`, già mostrato in cima alla pagina corso.
+- **Gestione ruoli** (`src/app/(admin)/admin/utenti/RoleToggle.tsx`): badge ruolo cliccabile in /admin/utenti, promuove/declassa admin. Richiede **migration 009** (`Admins can update all profiles`, prima mancava l'update admin sui profili). L'admin non può cambiare il **proprio** ruolo (anti-lockout).
+- **Elimina docente**: bottone in `InstructorFormModal` (solo in modifica). Le FK sono CASCADE (`course_instructors`, `instructor_terms`) / SET NULL (`courses.instructor_id`), quindi è sicuro.
 
 ## Mappa file rapida
 

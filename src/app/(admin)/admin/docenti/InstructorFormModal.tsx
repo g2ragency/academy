@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { Plus, Edit2, X, Save } from 'lucide-react'
+import { Plus, Edit2, X, Save, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -37,6 +37,7 @@ interface Props {
 
 export default function InstructorFormModal({ instructor, compact, onCreated, taxonomies, initialTermIds }: Props) {
   const [open, setOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(instructor?.avatar_url ?? null)
   const [termIds, setTermIds] = useState<string[]>(initialTermIds ?? [])
   const router = useRouter()
@@ -85,6 +86,20 @@ export default function InstructorFormModal({ instructor, compact, onCreated, ta
     }
 
     toast.success(isEditing ? 'Docente aggiornato!' : 'Docente creato!')
+    setOpen(false)
+    router.refresh()
+  }
+
+  const handleDelete = async () => {
+    if (!instructor) return
+    if (!confirm(`Eliminare il docente "${instructor.full_name}"? I corsi collegati resteranno, ma perderanno questo relatore.`)) return
+    setDeleting(true)
+    // FK in cascata/SET NULL: course_instructors e instructor_terms si puliscono,
+    // courses.instructor_id (legacy) va a null
+    const { error } = await supabase.from('instructors').delete().eq('id', instructor.id)
+    setDeleting(false)
+    if (error) { toast.error(error.message); return }
+    toast.success('Docente eliminato')
     setOpen(false)
     router.refresh()
   }
@@ -151,11 +166,16 @@ export default function InstructorFormModal({ instructor, compact, onCreated, ta
                 />
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex items-center gap-3 pt-2">
                 <Button type="submit" loading={isSubmitting} size="sm" className="gap-1.5">
                   <Save className="w-3.5 h-3.5" /> {isEditing ? 'Salva' : 'Crea'}
                 </Button>
                 <Button onClick={() => setOpen(false)} type="button" variant="ghost" size="sm">Annulla</Button>
+                {isEditing && (
+                  <Button onClick={handleDelete} loading={deleting} type="button" variant="danger" size="sm" className="ml-auto gap-1.5">
+                    <Trash2 className="w-3.5 h-3.5" /> Elimina
+                  </Button>
+                )}
               </div>
             </form>
           </div>

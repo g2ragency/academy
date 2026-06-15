@@ -1,5 +1,5 @@
-import { createServerClient } from '@/lib/supabase/server'
-import { User, Shield } from 'lucide-react'
+import { createServerClient, getProfile } from '@/lib/supabase/server'
+import RoleToggle from './RoleToggle'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Gestione Utenti' }
@@ -7,10 +7,13 @@ export const metadata = { title: 'Gestione Utenti' }
 export default async function AdminUtentiPage() {
   const supabase = createServerClient()
 
-  const { data: users } = await supabase
-    .from('profiles')
-    .select('*, enrollments:enrollments(count)')
-    .order('created_at', { ascending: false })
+  const [{ data: users }, me] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('*, enrollments:enrollments(count)')
+      .order('created_at', { ascending: false }),
+    getProfile(),
+  ])
 
   return (
     <div className="px-10 py-8">
@@ -44,15 +47,7 @@ export default async function AdminUtentiPage() {
                   </td>
                   <td className="px-4 py-3 text-sm text-white/60">{user.company ?? '—'}</td>
                   <td className="px-4 py-3">
-                    {user.role === 'admin' ? (
-                      <span className="badge bg-brand/20 text-brand border-brand/30 text-xs gap-1">
-                        <Shield className="w-3 h-3" /> Admin
-                      </span>
-                    ) : (
-                      <span className="badge bg-surface-elevated text-white/40 border-surface-border text-xs">
-                        Utente
-                      </span>
-                    )}
+                    <RoleToggle userId={user.id} role={user.role} isSelf={user.id === me?.id} />
                   </td>
                   <td className="px-4 py-3 text-sm text-white/60">
                     {user.enrollments?.[0]?.count ?? 0} corsi
