@@ -32,6 +32,18 @@ export default function Hero() {
         </div>
       </div>
 
+      {/* Blur progressivo sullo stack: sfocato a sinistra, nitido verso destra.
+          Il backdrop-filter è mascherato con un gradiente che si annulla a destra. */}
+      <div
+        className="absolute inset-y-0 right-0 left-[10%] hidden lg:block pointer-events-none"
+        style={{
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          maskImage: 'linear-gradient(to right, #000 0%, #000 15%, transparent 55%)',
+          WebkitMaskImage: 'linear-gradient(to right, #000 0%, #000 15%, transparent 55%)',
+        }}
+      />
+
       {/* Sfumatura per leggibilità del testo sopra lo stack */}
       <div className="absolute inset-y-0 left-0 w-3/5 bg-gradient-to-r from-surface via-surface/80 to-transparent pointer-events-none" />
 
