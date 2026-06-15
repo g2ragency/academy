@@ -20,7 +20,7 @@ import { TAXONOMY_PARAM_PREFIX } from '@/lib/taxonomy'
 import { getMediaUrl } from '@/lib/media'
 import { CourseTypeBadge } from '@/components/ui/Badge'
 import CourseRowCard from '@/components/courses/CourseRowCard'
-import { formatPrice, formatDuration, formatSeconds } from '@/lib/utils'
+import { formatPrice, formatHours, formatSeconds } from '@/lib/utils'
 import type { Course, Instructor, Module, Lesson, Term } from '@/types'
 import EnrollButton from './EnrollButton'
 import ExpandableText from './ExpandableText'
@@ -160,7 +160,7 @@ export default async function CourseDetailPage({ params }: Props) {
                 <Link
                   key={term.id}
                   href={`/corsi?${TAXONOMY_PARAM_PREFIX}${term.taxonomy.slug}=${term.slug}`}
-                  className="px-3 py-1 rounded-full border border-surface-border text-xs text-white/60 hover:text-white hover:border-white/30 transition-colors"
+                  className="px-2.5 py-1 rounded-[10px] bg-[#1B1B1B] backdrop-blur-[15px] text-xs text-[#989898] hover:text-white transition-colors"
                 >
                   {term.name}
                 </Link>
@@ -170,7 +170,7 @@ export default async function CourseDetailPage({ params }: Props) {
             <h3 className="text-white mt-4 leading-tight">{course.title}</h3>
 
             {/* Video anteprima / immagine */}
-            <div className="aspect-video bg-surface-elevated rounded-2xl overflow-hidden relative mt-8">
+            <div className="aspect-video bg-surface-elevated rounded-[30px] overflow-hidden relative mt-8">
               {previewVideo && isEmbed ? (
                 <iframe
                   src={previewVideo}
@@ -259,14 +259,14 @@ export default async function CourseDetailPage({ params }: Props) {
 
           {/* Sidebar — Riepilogo del corso (sticky) */}
           <div className="lg:col-span-1">
-            <div className="card p-6 sticky top-24">
+            <div className="rounded-[40px] bg-[#1B1B1B] p-6 sticky top-24">
               <h6 className="text-white mb-6">Riepilogo del corso</h6>
 
               {/* Meta */}
-              <ul className="space-y-3 pb-6 border-b border-surface-border">
+              <ul className="space-y-3">
                 {[
                   ...(course.duration_minutes
-                    ? [{ icon: Clock, label: formatDuration(course.duration_minutes) }]
+                    ? [{ icon: Clock, label: formatHours(course.duration_minutes) }]
                     : []),
                   {
                     icon: GraduationCap,
@@ -275,18 +275,18 @@ export default async function CourseDetailPage({ params }: Props) {
                   { icon: BookOpen, label: `${totalLessons} ${totalLessons === 1 ? 'lezione' : 'lezioni'}` },
                 ].map((row) => (
                   <li key={row.label} className="flex items-center gap-3 text-sm text-white/70">
-                    <span className="w-8 h-8 rounded-full bg-surface-elevated border border-surface-border flex items-center justify-center shrink-0">
-                      <row.icon className="w-4 h-4 text-muted" />
+                    <span className="w-8 h-8 rounded-[10px] bg-[#888888] flex items-center justify-center shrink-0">
+                      <row.icon className="w-4 h-4 text-white" />
                     </span>
                     {row.label}
                   </li>
                 ))}
               </ul>
 
-              {/* Prezzo */}
-              <div className="flex items-baseline gap-2 pt-6">
+              {/* Prezzo (divisore sotto, come nel Figma) */}
+              <div className="flex items-baseline gap-2 mt-6 pb-6 border-b border-surface-border">
                 <span className="text-4xl text-white">{formatPrice(course.price_cents)}</span>
-                {course.price_cents > 0 && <span className="text-xs text-muted">IVA inclusa</span>}
+                {course.price_cents > 0 && <span className="text-xs text-muted">IVA Inclusa</span>}
               </div>
 
               {/* Checklist */}
@@ -304,7 +304,7 @@ export default async function CourseDetailPage({ params }: Props) {
                 {isEnrolled ? (
                   <Link
                     href={`/dashboard/corsi/${course.slug}`}
-                    className="btn-primary w-full flex items-center justify-center gap-2 text-sm py-3"
+                    className="btn-primary w-full flex items-center justify-center gap-2 text-sm py-3 rounded-[20px] backdrop-blur-[15px]"
                   >
                     <Play className="w-4 h-4" />
                     Continua a studiare

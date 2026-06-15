@@ -76,7 +76,7 @@ export default function EnrollButton({ course, isLoggedIn }: Props) {
   }
 
   return (
-    <Button onClick={handleClick} className="w-full" size="lg">
+    <Button onClick={handleClick} className="w-full rounded-[20px] backdrop-blur-[15px]" size="lg">
       <ShoppingCart className="w-4 h-4" />
       Acquista
     </Button>
