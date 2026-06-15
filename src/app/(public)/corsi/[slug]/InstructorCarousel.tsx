@@ -1,10 +1,8 @@
 'use client'
 
 import { useRef } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { getMediaUrl } from '@/lib/media'
+import InstructorCard from '@/components/instructors/InstructorCard'
 import type { Instructor } from '@/types'
 
 /** Carosello "Relatori": scroll orizzontale nativo + frecce, card foto/nome/qualifica */
@@ -37,29 +35,11 @@ export default function InstructorCarousel({ instructors }: { instructors: Instr
       </div>
 
       <div ref={trackRef} className="flex gap-4 overflow-x-auto scrollbar-hide pb-1">
-        {instructors.map((instructor) => {
-          const avatar = getMediaUrl(instructor.avatar_url)
-          return (
-            <Link key={instructor.id} href={`/docenti/${instructor.slug}`} className="w-52 shrink-0 group">
-              <div className="aspect-[3/4] rounded-2xl overflow-hidden relative bg-surface-elevated border border-surface-border">
-                {avatar ? (
-                  <Image
-                    src={avatar}
-                    alt={instructor.full_name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-white/30 text-4xl">
-                    {instructor.full_name[0]}
-                  </div>
-                )}
-              </div>
-              <p className="text-base text-white mt-3">{instructor.full_name}</p>
-              {instructor.title && <p className="text-xs text-muted mt-1 line-clamp-2">{instructor.title}</p>}
-            </Link>
-          )
-        })}
+        {instructors.map((instructor) => (
+          <div key={instructor.id} className="w-52 shrink-0">
+            <InstructorCard instructor={instructor} />
+          </div>
+        ))}
       </div>
     </div>
   )
