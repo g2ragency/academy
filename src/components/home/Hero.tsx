@@ -51,7 +51,7 @@ export default function Hero() {
 
           {/* Selettore argomenti */}
           <div className="flex items-center gap-3 mb-6">
-            <span className="w-0.5 h-6 bg-white shrink-0" />
+            <span className="w-0.5 h-6 bg-[#60FDE8] shrink-0" />
             <h6 className="text-white">Cosa ti porta oggi in Academy?</h6>
           </div>
 
@@ -60,10 +60,16 @@ export default function Hero() {
               <button
                 key={topic}
                 onClick={() => setSelected(i)}
-                className={`w-full flex items-center gap-4 px-4 h-[53px] rounded-xl text-left transition-colors duration-200 ${
+                style={
                   selected === i
-                    ? 'bg-surface-elevated text-white'
-                    : 'bg-surface-card text-muted hover:text-white'
+                    ? {
+                        background:
+                          'radial-gradient(138.67% 252.83% at -6.76% -72.64%, rgba(115, 115, 115, 0.3) 0%, rgba(217, 217, 217, 0.3) 100%)',
+                      }
+                    : undefined
+                }
+                className={`w-full flex items-center gap-4 px-4 h-[53px] rounded-[15px] text-left backdrop-blur-[15px] transition-colors duration-200 ${
+                  selected === i ? 'text-white' : 'bg-[#1B1B1B] text-muted hover:text-white'
                 }`}
               >
                 <span
@@ -80,7 +86,7 @@ export default function Hero() {
 
           <Link
             href="/corsi"
-            className="inline-flex items-center justify-center w-[225px] h-[65px] bg-white text-black rounded-xl hover:bg-white/80 transition-colors"
+            className="inline-flex items-center justify-center w-[225px] h-[65px] bg-white text-black rounded-[15px] backdrop-blur-[15px] hover:bg-white/80 transition-colors"
           >
             Continua
           </Link>
