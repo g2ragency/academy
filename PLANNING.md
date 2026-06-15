@@ -33,7 +33,8 @@
 | A2 | Allineamento design: Corsi (listing) + CourseCard unificata | — | ✅ |
 | A3 | Allineamento design: pagina Professore + CourseCarousel | — | ✅ |
 | A4 | Allineamento design: Login/Iscriviti (+ flusso recupero password, prima mancante) + tab Corsi dashboard | — | ✅ |
-| A5 | Allineamento design: pagina Checkout `/checkout/[slug]` (form fatturazione → Stripe; carrello multi-corso rimandato) | — | ✅ |
+| A5 | Allineamento design: pagina Checkout (form fatturazione → Stripe) | — | ✅ |
+| B1 | Carrello multi-corso (sidecart + checkout dal carrello + webhook multi-iscrizione) | — | ✅ codice (Stripe da testare) |
 
 ## Criticità aperte
 
@@ -51,7 +52,6 @@
 
 ## Rimandati (tenere a mente)
 
-- **Carrello multi-corso nel checkout** (il design "Riepilogo del carrello" mostra più item con X di rimozione): oggi il checkout è per singolo corso (`/checkout/[slug]`); servirebbe stato carrello + checkout Stripe multi line-item. I wallet (Apple/Google Pay) compaiono nella pagina Stripe, non in quella interna (richiederebbero Stripe Elements).
 - **"Segui" docente + campanellino notifiche** (design pagina professore, deciso 2026-06-12 di ometterli): servirà tabella `instructor_followers` + sistema notifiche (email su nuovo corso pubblicato)
 - Calendario lezioni / eventi live (tabella `live_sessions` con data/ora e link partecipazione)
 - Materiali didattici (sezione dedicata; oggi i PDF vivono dentro le lezioni)
@@ -206,6 +206,20 @@ Thumbnail e avatar restano nel bucket pubblico `academy` (non sono contenuto a p
 **Componenti nuovi**: `ExpandableText` (clamp+fade+Mostra di più, client), `InstructorCarousel` (scroll nativo + frecce, client), `CourseRowCard` (card orizzontale per i correlati). Correlati = corsi published ordinati per `course_popularity`, max 4, sezione nascosta se vuota. Checklist riepilogo statica, "Certificato di completamento" solo se `issues_certificate`. Targhette tipo corso rese neutre (3 colori, COURSE_TYPE_COLORS).
 
 **Demo data nel DB**: docenti "Paolo Neri" e "Roberto Bianchi" + topics sul corso PEX (creati per la verifica visiva — sostituire/eliminare quando arrivano i contenuti reali).
+
+## 9. Carrello multi-corso (sidecart)
+
+**Stato**: client `localStorage`, niente DB. Si aggiunge senza login; il login serve solo al checkout. `src/context/CartContext.tsx` (`addItem`/`removeItem`/`clear`/`has`, `count`, `totalCents`, `isOpen`, flag `ready` anti-mismatch SSR, sync tra schede via evento `storage`). Montato globalmente da `src/app/Providers.tsx` (wrappa i children nel root layout) che monta anche `<CartDrawer>`.
+
+**Flusso**: bottone "Acquista" sulla pagina corso (`EnrollButton`) → `addItem` + `openCart` (apre il sidecart da destra). I **corsi gratuiti NON entrano nel carrello** → iscrizione diretta via `/api/enroll` (come prima). Il sidecart (`CartDrawer`) ha lista/rimozione/totale/Check out → `/checkout`. L'icona in navbar (`CartButton`) è opaca a vuoto, bianca + badge con articoli.
+
+**Checkout**: `/checkout` (unica pagina; la vecchia `/checkout/[slug]` è stata rimossa). Server page = guardia login; `CheckoutClient` legge gli articoli dal carrello (client) e mostra form fatturazione + "Riepilogo del carrello". Al submit salva i dati su `profiles` e POST `courseIds[]` all'API.
+
+> ⚠️ **Per l'altro dev (Stripe)**: il percorso multi-corso è **scritto ma non testato** senza chiavi.
+> - `POST /api/stripe/checkout` accetta `{ courseIds: string[], orderNotes? }` (retro-compat `courseId`). **Rilegge i prezzi dal DB** (mai dal client), scarta corsi già acquistati e gratuiti, crea N line-item, mette `metadata.course_ids` = id separati da virgola.
+> - Webhook `checkout.session.completed`: legge `course_ids` (fallback legacy `course_id`), itera e crea un enrollment per corso con `amount_paid_cents` riletto dal DB per ciascuno.
+> - `success_url` = `/dashboard?enrolled=1` → `ClearCartOnSuccess` svuota il carrello. `cancel_url` = `/checkout` (carrello preservato).
+> - Edge: un `charge.refunded` annulla **tutti** gli enrollment con quel payment_intent (rimborso totale ok; il parziale andrebbe gestito a parte).
 
 ## Mappa file rapida
 

@@ -23,17 +23,35 @@ export async function POST(request: Request) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
-    const { course_id, user_id } = session.metadata ?? {}
+    const { course_ids, course_id, user_id } = session.metadata ?? {}
 
-    if (course_id && user_id) {
-      await supabaseAdmin().from('enrollments').upsert({
-        user_id,
-        course_id,
-        status: 'active',
-        stripe_payment_intent_id: session.payment_intent as string,
-        amount_paid_cents: session.amount_total ?? 0,
-        enrolled_at: new Date().toISOString(),
-      }, { onConflict: 'user_id,course_id' })
+    // course_ids (carrello multi-corso) con fallback su course_id (legacy singolo)
+    const ids = (course_ids ?? course_id ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+
+    if (ids.length > 0 && user_id) {
+      const admin = supabaseAdmin()
+      // Importo per corso autorevole dal DB: l'amount_total Stripe è la somma
+      const { data: courses } = await admin
+        .from('courses')
+        .select('id, price_cents')
+        .in('id', ids)
+      const priceMap = new Map((courses ?? []).map((c) => [c.id, c.price_cents]))
+      const enrolledAt = new Date().toISOString()
+
+      await admin.from('enrollments').upsert(
+        ids.map((cid) => ({
+          user_id,
+          course_id: cid,
+          status: 'active',
+          stripe_payment_intent_id: session.payment_intent as string,
+          amount_paid_cents: priceMap.get(cid) ?? 0,
+          enrolled_at: enrolledAt,
+        })),
+        { onConflict: 'user_id,course_id' }
+      )
     }
   }
 

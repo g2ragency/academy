@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
 import { Toaster } from 'sonner'
+import Providers from './Providers'
 
 // Regola cliente: tutto il sito a font-weight 400 → carichiamo solo Regular.
 // Gli altri pesi sono in src/fonts/, da riaggiungere qui se la regola cambia.
@@ -27,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="it" className="dark">
       <body className={`${aeonik.variable} font-sans`}>
-        {children}
+        <Providers>{children}</Providers>
         <Toaster
           position="top-right"
           theme="dark"

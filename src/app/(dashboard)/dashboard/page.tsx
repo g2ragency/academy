@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { createServerClient, getProfile } from '@/lib/supabase/server'
 import MyCoursesTabs, { type EnrolledItem } from './MyCoursesTabs'
+import ClearCartOnSuccess from './ClearCartOnSuccess'
 import type { Course, CourseProgress, Enrollment } from '@/types'
 
 export const dynamic = 'force-dynamic'
@@ -55,6 +57,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="px-10 py-8">
+      <Suspense fallback={null}>
+        <ClearCartOnSuccess />
+      </Suspense>
       <h5 className="text-white mb-8">Corsi</h5>
       <MyCoursesTabs enrolled={enrolled} recommended={recommended} />
     </div>

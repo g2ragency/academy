@@ -8,6 +8,7 @@ import {
   Presentation, GraduationCap, Zap, Briefcase, ShieldCheck, BookOpen, Tag,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import CartButton from '@/components/cart/CartButton'
 import { buildTermTree, TAXONOMY_PARAM_PREFIX } from '@/lib/taxonomy'
 import type { Profile, Taxonomy } from '@/types'
 import { cn } from '@/lib/utils'
@@ -264,15 +265,19 @@ export default function Navbar() {
                 </Link>
               </>
             )}
+            <CartButton />
           </div>
 
-          {/* Mobile menu button */}
-          <button
-            className="lg:hidden p-2 rounded-lg hover:bg-surface-elevated transition-colors"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          {/* Mobile: carrello + hamburger */}
+          <div className="lg:hidden flex items-center gap-1">
+            <CartButton />
+            <button
+              className="p-2 rounded-lg hover:bg-surface-elevated transition-colors"
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
 
         {/* Barra di ricerca (desktop, sotto la nav) */}

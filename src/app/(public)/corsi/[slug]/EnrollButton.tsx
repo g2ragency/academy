@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ShoppingCart, LogIn } from 'lucide-react'
+import { ShoppingCart, LogIn, Check } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { useCart } from '@/context/CartContext'
 import type { Course } from '@/types'
 
 interface Props {
@@ -15,17 +16,18 @@ interface Props {
 export default function EnrollButton({ course, isLoggedIn }: Props) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { addItem, openCart, has } = useCart()
+  const inCart = has(course.id)
 
-  const handleEnroll = async () => {
-    if (!isLoggedIn) {
-      router.push(`/auth/login?redirect=/corsi/${course.slug}`)
-      return
-    }
-
-    setLoading(true)
-    try {
-      if (course.price_cents === 0) {
-        // Free course - enroll directly
+  const handleClick = async () => {
+    // Corso gratuito: iscrizione diretta (login richiesto)
+    if (course.price_cents === 0) {
+      if (!isLoggedIn) {
+        router.push(`/auth/login?redirect=/corsi/${course.slug}`)
+        return
+      }
+      setLoading(true)
+      try {
         const res = await fetch('/api/enroll', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -36,30 +38,47 @@ export default function EnrollButton({ course, isLoggedIn }: Props) {
         toast.success('Iscrizione completata!')
         router.push(`/dashboard/corsi/${course.slug}`)
         router.refresh()
-      } else {
-        // Corso a pagamento: pagina checkout interna (dati fatturazione), poi Stripe
-        router.push(`/checkout/${course.slug}`)
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : 'Si è verificato un errore')
+      } finally {
+        setLoading(false)
       }
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Si è verificato un errore')
-    } finally {
-      setLoading(false)
+      return
     }
+
+    // Corso a pagamento: aggiunge al carrello (no login necessario) e apre il sidecart
+    addItem({
+      id: course.id,
+      slug: course.slug,
+      title: course.title,
+      price_cents: course.price_cents,
+      thumbnail_url: course.thumbnail_url,
+    })
+    openCart()
   }
 
-  if (!isLoggedIn) {
+  if (course.price_cents === 0) {
     return (
-      <Button onClick={handleEnroll} className="w-full" size="lg">
-        <LogIn className="w-4 h-4" />
-        Accedi per iscriverti
+      <Button onClick={handleClick} loading={loading} className="w-full" size="lg">
+        {!isLoggedIn && <LogIn className="w-4 h-4" />}
+        Iscriviti gratis
+      </Button>
+    )
+  }
+
+  if (inCart) {
+    return (
+      <Button onClick={openCart} variant="secondary" className="w-full" size="lg">
+        <Check className="w-4 h-4" />
+        Nel carrello — apri
       </Button>
     )
   }
 
   return (
-    <Button onClick={handleEnroll} loading={loading} className="w-full" size="lg">
+    <Button onClick={handleClick} className="w-full" size="lg">
       <ShoppingCart className="w-4 h-4" />
-      {course.price_cents === 0 ? 'Iscriviti gratis' : `Acquista — ${(course.price_cents / 100).toFixed(0)}€`}
+      Acquista
     </Button>
   )
 }

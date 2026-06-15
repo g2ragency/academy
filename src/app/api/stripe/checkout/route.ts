@@ -2,6 +2,7 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
+import type Stripe from 'stripe'
 
 export async function POST(request: Request) {
   try {
@@ -12,46 +13,69 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
     }
 
-    const { courseId, orderNotes } = await request.json()
+    const body = await request.json()
+    // Accetta sia il carrello multi-corso (courseIds) sia il singolo legacy (courseId)
+    const rawIds: string[] = Array.isArray(body.courseIds)
+      ? body.courseIds
+      : body.courseId
+        ? [body.courseId]
+        : []
+    const orderNotes: string | undefined = body.orderNotes
+    const courseIds = Array.from(new Set(rawIds.filter(Boolean)))
 
-    const { data: course } = await supabase
-      .from('courses')
-      .select('id, title, price_cents, stripe_price_id')
-      .eq('id', courseId)
-      .single()
-
-    if (!course) {
-      return NextResponse.json({ error: 'Corso non trovato' }, { status: 404 })
+    if (courseIds.length === 0) {
+      return NextResponse.json({ error: 'Carrello vuoto' }, { status: 400 })
     }
 
-    const { data: existing } = await supabase
-      .from('enrollments')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('course_id', courseId)
-      .single()
+    // Prezzi autorevoli dal DB (mai fidarsi del client)
+    const { data: courses } = await supabase
+      .from('courses')
+      .select('id, title, price_cents, stripe_price_id')
+      .in('id', courseIds)
+      .eq('status', 'published')
 
-    if (existing) {
-      return NextResponse.json({ error: 'Già iscritto a questo corso' }, { status: 400 })
+    if (!courses || courses.length === 0) {
+      return NextResponse.json({ error: 'Corsi non trovati' }, { status: 404 })
+    }
+
+    // Esclude i corsi a cui l'utente è già iscritto e quelli gratuiti
+    const { data: enrolled } = await supabase
+      .from('enrollments')
+      .select('course_id')
+      .eq('user_id', user.id)
+      .in('course_id', courseIds)
+    const enrolledIds = new Set((enrolled ?? []).map((e) => e.course_id))
+
+    const payable = courses.filter((c) => c.price_cents > 0 && !enrolledIds.has(c.id))
+
+    if (payable.length === 0) {
+      return NextResponse.json(
+        { error: 'Nessun corso da acquistare (già acquistati o gratuiti)' },
+        { status: 400 }
+      )
     }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = payable.map((c) =>
+      c.stripe_price_id
+        ? { price: c.stripe_price_id, quantity: 1 }
+        : {
+            price_data: {
+              currency: 'eur',
+              product_data: { name: c.title },
+              unit_amount: c.price_cents,
+            },
+            quantity: 1,
+          }
+    )
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
-      line_items: course.stripe_price_id
-        ? [{ price: course.stripe_price_id, quantity: 1 }]
-        : [{
-            price_data: {
-              currency: 'eur',
-              product_data: { name: course.title },
-              unit_amount: course.price_cents,
-            },
-            quantity: 1,
-          }],
-      success_url: `${siteUrl}/dashboard/corsi?enrolled=${courseId}`,
-      cancel_url: `${siteUrl}/corsi`,
+      line_items: lineItems,
+      success_url: `${siteUrl}/dashboard?enrolled=1`,
+      cancel_url: `${siteUrl}/checkout`,
       customer_email: user.email,
       // Fatturazione: Stripe genera la fattura PDF e raccoglie indirizzo + P.IVA.
       // La fattura elettronica SDI resta fuori scope (gestione via export Stripe).
@@ -59,7 +83,8 @@ export async function POST(request: Request) {
       billing_address_collection: 'required',
       tax_id_collection: { enabled: true },
       metadata: {
-        course_id: courseId,
+        // Il webhook itera su questi id per creare un enrollment per corso
+        course_ids: payable.map((c) => c.id).join(','),
         user_id: user.id,
         ...(orderNotes ? { order_notes: String(orderNotes).slice(0, 450) } : {}),
       },
