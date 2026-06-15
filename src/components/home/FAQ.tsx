@@ -60,24 +60,30 @@ const FAQ_SECTIONS = [
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="rounded-xl bg-surface-card overflow-hidden">
+    <div className="rounded-[15px] bg-[#1B1B1B] backdrop-blur-[15px] overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-6 h-[53px] text-left hover:bg-surface-elevated transition-colors"
+        className="w-full flex items-center justify-between px-6 h-[53px] text-left"
       >
         <span className="text-muted">{q}</span>
         <ChevronDown
           className={cn(
-            'w-4 h-4 text-muted shrink-0 ml-4 transition-transform duration-200',
+            'w-4 h-4 text-muted shrink-0 ml-4 transition-transform duration-300',
             open && 'rotate-180'
           )}
         />
       </button>
-      {open && (
-        <div className="px-6 pb-5">
-          <p className="text-muted text-base leading-relaxed">{a}</p>
+      {/* Apertura/chiusura morbida: la riga grid passa da 0fr a 1fr animando l'altezza */}
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows] duration-300 ease-out',
+          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+        )}
+      >
+        <div className="overflow-hidden">
+          <p className="px-6 pb-5 text-muted text-base leading-relaxed">{a}</p>
         </div>
-      )}
+      </div>
     </div>
   )
 }
