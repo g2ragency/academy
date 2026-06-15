@@ -21,7 +21,7 @@ export default function CourseRowCard({ course, href, progress }: Props) {
   return (
     <Link
       href={href ?? `/corsi/${course.slug}`}
-      className="flex flex-col sm:flex-row gap-5 py-4 px-[18px] rounded-[40px] bg-surface-card border border-surface-border hover:border-white/10 transition-colors"
+      className="flex flex-col sm:flex-row gap-5 py-4 px-[18px] rounded-[30px] bg-[#1B1B1B] transition-colors"
     >
       <div className="sm:w-56 shrink-0 aspect-video rounded-[20px] overflow-hidden relative bg-surface-elevated">
         {thumb ? (
