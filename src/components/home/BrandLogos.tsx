@@ -13,7 +13,7 @@ const BRANDS = [
 export default function BrandLogos() {
   return (
     <section className="bg-surface">
-      <div className="bg-surface-card">
+      <div className="bg-[#1B1B1B]">
         <div className="container-wide flex items-center justify-between gap-12 overflow-x-auto h-[169px] scrollbar-hide">
           {BRANDS.map((brand) => (
             <img
