@@ -25,7 +25,7 @@ export function Badge({ children, className, variant = 'default' }: BadgeProps) 
 export function CourseTypeBadge({ type }: { type: CourseType }) {
   // Targhetta tipo corso (Figma): radius 10, #1B1B1B + blur 15, testo #989898
   return (
-    <span className="inline-flex items-center text-xs px-2.5 py-1 rounded-[10px] bg-[#1B1B1B] backdrop-blur-[15px] text-[#989898]">
+    <span className="inline-flex items-center text-xs px-[18px] py-2 rounded-[10px] bg-[#1B1B1B] backdrop-blur-[15px] text-[#989898]">
       {COURSE_TYPE_LABELS[type]}
     </span>
   )

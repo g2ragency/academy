@@ -34,12 +34,27 @@ export default function InstructorCarousel({ instructors }: { instructors: Instr
         )}
       </div>
 
-      <div ref={trackRef} className="flex gap-4 overflow-x-auto scrollbar-hide pb-1">
-        {instructors.map((instructor) => (
-          <div key={instructor.id} className="w-52 shrink-0">
-            <InstructorCard instructor={instructor} />
-          </div>
-        ))}
+      <div className="relative">
+        <div ref={trackRef} className="flex gap-4 overflow-x-auto scrollbar-hide pb-1">
+          {instructors.map((instructor) => (
+            // 3 card e mezzo in vista: la basis lascia mezza card visibile a destra
+            <div key={instructor.id} className="shrink-0 basis-[calc((100%-48px)/3.5)]">
+              <InstructorCard instructor={instructor} />
+            </div>
+          ))}
+        </div>
+        {/* La mezza card a destra si sfoca, per suggerire lo scroll */}
+        {instructors.length > 3 && (
+          <div
+            className="absolute right-0 top-0 bottom-1 w-[16%] pointer-events-none"
+            style={{
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              maskImage: 'linear-gradient(to right, transparent, #000 70%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent, #000 70%)',
+            }}
+          />
+        )}
       </div>
     </div>
   )

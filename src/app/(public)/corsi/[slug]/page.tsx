@@ -160,7 +160,7 @@ export default async function CourseDetailPage({ params }: Props) {
                 <Link
                   key={term.id}
                   href={`/corsi?${TAXONOMY_PARAM_PREFIX}${term.taxonomy.slug}=${term.slug}`}
-                  className="px-2.5 py-1 rounded-[10px] bg-[#1B1B1B] backdrop-blur-[15px] text-xs text-[#989898] hover:text-white transition-colors"
+                  className="px-[18px] py-2 rounded-[10px] bg-[#1B1B1B] backdrop-blur-[15px] text-xs text-[#989898] hover:text-white transition-colors"
                 >
                   {term.name}
                 </Link>
@@ -204,7 +204,7 @@ export default async function CourseDetailPage({ params }: Props) {
                     <Link
                       key={term.id}
                       href={`/corsi?${TAXONOMY_PARAM_PREFIX}${term.taxonomy.slug}=${term.slug}`}
-                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-elevated border border-surface-border text-sm text-white hover:border-white/30 transition-colors"
+                      className="flex items-center gap-2 px-[18px] py-4 rounded-[15px] bg-[#1B1B1B] backdrop-blur-[20px] text-sm text-white hover:text-white/70 transition-colors"
                     >
                       <Users className="w-4 h-4 text-muted" />
                       {term.name}
@@ -334,7 +334,7 @@ export default async function CourseDetailPage({ params }: Props) {
         {relatedCourses.length > 0 && (
           <section className="border-t border-surface-border mt-16 pt-12">
             <h5 className="text-white mb-8">Gli altri utenti hanno seguito anche</h5>
-            <div className="space-y-4">
+            <div className="space-y-5">
               {relatedCourses.map((related) => (
                 <CourseRowCard key={related.id} course={related} />
               ))}

@@ -21,9 +21,9 @@ export default function CourseRowCard({ course, href, progress }: Props) {
   return (
     <Link
       href={href ?? `/corsi/${course.slug}`}
-      className="card flex flex-col sm:flex-row gap-5 p-4 hover:border-white/10 transition-colors"
+      className="flex flex-col sm:flex-row gap-5 py-4 px-[18px] rounded-[40px] bg-surface-card border border-surface-border hover:border-white/10 transition-colors"
     >
-      <div className="sm:w-56 shrink-0 aspect-video rounded-lg overflow-hidden relative bg-surface-elevated">
+      <div className="sm:w-56 shrink-0 aspect-video rounded-[20px] overflow-hidden relative bg-surface-elevated">
         {thumb ? (
           <Image src={thumb} alt={course.title} fill className="object-cover" />
         ) : (
@@ -41,7 +41,7 @@ export default function CourseRowCard({ course, href, progress }: Props) {
         <div className="flex items-center gap-3">
           <CourseTypeBadge type={course.type} />
           {course.duration_minutes ? (
-            <span className="flex items-center gap-1 text-xs text-muted">
+            <span className="inline-flex items-center gap-1.5 px-[18px] py-2 rounded-[10px] bg-[#1B1B1B] backdrop-blur-[15px] text-xs text-[#989898]">
               <Clock className="w-3.5 h-3.5" />
               {formatHours(course.duration_minutes)}
             </span>
