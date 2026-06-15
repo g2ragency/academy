@@ -39,9 +39,9 @@ export default function CourseRowCard({ course, href, progress }: Props) {
       </div>
       <div className="min-w-0 py-1">
         <div className="flex items-center gap-3">
-          <CourseTypeBadge type={course.type} />
+          <CourseTypeBadge type={course.type} className="bg-[#F4F3F3]/15 backdrop-blur-[20px]" />
           {course.duration_minutes ? (
-            <span className="inline-flex items-center gap-1.5 px-[18px] py-2 rounded-[10px] bg-[#1B1B1B] backdrop-blur-[15px] text-xs text-[#989898]">
+            <span className="inline-flex items-center gap-1.5 px-[18px] py-2 rounded-[10px] bg-[#F4F3F3]/15 backdrop-blur-[20px] text-xs text-[#989898]">
               <Clock className="w-3.5 h-3.5" />
               {formatHours(course.duration_minutes)}
             </span>
