@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import CartButton from '@/components/cart/CartButton'
+import { useCart } from '@/context/CartContext'
 import { buildTermTree, TAXONOMY_PARAM_PREFIX } from '@/lib/taxonomy'
 import type { Profile, Taxonomy } from '@/types'
 import { cn } from '@/lib/utils'
@@ -42,8 +43,14 @@ export default function Navbar() {
   const navRef = useRef<HTMLElement>(null)
   const pathname = usePathname()
   const router = useRouter()
+  const { isOpen: cartOpen, closeCart } = useCart()
   // Istanza stabile: se ricreato a ogni render, lo useEffect con dep [supabase] rifetcha in loop
   const [supabase] = useState(() => createClient())
+
+  // Sidecart e menu account sono mutuamente esclusivi: se si apre il carrello, chiudi il profilo
+  useEffect(() => {
+    if (cartOpen) setProfileOpen(false)
+  }, [cartOpen])
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -207,7 +214,7 @@ export default function Navbar() {
             {profile ? (
               <div className="relative">
                 <button
-                  onClick={() => setProfileOpen(!profileOpen)}
+                  onClick={() => { closeCart(); setProfileOpen((o) => !o) }}
                   className="block rounded-full hover:ring-2 hover:ring-white/20 transition-shadow"
                   aria-label="Menu profilo"
                 >
