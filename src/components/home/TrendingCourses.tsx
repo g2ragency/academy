@@ -67,8 +67,8 @@ export default function TrendingCourses({ courses }: Props) {
                 }`}
               >
                 <span
-                  className={`w-8 h-8 rounded-[10px] flex items-center justify-center text-white ${
-                    active ? 'bg-[#989898]' : 'bg-[#888888]'
+                  className={`w-8 h-8 rounded-[10px] flex items-center justify-center ${
+                    active ? 'bg-[#989898] text-white' : 'bg-[#888888] text-black'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
