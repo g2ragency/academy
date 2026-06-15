@@ -2,6 +2,7 @@
 
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { safeRedirect } from '@/lib/utils'
 
 interface Props {
   /** Testo del divisore, es. "Oppure entra con" / "Oppure registrati con" */
@@ -15,9 +16,10 @@ export default function SocialButtons({ label, redirect = '/dashboard' }: Props)
   const supabase = createClient()
 
   const signInWith = async (provider: 'google' | 'apple') => {
+    const safe = encodeURIComponent(safeRedirect(redirect))
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${safe}` },
     })
     if (error) {
       toast.error(`Accesso con ${provider === 'google' ? 'Google' : 'Apple'} non disponibile al momento`)

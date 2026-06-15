@@ -37,6 +37,18 @@ export function formatDate(iso: string): string {
   return new Intl.DateTimeFormat('it-IT', { dateStyle: 'long' }).format(new Date(iso))
 }
 
+/**
+ * Sanifica un parametro di redirect: accetta SOLO path interni (evita open
+ * redirect verso domini esterni). Deve iniziare con '/' ma non con '//'
+ * o '/\' (URL protocol-relative che porterebbero fuori dal sito).
+ */
+export function safeRedirect(path: string | null | undefined, fallback = '/dashboard'): string {
+  if (!path || typeof path !== 'string') return fallback
+  if (!path.startsWith('/')) return fallback
+  if (path.startsWith('//') || path.startsWith('/\\')) return fallback
+  return path
+}
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()

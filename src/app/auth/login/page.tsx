@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { toast } from 'sonner'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { safeRedirect } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import AuthField from '../AuthField'
 import SocialButtons from '../SocialButtons'
@@ -25,7 +26,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirect = searchParams.get('redirect') ?? '/dashboard'
+  const redirect = safeRedirect(searchParams.get('redirect'))
   const supabase = createClient()
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({

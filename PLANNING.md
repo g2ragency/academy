@@ -229,6 +229,30 @@ Thumbnail e avatar restano nel bucket pubblico `academy` (non sono contenuto a p
 - **Gestione ruoli** (`src/app/(admin)/admin/utenti/RoleToggle.tsx`): badge ruolo cliccabile in /admin/utenti, promuove/declassa admin. Richiede **migration 009** (`Admins can update all profiles`, prima mancava l'update admin sui profili). L'admin non può cambiare il **proprio** ruolo (anti-lockout).
 - **Elimina docente**: bottone in `InstructorFormModal` (solo in modifica). Le FK sono CASCADE (`course_instructors`, `instructor_terms`) / SET NULL (`courses.instructor_id`), quindi è sicuro.
 
+## 11. Sicurezza (audit 2026-06-15)
+
+Audit completo (RLS DB + API routes + ricerca attacchi comuni allo stack Supabase/Next/Stripe).
+
+**Corretto:**
+- 🔴→✅ **Privilege escalation**: la policy "update own profile" permetteva a un utente di cambiarsi `role` a `admin` da solo. Migration **010**: trigger `prevent_role_self_escalation` (un non-admin non può cambiare il proprio ruolo; gli admin sì, via RoleToggle).
+- 🟠→✅ **Open redirect** nelle pagine auth (`?redirect=` portava a domini esterni). Helper `safeRedirect()` in `utils.ts` (solo path interni) usato in `auth/callback`, `auth/login`, `SocialButtons`. Testato.
+- 🟢→✅ **Header di sicurezza** in `next.config.js`: X-Frame-Options DENY, X-Content-Type-Options nosniff, Referrer-Policy, Permissions-Policy, HSTS.
+
+**Verificato già sicuro:**
+- Tutte le 15 tabelle hanno **RLS attiva** con policy (nessuna tabella esposta — l'errore #1 più comune).
+- `middleware.ts` protegge `/admin` server-side (sessione + ruolo), oltre alle RLS.
+- Ricevute (`api/receipts`): nessun IDOR, verifica ownership via enrollment.
+- Eliminazione account: cancella solo l'utente loggato (mai un id dal body).
+- Iscrizioni: un utente **non** può auto-regalarsi un corso a pagamento (nessuna policy di insert utente su `enrollments`).
+- Service role key e Stripe secret usate **solo lato server**, mai esposte al client. Niente `dangerouslySetInnerHTML`/`eval`.
+- Webhook Stripe verifica la firma; il checkout rilegge i prezzi dal DB.
+
+**Hardening rimandato (non bloccante):**
+- **CSP** (Content-Security-Policy) stretta: va testata con Next inline scripts + Supabase + Stripe + embed YouTube prima di attivarla.
+- **Rate limiting** su login/registrazione (anti brute-force / enumerazione email) — Supabase Auth ne ha un po' built-in; per il resto serve un provider (es. Upstash).
+- **Validazione input Zod** sulle API route (`enroll`, `checkout`): oggi protette dalle RLS, ma una validazione esplicita è più robusta.
+- ⚠️ **Bug funzionale** (non sicurezza): `api/enroll` per i corsi gratuiti fa upsert su `enrollments` ma manca la policy di insert utente → l'iscrizione gratuita fallisce (in modo sicuro). Da sistemare se serviranno corsi gratuiti.
+
 ## Mappa file rapida
 
 | Ambito | File chiave |
