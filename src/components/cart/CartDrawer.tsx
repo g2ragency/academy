@@ -19,18 +19,17 @@ export default function CartDrawer() {
 
   return (
     <>
-      {/* Backdrop (sotto la navbar z-50, così l'icona resta cliccabile) */}
+      {/* Backdrop trasparente: serve solo a chiudere al click fuori.
+          Il dimming/blur lo fa il vetro del drawer (#00000080 + blur 10). */}
       <div
         onClick={closeCart}
-        className={`fixed inset-0 z-40 bg-black/60 transition-opacity duration-300 ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 z-40 ${isOpen ? '' : 'pointer-events-none'}`}
         aria-hidden={!isOpen}
       />
 
       {/* Pannello */}
       <aside
-        className={`fixed top-16 bottom-0 right-0 z-40 w-[360px] max-w-[90vw] bg-surface-elevated border-l border-y border-surface-border rounded-l-3xl flex flex-col transition-transform duration-300 ${
+        className={`fixed top-16 bottom-0 right-0 z-40 w-[360px] max-w-[90vw] bg-surface/50 backdrop-blur-[10px] border-l border-y border-surface-border rounded-l-3xl flex flex-col transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         role="dialog"

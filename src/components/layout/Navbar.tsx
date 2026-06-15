@@ -146,7 +146,7 @@ export default function Navbar() {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
         scrolled || mobileOpen || searchOpen
-          ? 'bg-surface/95 backdrop-blur-md border-b border-surface-border'
+          ? 'bg-surface/50 backdrop-blur-[10px] border-b border-surface-border'
           : 'bg-transparent'
       )}
     >
@@ -225,7 +225,7 @@ export default function Navbar() {
                 </button>
 
                 {profileOpen && (
-                  <div className="absolute top-full right-0 mt-1 w-52 bg-surface-card border border-surface-border rounded-xl shadow-2xl overflow-hidden">
+                  <div className="absolute top-full right-0 mt-1 w-52 bg-surface/50 backdrop-blur-[10px] border border-surface-border rounded-xl shadow-2xl overflow-hidden">
                     <div className="p-1">
                       <Link href="/dashboard" onClick={() => setProfileOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-surface-elevated rounded-lg">
                         <LayoutDashboard className="w-4 h-4" /> Dashboard
@@ -383,7 +383,7 @@ function NavDropdown({ label, items, open, onOpen, active }: {
         // pt-2 (non mt-2): il padding fa da "ponte" hoverable tra bottone e
         // pannello, così muovendo il mouse sulle voci il menu non si chiude
         <div className="absolute top-full left-0 pt-2 w-60">
-          <div className="bg-surface-card backdrop-blur-md border border-surface-border rounded-2xl shadow-2xl overflow-hidden">
+          <div className="bg-surface/50 backdrop-blur-[10px] border border-surface-border rounded-2xl shadow-2xl overflow-hidden">
             <div className="p-2">
               {items.map((item) => (
                 <Link
