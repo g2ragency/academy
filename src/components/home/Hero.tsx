@@ -24,7 +24,7 @@ export default function Hero() {
           alt=""
           fill
           priority
-          className="object-contain object-right-top"
+          className="object-cover object-right-top"
         />
         {/* Tooltip sul corso in evidenza */}
         <div className="absolute top-[44%] right-[22%] bg-white text-black rounded-lg px-5 py-2.5">
@@ -39,8 +39,8 @@ export default function Hero() {
         style={{
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
-          maskImage: 'linear-gradient(to right, #000 0%, #000 15%, transparent 55%)',
-          WebkitMaskImage: 'linear-gradient(to right, #000 0%, #000 15%, transparent 55%)',
+          maskImage: 'linear-gradient(to right, #000 0%, #000 20%, transparent 65%)',
+          WebkitMaskImage: 'linear-gradient(to right, #000 0%, #000 20%, transparent 65%)',
         }}
       />
 
