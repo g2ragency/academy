@@ -228,7 +228,7 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
 
       {open && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setOpen(false)}>
-          <div className="bg-surface-card border border-surface-border rounded-2xl p-6 w-full max-w-2xl space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface/50 backdrop-blur-[10px] border border-surface-border rounded-2xl p-6 w-full max-w-2xl space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-semibold text-white">Modifica lezione: {lesson.title}</h3>
 
             {lesson.type === 'video' && (

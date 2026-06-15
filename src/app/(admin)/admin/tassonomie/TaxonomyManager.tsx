@@ -142,7 +142,7 @@ function TaxonomyFormModal({ taxonomy, onClose, onSaved }: {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-surface-card border border-surface-border rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-surface/50 backdrop-blur-[10px] border border-surface-border rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="text-white">{isEditing ? 'Modifica gruppo' : 'Nuovo gruppo'}</h3>
           <button onClick={onClose} className="text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
