@@ -104,7 +104,7 @@ export default function CheckoutClient({ profile }: { profile: Profile }) {
         <h5 className="text-white">Checkout</h5>
         <h6 className="text-white mt-10 mb-6">Dati di fatturazione</h6>
 
-        <div className="space-y-4 max-w-3xl">
+        <div className="space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
             <Input {...register('first_name')} id="first_name" label="Nome*" placeholder="Mario" autoComplete="given-name" error={errors.first_name?.message} />
             <Input {...register('last_name')} id="last_name" label="Cognome*" placeholder="Rossi" autoComplete="family-name" error={errors.last_name?.message} />

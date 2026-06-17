@@ -22,10 +22,12 @@ export default async function ImpostazioniPage() {
           </p>
         </div>
 
-        <div className="space-y-6 max-w-2xl">
-          <ChangePasswordForm />
+        <div className="grid lg:grid-cols-2 gap-6 items-start max-w-6xl">
+          <div className="space-y-6">
+            <ChangePasswordForm />
+            <DeleteAccountSection />
+          </div>
           <BillingForm profile={profile} />
-          <DeleteAccountSection />
         </div>
       </div>
     </div>

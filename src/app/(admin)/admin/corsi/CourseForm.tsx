@@ -146,7 +146,10 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-6xl">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+      {/* Colonna principale: contenuti del corso */}
+      <div className="xl:col-span-2 space-y-6">
       {/* Basic info */}
       <div className="card p-6 space-y-4">
         <h3 className="font-semibold text-white border-b border-surface-border pb-3">Informazioni base</h3>
@@ -272,7 +275,10 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
           <span className="text-sm text-white/70">Rilascia attestato al completamento del corso</span>
         </label>
       </div>
+      </div>
 
+      {/* Colonna laterale: relatori, classificazioni, media */}
+      <div className="space-y-6">
       {/* Relatori */}
       <div className="card p-6">
         <div className="flex items-center justify-between border-b border-surface-border pb-3 mb-4">
@@ -389,6 +395,8 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
         <p className="text-xs text-white/40 mt-3">
           Link &quot;Scarica il programma&quot; nel riepilogo della pagina corso. Materiale pubblico (no contenuti riservati).
         </p>
+      </div>
+      </div>
       </div>
 
       <Button type="submit" loading={isSubmitting} size="lg" className="gap-2">

@@ -166,12 +166,13 @@ export default function ProfiloPage() {
   if (!profile) return null
 
   return (
-    <div className="px-10 py-8 max-w-3xl">
+    <div className="px-10 py-8 max-w-5xl">
       <h5 className="text-white mb-8">Account</h5>
 
-      <div className="border-b border-surface-border pb-8 mb-8">
+      <div className="grid lg:grid-cols-[260px_1fr] gap-10 items-start">
+      <div className="border-b border-surface-border pb-8 mb-8 lg:border-b-0 lg:pb-0 lg:mb-0">
         <p className="text-sm font-medium text-white/60 mb-4">Foto profilo</p>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 lg:flex-col lg:items-start">
           <div className="w-20 h-20 rounded-full bg-surface-elevated border border-surface-border flex items-center justify-center overflow-hidden shrink-0">
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
@@ -210,15 +211,6 @@ export default function ProfiloPage() {
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
         </div>
       </div>
-
-      {cropSrc && (
-        <AvatarCropModal
-          imageSrc={cropSrc}
-          uploading={avatarUploading}
-          onCancel={() => { setCropSrc(null); setPendingFile(null) }}
-          onConfirm={handleCropConfirm}
-        />
-      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
@@ -320,6 +312,16 @@ export default function ProfiloPage() {
           </button>
         </div>
       </form>
+      </div>
+
+      {cropSrc && (
+        <AvatarCropModal
+          imageSrc={cropSrc}
+          uploading={avatarUploading}
+          onCancel={() => { setCropSrc(null); setPendingFile(null) }}
+          onConfirm={handleCropConfirm}
+        />
+      )}
     </div>
   )
 }
