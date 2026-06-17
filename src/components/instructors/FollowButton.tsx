@@ -62,12 +62,12 @@ export default function FollowButton({
   }
 
   return (
-    <div className="flex items-center gap-2 ml-auto shrink-0">
+    <div className="flex items-center gap-2 ml-auto">
       <button
         onClick={handleFollow}
         disabled={loadingFollow}
-        style={{ width: 175, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
-        className={`py-2 rounded-[15px] text-sm transition-colors disabled:opacity-50 shrink-0 ${
+        style={{ maxWidth: 175, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
+        className={`w-full py-2 rounded-[15px] text-sm transition-colors disabled:opacity-50 ${
           following
             ? 'bg-[#1B1B1B] text-white border border-white/10'
             : 'bg-[#F4F3F3] text-black'
