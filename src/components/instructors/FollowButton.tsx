@@ -66,7 +66,7 @@ export default function FollowButton({
       <button
         onClick={handleFollow}
         disabled={loadingFollow}
-        style={{ width: 175, height: 40, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
+        style={{ width: 175, height: 50, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
         className={`rounded-[15px] text-sm transition-colors disabled:opacity-50 ${
           following
             ? 'bg-[#1B1B1B] text-white border border-white/10'
@@ -79,7 +79,7 @@ export default function FollowButton({
         onClick={handleNotify}
         disabled={loadingNotify}
         aria-label={notify ? 'Disattiva notifiche' : 'Attiva notifiche'}
-        style={{ width: 40, height: 40, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
+        style={{ width: 50, height: 50, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
         className={`shrink-0 rounded-[15px] flex items-center justify-center transition-colors disabled:opacity-50 ${
           notify
             ? 'bg-[#1B1B1B] text-white'
