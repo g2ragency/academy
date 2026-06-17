@@ -11,10 +11,14 @@ interface Props {
   threshold?: number
 }
 
-/** Testo lungo con clamp + fade verso il nero e toggle "Mostra di più" */
+/** Rileva se la stringa contiene HTML (output del rich editor) */
+function isHtml(s: string) { return /<[a-z][\s\S]*>/i.test(s) }
+
+/** Testo/HTML lungo con clamp + fade verso il nero e toggle "Mostra di più" */
 export default function ExpandableText({ text, collapsedHeight = 260, threshold = 500 }: Props) {
   const [expanded, setExpanded] = useState(false)
-  const isLong = text.length > threshold
+  const plainLength = isHtml(text) ? text.replace(/<[^>]*>/g, '').length : text.length
+  const isLong = plainLength > threshold
 
   return (
     <div>
@@ -22,7 +26,14 @@ export default function ExpandableText({ text, collapsedHeight = 260, threshold 
         className="relative overflow-hidden"
         style={{ maxHeight: expanded || !isLong ? undefined : collapsedHeight }}
       >
-        <div className="text-white/60 leading-relaxed whitespace-pre-line">{text}</div>
+        {isHtml(text) ? (
+          <div
+            className="rich-content text-white/60 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: text }}
+          />
+        ) : (
+          <div className="text-white/60 leading-relaxed whitespace-pre-line">{text}</div>
+        )}
         {isLong && !expanded && (
           <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-surface to-transparent pointer-events-none" />
         )}

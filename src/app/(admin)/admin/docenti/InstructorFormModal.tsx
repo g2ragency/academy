@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/Input'
 import FileUpload from '@/components/admin/FileUpload'
 import TermsPicker from '@/components/admin/TermsPicker'
 import { slugify } from '@/lib/utils'
+import RichTextEditor from '@/components/ui/RichTextEditor'
 import type { Instructor, Taxonomy } from '@/types'
 
 const schema = z.object({
@@ -135,7 +136,12 @@ export default function InstructorFormModal({ instructor, compact, onCreated, ta
               <Input {...register('title')} id="title" label="Titolo / qualifica" placeholder="Avvocato tributarista" />
               <div>
                 <label className="label">Bio</label>
-                <textarea {...register('bio')} rows={4} className="input resize-none text-sm" />
+                <RichTextEditor
+                  value={watch('bio')}
+                  onChange={(html) => setValue('bio', html, { shouldDirty: true })}
+                  placeholder="Breve biografia del docente..."
+                  minHeight={120}
+                />
               </div>
               <Input {...register('linkedin_url')} id="li" label="LinkedIn URL" placeholder="https://linkedin.com/in/..." error={errors.linkedin_url?.message} />
               <Input {...register('sort_order')} id="ord" type="number" label="Ordine (0 = primo)" />

@@ -14,6 +14,7 @@ import FileUpload from '@/components/admin/FileUpload'
 import TermsPicker from '@/components/admin/TermsPicker'
 import InstructorFormModal from '../docenti/InstructorFormModal'
 import { slugify } from '@/lib/utils'
+import RichTextEditor from '@/components/ui/RichTextEditor'
 import type { Course, CourseType, Taxonomy } from '@/types'
 import { COURSE_TYPE_LABELS } from '@/types'
 
@@ -172,21 +173,21 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
 
         <div>
           <label className="label">Descrizione breve</label>
-          <textarea
-            {...register('short_description')}
-            rows={2}
+          <RichTextEditor
+            value={watch('short_description')}
+            onChange={(html) => setValue('short_description', html, { shouldDirty: true })}
             placeholder="Una breve descrizione del corso..."
-            className="input resize-none"
+            minHeight={80}
           />
         </div>
 
         <div>
           <label className="label">Descrizione completa</label>
-          <textarea
-            {...register('description')}
-            rows={6}
+          <RichTextEditor
+            value={watch('description')}
+            onChange={(html) => setValue('description', html, { shouldDirty: true })}
             placeholder="Descrizione dettagliata del corso, obiettivi, a chi è rivolto..."
-            className="input resize-none"
+            minHeight={160}
           />
         </div>
 

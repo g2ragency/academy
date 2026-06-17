@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { Clock, Play } from 'lucide-react'
 import { CourseTypeBadge } from '@/components/ui/Badge'
 import { getMediaUrl } from '@/lib/media'
-import { formatHours } from '@/lib/utils'
+import { formatHours, stripHtml } from '@/lib/utils'
 import type { Course } from '@/types'
 
 interface Props {
@@ -49,7 +49,7 @@ export default function CourseRowCard({ course, href, progress }: Props) {
         </div>
         <h6 className="text-white mt-2.5 line-clamp-1">{course.title}</h6>
         {course.short_description && (
-          <p className="text-sm text-muted mt-2 line-clamp-2">{course.short_description}</p>
+          <p className="text-sm text-muted mt-2 line-clamp-2">{stripHtml(course.short_description)}</p>
         )}
       </div>
     </Link>

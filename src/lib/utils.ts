@@ -49,6 +49,11 @@ export function safeRedirect(path: string | null | undefined, fallback = '/dashb
   return path
 }
 
+/** Rimuove i tag HTML — usato per mostrare testo plain nelle card quando il campo viene dal rich editor */
+export function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim()
+}
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()

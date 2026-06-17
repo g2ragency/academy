@@ -135,9 +135,16 @@ export default async function InstructorPage({ params }: Props) {
         {instructor.bio && (
           <section className="border-t border-surface-border mt-10 pt-10">
             <h5 className="text-white mb-6">Informazioni</h5>
-            <div className="text-white/60 leading-relaxed whitespace-pre-line max-w-5xl">
-              {instructor.bio}
-            </div>
+            {/<[a-z][\s\S]*>/i.test(instructor.bio) ? (
+              <div
+                className="rich-content text-white/60 leading-relaxed max-w-5xl"
+                dangerouslySetInnerHTML={{ __html: instructor.bio }}
+              />
+            ) : (
+              <div className="text-white/60 leading-relaxed whitespace-pre-line max-w-5xl">
+                {instructor.bio}
+              </div>
+            )}
           </section>
         )}
 
