@@ -62,12 +62,12 @@ export default function FollowButton({
   }
 
   return (
-    <div className="flex items-center gap-2 ml-auto">
+    <div className="flex items-center gap-2 ml-auto shrink-0">
       <button
         onClick={handleFollow}
         disabled={loadingFollow}
-        style={{ maxWidth: 175, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
-        className={`w-full py-2 rounded-[15px] text-sm transition-colors disabled:opacity-50 ${
+        style={{ width: 175, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
+        className={`py-2 rounded-[15px] text-sm transition-colors disabled:opacity-50 ${
           following
             ? 'bg-[#1B1B1B] text-white border border-white/10'
             : 'bg-[#F4F3F3] text-black'
@@ -79,8 +79,8 @@ export default function FollowButton({
         onClick={handleNotify}
         disabled={loadingNotify}
         aria-label={notify ? 'Disattiva notifiche' : 'Attiva notifiche'}
-        style={{ backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
-        className={`w-10 h-10 rounded-[15px] flex items-center justify-center transition-colors disabled:opacity-50 ${
+        style={{ width: 40, height: 40, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
+        className={`shrink-0 rounded-[15px] flex items-center justify-center transition-colors disabled:opacity-50 ${
           notify
             ? 'bg-[#1B1B1B] text-white'
             : 'bg-[#F4F3F3] text-black hover:opacity-80'
