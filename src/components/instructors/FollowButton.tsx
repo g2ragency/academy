@@ -66,8 +66,8 @@ export default function FollowButton({
       <button
         onClick={handleFollow}
         disabled={loadingFollow}
-        style={{ width: 175, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
-        className={`py-2 rounded-[15px] text-sm transition-colors disabled:opacity-50 ${
+        style={{ width: 175, height: 40, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
+        className={`rounded-[15px] text-sm transition-colors disabled:opacity-50 ${
           following
             ? 'bg-[#1B1B1B] text-white border border-white/10'
             : 'bg-[#F4F3F3] text-black'
