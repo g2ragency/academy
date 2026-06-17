@@ -15,16 +15,18 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     .single()
 
   if (existing) {
-    await supabase
+    const { error } = await supabase
       .from('instructor_follows')
       .delete()
       .eq('user_id', user.id)
       .eq('instructor_id', params.id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ following: false, notify: false })
   }
 
-  await supabase
+  const { error } = await supabase
     .from('instructor_follows')
     .insert({ user_id: user.id, instructor_id: params.id })
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ following: true, notify: false })
 }

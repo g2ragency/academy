@@ -34,16 +34,16 @@ export default async function DocentiPreferiti() {
           </Link>
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
           {items.map(({ instructors: instructor, notify }) => {
             const avatar = getMediaUrl(instructor!.avatar_url)
             return (
               <Link
                 key={instructor!.id}
                 href={`/docenti/${instructor!.slug}`}
-                className="flex items-center gap-4 p-4 rounded-[20px] bg-[#1B1B1B] transition-colors hover:bg-[#222]"
+                className="flex flex-col items-center text-center gap-3 p-5 rounded-[20px] bg-[#1B1B1B] hover:bg-[#222] transition-colors"
               >
-                <div className="w-14 h-14 rounded-full overflow-hidden relative bg-surface-elevated border border-surface-border shrink-0">
+                <div className="w-20 h-20 rounded-full overflow-hidden relative bg-surface-elevated border border-surface-border shrink-0">
                   {avatar ? (
                     <Image
                       src={avatar}
@@ -53,17 +53,17 @@ export default async function DocentiPreferiti() {
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <User className="w-6 h-6 text-white/20" />
+                      <User className="w-8 h-8 text-white/20" />
                     </div>
                   )}
                 </div>
-                <div className="min-w-0">
-                  <p className="text-white truncate">{instructor!.full_name}</p>
+                <div>
+                  <p className="text-white leading-snug">{instructor!.full_name}</p>
                   {instructor!.title && (
-                    <p className="text-sm text-muted truncate mt-0.5">{instructor!.title}</p>
+                    <p className="text-sm text-muted mt-1 line-clamp-2 leading-snug">{instructor!.title}</p>
                   )}
                   {notify && (
-                    <p className="text-xs text-muted mt-0.5">Notifiche attive</p>
+                    <span className="inline-block text-xs text-muted mt-2 opacity-60">Notifiche attive</span>
                   )}
                 </div>
               </Link>
