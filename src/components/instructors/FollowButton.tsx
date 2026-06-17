@@ -66,7 +66,8 @@ export default function FollowButton({
       <button
         onClick={handleFollow}
         disabled={loadingFollow}
-        className={`px-5 py-2 rounded-[15px] text-sm transition-colors disabled:opacity-50 ${
+        style={{ width: 175, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
+        className={`py-2 rounded-[15px] text-sm transition-colors disabled:opacity-50 shrink-0 ${
           following
             ? 'bg-[#1B1B1B] text-white border border-white/10'
             : 'bg-[#F4F3F3] text-black'
@@ -78,10 +79,11 @@ export default function FollowButton({
         onClick={handleNotify}
         disabled={loadingNotify}
         aria-label={notify ? 'Disattiva notifiche' : 'Attiva notifiche'}
-        className={`w-10 h-10 rounded-[15px] border flex items-center justify-center transition-colors disabled:opacity-50 ${
+        style={{ backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
+        className={`w-10 h-10 rounded-[15px] flex items-center justify-center transition-colors disabled:opacity-50 ${
           notify
-            ? 'bg-[#1B1B1B] border-white/10 text-white'
-            : 'border-surface-border text-white/50 hover:text-white hover:border-white/30'
+            ? 'bg-[#1B1B1B] text-white'
+            : 'bg-[#F4F3F3] text-black hover:opacity-80'
         }`}
       >
         {notify ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
