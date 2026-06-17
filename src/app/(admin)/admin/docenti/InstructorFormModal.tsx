@@ -123,16 +123,18 @@ export default function InstructorFormModal({ instructor, compact, onCreated, ta
 
       {open && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setOpen(false)}>
-          <div className="bg-surface/50 backdrop-blur-[10px] border border-surface-border rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface/50 backdrop-blur-[10px] border border-surface-border rounded-2xl p-6 w-full max-w-3xl space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-white">{isEditing ? 'Modifica docente' : 'Nuovo docente'}</h3>
               <button onClick={() => setOpen(false)} className="text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <Input {...register('full_name')} id="fn" label="Nome completo" placeholder="Paolo Neri" error={errors.full_name?.message}
-                onChange={(e) => { register('full_name').onChange(e); if (!isEditing) setValue('slug', slugify(e.target.value)) }} />
-              <Input {...register('slug')} id="slug" label="Slug URL" placeholder="paolo-neri" error={errors.slug?.message} />
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Input {...register('full_name')} id="fn" label="Nome completo" placeholder="Paolo Neri" error={errors.full_name?.message}
+                  onChange={(e) => { register('full_name').onChange(e); if (!isEditing) setValue('slug', slugify(e.target.value)) }} />
+                <Input {...register('slug')} id="slug" label="Slug URL" placeholder="paolo-neri" error={errors.slug?.message} />
+              </div>
               <Input {...register('title')} id="title" label="Titolo / qualifica" placeholder="Avvocato tributarista" />
               <div>
                 <label className="label">Bio</label>
@@ -140,11 +142,13 @@ export default function InstructorFormModal({ instructor, compact, onCreated, ta
                   value={watch('bio')}
                   onChange={(html) => setValue('bio', html, { shouldDirty: true })}
                   placeholder="Breve biografia del docente..."
-                  minHeight={120}
+                  minHeight={140}
                 />
               </div>
-              <Input {...register('linkedin_url')} id="li" label="LinkedIn URL" placeholder="https://linkedin.com/in/..." error={errors.linkedin_url?.message} />
-              <Input {...register('sort_order')} id="ord" type="number" label="Ordine (0 = primo)" />
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Input {...register('linkedin_url')} id="li" label="LinkedIn URL" placeholder="https://linkedin.com/in/..." error={errors.linkedin_url?.message} />
+                <Input {...register('sort_order')} id="ord" type="number" label="Ordine (0 = primo)" />
+              </div>
 
               {taxonomies && taxonomies.length > 0 && (
                 <div>
