@@ -3,12 +3,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  User, BookOpen, Award, CreditCard, Settings, Search
+  User, BookOpen, Award, CreditCard, Settings, Search, Heart
 } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard/profilo', label: 'Profilo', icon: User },
   { href: '/dashboard', label: 'Corsi', icon: BookOpen, exact: true },
+  { href: '/dashboard/docenti', label: 'Docenti preferiti', icon: Heart },
   { href: '/dashboard/attestati', label: 'Attestati', icon: Award },
   { href: '/dashboard/acquisti', label: 'Acquisti e fatture', icon: CreditCard },
   { href: '/dashboard/impostazioni', label: 'Impostazioni', icon: Settings },
