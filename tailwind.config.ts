@@ -19,6 +19,13 @@ const config: Config = {
           light: '#F4F3F3',
           dark: '#989898',
         },
+        // Superficie "card" del Figma: #1b1b1b solido. È IL colore di tutte le
+        // card/chip/righe FAQ/striscia loghi. Token unico riusabile (bg-card,
+        // hover:bg-card-hover) — un solo punto per ritoccare tutte le superfici.
+        card: {
+          DEFAULT: '#1B1B1B',
+          hover: '#222222',
+        },
         surface: {
           DEFAULT: '#000000',
           card: 'rgba(244, 243, 243, 0.04)',

@@ -62,14 +62,14 @@ export default function FollowButton({
   }
 
   return (
-    <div className="flex items-center gap-2 ml-auto shrink-0">
+    <div className="flex items-center gap-2 shrink-0">
       <button
         onClick={handleFollow}
         disabled={loadingFollow}
-        style={{ width: 175, height: 50, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
-        className={`rounded-[15px] text-sm transition-colors disabled:opacity-50 ${
+        style={{ backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
+        className={`w-[88px] sm:w-[175px] h-10 sm:h-[50px] rounded-[10px] sm:rounded-[15px] text-xs sm:text-sm transition-colors disabled:opacity-50 ${
           following
-            ? 'bg-[#1B1B1B] text-white border border-white/10'
+            ? 'bg-card text-white border border-white/10'
             : 'bg-[#F4F3F3] text-black'
         }`}
       >
@@ -79,10 +79,10 @@ export default function FollowButton({
         onClick={handleNotify}
         disabled={loadingNotify}
         aria-label={notify ? 'Disattiva notifiche' : 'Attiva notifiche'}
-        style={{ width: 50, height: 50, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
-        className={`shrink-0 rounded-[15px] flex items-center justify-center transition-colors disabled:opacity-50 ${
+        style={{ backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
+        className={`w-10 sm:w-[50px] h-10 sm:h-[50px] shrink-0 rounded-[10px] sm:rounded-[15px] flex items-center justify-center transition-colors disabled:opacity-50 ${
           notify
-            ? 'bg-[#1B1B1B] text-white'
+            ? 'bg-card text-white'
             : 'bg-[#F4F3F3] text-black hover:opacity-80'
         }`}
       >

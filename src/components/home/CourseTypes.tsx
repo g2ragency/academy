@@ -1,15 +1,7 @@
 import Link from 'next/link'
-import { GraduationCap, Presentation, ShieldCheck, Zap, Briefcase } from 'lucide-react'
+import CourseTypeIcon from '@/components/icons/CourseTypeIcon'
 import type { CourseType } from '@/types'
 import { COURSE_TYPE_LABELS } from '@/types'
-
-const TYPE_ICONS: Record<CourseType, React.ElementType> = {
-  webinar: Presentation,
-  masterclass: GraduationCap,
-  fast_focus: Zap,
-  short_master: Briefcase,
-  executive_master: ShieldCheck,
-}
 
 // Nuvola di chip come nel design: le tipologie ripetute su quattro righe
 const CHIP_ROWS: CourseType[][] = [
@@ -22,38 +14,39 @@ const CHIP_ROWS: CourseType[][] = [
 export default function CourseTypes() {
   return (
     <>
-      <section className="py-16 bg-surface border-t border-surface-border">
-        <div className="container-wide">
+      {/* Nuvola di chip: solo da md in su (il Figma mobile omette questa
+          sezione, passando da "I nostri docenti" direttamente alle FAQ) */}
+      <section className="hidden md:block bg-surface">
+        <div className="section-divider" />
+        <div className="container-wide py-16">
           <h3 className="text-white text-center mb-14">I nostri corsi</h3>
 
           <div className="space-y-4">
             {CHIP_ROWS.map((row, rowIndex) => (
               <div key={rowIndex} className="flex flex-wrap justify-center gap-4">
-                {row.map((type, i) => {
-                  const Icon = TYPE_ICONS[type]
-                  return (
-                    <Link
-                      key={`${type}-${i}`}
-                      href={`/corsi?tipo=${type}`}
-                      className="flex items-center gap-3 pl-2.5 pr-6 h-[60px] rounded-xl bg-surface-card text-white hover:bg-surface-elevated transition-colors"
-                    >
-                      <span className="w-9 h-9 rounded-lg bg-surface-elevated flex items-center justify-center">
-                        <Icon className="w-[18px] h-[18px]" />
-                      </span>
-                      {COURSE_TYPE_LABELS[type]}
-                    </Link>
-                  )
-                })}
+                {row.map((type, i) => (
+                  <Link
+                    key={`${type}-${i}`}
+                    href={`/corsi?tipo=${type}`}
+                    className="flex items-center gap-3 pl-2.5 pr-6 h-[60px] rounded-[15px] bg-card text-muted text-lg md:text-[22px] hover:bg-card-hover hover:text-white transition-colors"
+                  >
+                    <span className="w-9 h-9 rounded-lg bg-surface-elevated flex items-center justify-center shrink-0">
+                      <CourseTypeIcon type={type} className="w-[18px] h-[18px]" />
+                    </span>
+                    {COURSE_TYPE_LABELS[type]}
+                  </Link>
+                ))}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Video di presentazione */}
-      <section className="py-16 bg-surface border-t border-surface-border">
-        <div className="container-wide">
-          <div className="mx-auto max-w-[1069px] h-[600px] rounded-3xl bg-surface-card" />
+      {/* Video di presentazione (Figma 1069×600 ≈ 16:9, responsive) */}
+      <section className="bg-surface">
+        <div className="section-divider" />
+        <div className="container-wide py-16">
+          <div className="mx-auto w-full max-w-[1069px] aspect-video rounded-[20px] bg-card" />
         </div>
       </section>
     </>

@@ -14,16 +14,21 @@ interface Props {
   progress?: number
 }
 
-/** Card corso orizzontale ("Gli altri utenti hanno seguito anche", tab Corsi dashboard) */
+/** Card corso orizzontale ("Gli altri utenti hanno seguito anche", tab Corsi
+ *  dashboard).
+ *  - Mobile (Figma): layout compatto, radius 10 (card + immagine), miniatura
+ *    quadrata, solo badge tipo + titolo (niente "ore", niente descrizione).
+ *  - Desktop: card grande con immagine 360px, badge + durata + descrizione. */
 export default function CourseRowCard({ course, href, progress }: Props) {
   const thumb = getMediaUrl(course.thumbnail_url)
 
   return (
     <Link
       href={href ?? `/corsi/${course.slug}`}
-      className="flex flex-col sm:flex-row gap-5 py-4 px-[18px] rounded-[30px] bg-[#1B1B1B] transition-colors"
+      className="flex flex-row sm:gap-5 sm:py-4 sm:px-[18px] sm:rounded-[30px] gap-3 p-2.5 rounded-[10px] bg-card transition-colors"
     >
-      <div className="sm:w-[360px] shrink-0 aspect-video rounded-[20px] overflow-hidden relative bg-surface-elevated">
+      {/* Miniatura: quadrata e piccola su mobile, 360×aspect-video su desktop */}
+      <div className="w-20 h-20 sm:w-[360px] sm:h-auto shrink-0 sm:aspect-video rounded-[10px] sm:rounded-[20px] overflow-hidden relative bg-surface-elevated">
         {thumb ? (
           <Image src={thumb} alt={course.title} fill className="object-cover" />
         ) : (
@@ -37,19 +42,31 @@ export default function CourseRowCard({ course, href, progress }: Props) {
           </div>
         )}
       </div>
-      <div className="min-w-0 py-1">
+      <div className="min-w-0 flex-1 sm:py-1 flex flex-col justify-start">
         <div className="flex items-center gap-3">
-          <CourseTypeBadge type={course.type} className="bg-[#F4F3F3]/15 backdrop-blur-[20px]" />
+          {/* Targhetta: padding e radius ridotti su mobile (10×4 + r5 vs
+              18×8 + r10 su desktop, valori Figma) */}
+          <CourseTypeBadge
+            type={course.type}
+            className="bg-[#F4F3F3]/15 backdrop-blur-[20px] !px-2.5 !py-1 !rounded-[5px] sm:!px-[18px] sm:!py-2 sm:!rounded-[10px]"
+          />
+          {/* Durata: solo da sm in su (su mobile la card resta compatta) */}
           {course.duration_minutes ? (
-            <span className="inline-flex items-center gap-1.5 px-[18px] py-2 rounded-[10px] bg-[#F4F3F3]/15 backdrop-blur-[20px] text-xs text-[#989898]">
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-[18px] py-2 rounded-[10px] bg-[#F4F3F3]/15 backdrop-blur-[20px] text-xs text-[#989898]">
               <Clock className="w-3.5 h-3.5" />
               {formatHours(course.duration_minutes)}
             </span>
           ) : null}
         </div>
-        <h6 className="text-white mt-2.5 line-clamp-1">{course.title}</h6>
+        {/* Titolo: +2px su mobile (18px). Uso `max-sm:` così l'override esiste
+            solo sotto sm; da sm in su l'utility scompare e l'h6 torna alla
+            scala fluida base definita in globals.css. */}
+        <h6 className="max-sm:text-[18px] text-white mt-1.5 sm:mt-2.5 line-clamp-2 sm:line-clamp-1">
+          {course.title}
+        </h6>
+        {/* Descrizione: solo desktop (Figma mobile la omette) */}
         {course.short_description && (
-          <p className="text-sm text-muted mt-2 line-clamp-2">{stripHtml(course.short_description)}</p>
+          <p className="hidden sm:block text-sm text-muted mt-2 line-clamp-2">{stripHtml(course.short_description)}</p>
         )}
       </div>
     </Link>

@@ -1,9 +1,11 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import { Linkedin, User } from 'lucide-react'
+import Link from 'next/link'
+import { ChevronDown, Linkedin, User } from 'lucide-react'
+import ExpandableText from '@/components/ui/ExpandableText'
 import { createServerClient } from '@/lib/supabase/server'
 import { getMediaUrl } from '@/lib/media'
-import CourseCarousel from '@/components/courses/CourseCarousel'
+import InstructorCoursesGrid from './InstructorCoursesGrid'
 import CourseRowCard from '@/components/courses/CourseRowCard'
 import FollowButton from '@/components/instructors/FollowButton'
 import type { Course } from '@/types'
@@ -94,80 +96,85 @@ export default async function InstructorPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-surface pt-24 pb-20">
       <div className="container-wide">
-        {/* Header: avatar + nome + ruolo + segui */}
-        <div className="flex flex-wrap items-center gap-6">
-          <div className="w-24 h-24 rounded-full overflow-hidden relative bg-surface-elevated border border-surface-border shrink-0">
+        {/* Header: avatar + nome + ruolo + segui — tutto su una riga */}
+        <div className="flex items-center gap-3 sm:gap-5">
+          <div className="w-16 sm:w-24 h-16 sm:h-24 rounded-full overflow-hidden relative bg-surface-elevated border border-surface-border shrink-0">
             {avatar ? (
               <Image src={avatar} alt={instructor.full_name} fill className="object-cover" />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <User className="w-10 h-10 text-white/20" />
+                <User className="w-8 sm:w-10 h-8 sm:h-10 text-white/20" />
               </div>
             )}
           </div>
-          <div className="min-w-0">
+          <div className="flex-1 min-w-0">
             <h5 className="text-white">{instructor.full_name}</h5>
-            {instructor.title && <p className="text-base text-muted mt-1">{instructor.title}</p>}
+            {instructor.title && <p className="text-sm text-muted mt-1 line-clamp-2">{instructor.title}</p>}
           </div>
-          <div className="ml-auto flex items-center gap-3 shrink-0">
-            {instructor.linkedin_url && (
-              <a
-                href={instructor.linkedin_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`LinkedIn di ${instructor.full_name}`}
-                className="w-10 h-10 rounded-full border border-surface-border text-white/60 hover:text-white hover:border-white/30 transition-colors flex items-center justify-center"
-              >
-                <Linkedin className="w-4 h-4" />
-              </a>
-            )}
-            <FollowButton
-              instructorId={instructor.id}
-              instructorSlug={instructor.slug}
-              isLoggedIn={isLoggedIn}
-              initialFollowing={isFollowing}
-              initialNotify={isNotifying}
-            />
-          </div>
+          {instructor.linkedin_url && (
+            <a
+              href={instructor.linkedin_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`LinkedIn di ${instructor.full_name}`}
+              className="hidden sm:flex w-10 h-10 rounded-full border border-surface-border text-white/60 hover:text-white hover:border-white/30 transition-colors items-center justify-center shrink-0"
+            >
+              <Linkedin className="w-4 h-4" />
+            </a>
+          )}
+          <FollowButton
+            instructorId={instructor.id}
+            instructorSlug={instructor.slug}
+            isLoggedIn={isLoggedIn}
+            initialFollowing={isFollowing}
+            initialNotify={isNotifying}
+          />
         </div>
 
         {/* Informazioni */}
         {instructor.bio && (
-          <section className="border-t border-surface-border mt-10 pt-10">
+          <section className="mt-10">
+            <div className="border-t border-muted mb-10" />
             <h5 className="text-white mb-6">Informazioni</h5>
-            {/<[a-z][\s\S]*>/i.test(instructor.bio) ? (
-              <div
-                className="rich-content text-white/60 leading-relaxed max-w-5xl"
-                dangerouslySetInnerHTML={{ __html: instructor.bio }}
-              />
-            ) : (
-              <div className="text-white/60 leading-relaxed whitespace-pre-line max-w-5xl">
-                {instructor.bio}
-              </div>
-            )}
+            <ExpandableText text={instructor.bio} />
           </section>
         )}
 
-        {/* Corsi del docente */}
-        <section className="border-t border-surface-border mt-12 pt-10">
+        {/* Corsi del docente — griglia 2×2 con carica di più */}
+        <section className="mt-12">
+          <div className="border-t border-muted mb-10" />
+          <h5 className="text-white mb-8">Corsi</h5>
           {((courses ?? []) as Course[]).length === 0 ? (
-            <>
-              <h5 className="text-white mb-6">Corsi</h5>
-              <p className="text-white/40">Nessun corso disponibile al momento.</p>
-            </>
+            <p className="text-white/40">Nessun corso disponibile al momento.</p>
           ) : (
-            <CourseCarousel title="Corsi" courses={(courses ?? []) as Course[]} />
+            <InstructorCoursesGrid courses={(courses ?? []) as Course[]} />
           )}
         </section>
 
         {/* Gli altri utenti hanno seguito anche */}
         {otherCourses.length > 0 && (
-          <section className="border-t border-surface-border mt-12 pt-10">
+          <section className="mt-16">
+            <div className="border-t border-muted mb-12" />
             <h5 className="text-white mb-8">Gli altri utenti hanno seguito anche</h5>
-            <div className="space-y-4">
+            <div className="space-y-2.5 sm:space-y-5">
               {otherCourses.map((course) => (
                 <CourseRowCard key={course.id} course={course} />
               ))}
+            </div>
+
+            <div className="mt-6 md:mt-8">
+              <Link
+                href="/corsi"
+                className="md:hidden block w-full text-center bg-white text-black rounded-[10px] py-3 text-sm"
+              >
+                Scopri tutti i corsi
+              </Link>
+              <Link
+                href="/corsi"
+                className="hidden md:inline-flex w-full items-center justify-center gap-2 text-muted hover:text-white transition-colors"
+              >
+                Carica di più <ChevronDown className="w-4 h-4" />
+              </Link>
             </div>
           </section>
         )}

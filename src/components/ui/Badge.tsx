@@ -28,7 +28,7 @@ export function CourseTypeBadge({ type, className }: { type: CourseType; classNa
   return (
     <span
       className={cn(
-        'inline-flex items-center text-xs px-[18px] py-2 rounded-[10px] bg-[#1B1B1B] backdrop-blur-[15px] text-[#989898]',
+        'inline-flex items-center text-xs px-[18px] py-2 rounded-[10px] bg-card backdrop-blur-[15px] text-[#989898]',
         className
       )}
     >

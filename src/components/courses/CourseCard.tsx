@@ -9,27 +9,34 @@ interface Props {
   course: Course
   enrolled?: boolean
   progress?: number
+  /** Su mobile usa aspect-ratio "wide" 353/236 + radius 15 (variante elenco
+   *  pagina /corsi). Default = card verticale 343/450 (home/trending). */
+  mobileWide?: boolean
 }
 
 /**
- * Card corso (design Figma): card radius 40, immagine a tutta card, pannello
- * info #858585 pieno (no blur) — 14px laterale / 12px sotto, radius 30,
- * padding 16/26. Ora/icona/divisore neri al 50%.
+ * Card corso (design Figma): card radius 40 desktop, immagine a tutta card,
+ * pannello info bianco 50% + blur, padding 16/26.
  *
  * Il sollevamento in hover (translate) sta sul <Link> esterno e il clip
  * arrotondato sul <div> interno: tenerli separati evita il flash degli
  * angoli a punta che Chrome produce quando anima un transform sullo stesso
  * elemento che fa overflow-hidden + border-radius.
  */
-export default function CourseCard({ course, enrolled, progress }: Props) {
+export default function CourseCard({ course, enrolled, progress, mobileWide }: Props) {
   const thumb = getMediaUrl(course.thumbnail_url)
+  // Mobile: due varianti — verticale "home" (343/450 r10) o "wide" elenco
+  // corsi (353/236 r15). Su desktop sempre verticale 343/450 r40.
+  const aspectAndRadius = mobileWide
+    ? 'aspect-[353/236] rounded-[15px] md:aspect-[343/450] md:rounded-[40px]'
+    : 'aspect-[343/450] rounded-[10px] md:rounded-[40px]'
 
   return (
     <Link
       href={`/corsi/${course.slug}`}
       className="group block transition-transform duration-300 hover:-translate-y-1"
     >
-      <div className="relative aspect-[343/450] rounded-[40px] overflow-hidden bg-surface-card border border-surface-border">
+      <div className={`relative overflow-hidden bg-card border border-surface-border ${aspectAndRadius}`}>
         {thumb ? (
           <Image
             src={thumb}
@@ -43,10 +50,10 @@ export default function CourseCard({ course, enrolled, progress }: Props) {
           </div>
         )}
 
-        {/* Pannello informazioni in sovraimpressione */}
-        <div className="absolute left-[14px] right-[14px] bottom-3 rounded-[30px] bg-[#858585] py-4 px-[26px]">
-          <h5 className="text-black leading-snug line-clamp-2 mb-4">{course.title}</h5>
-          <div className="border-t border-black/50 pt-3 flex items-center gap-1.5 text-black/50 text-sm">
+        {/* Pannello informazioni in sovraimpressione (Figma: vetro bianco 50% + blur) */}
+        <div className="absolute left-2.5 right-2.5 bottom-2 md:left-[14px] md:right-[14px] md:bottom-3 rounded-[10px] md:rounded-[30px] bg-white/50 backdrop-blur-[7.5px] p-3 md:py-4 md:px-[26px]">
+          <h5 className="text-black leading-snug line-clamp-2 mb-2 md:mb-4">{course.title}</h5>
+          <div className="border-t border-black/40 pt-2 md:pt-3 flex items-center gap-1.5 text-black/60 text-sm">
             {enrolled ? (
               <>
                 <div className="flex-1 h-1.5 rounded-full bg-black/20 overflow-hidden">

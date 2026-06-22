@@ -60,12 +60,12 @@ const FAQ_SECTIONS = [
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="rounded-[15px] bg-[#1B1B1B] backdrop-blur-[15px] overflow-hidden">
+    <div className="rounded-[15px] bg-card backdrop-blur-[15px] overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-6 h-[53px] text-left"
+        className="w-full flex items-center justify-between px-6 min-h-[53px] py-3 text-left"
       >
-        <span className="text-muted">{q}</span>
+        <span className="text-muted text-base md:text-lg pr-4">{q}</span>
         <ChevronDown
           className={cn(
             'w-4 h-4 text-muted shrink-0 ml-4 transition-transform duration-300',
@@ -90,8 +90,9 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 export default function FAQ() {
   return (
-    <section className="py-16 bg-surface border-t border-surface-border">
-      <div className="container-wide">
+    <section className="bg-surface">
+      <div className="section-divider" />
+      <div className="container-wide py-16">
         <h3 className="text-white text-center mb-14">FAQ</h3>
 
         <div className="mx-auto max-w-[1068px] space-y-10">

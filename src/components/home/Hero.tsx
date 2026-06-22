@@ -47,27 +47,34 @@ export default function Hero() {
       {/* Sfumatura per leggibilità del testo sopra lo stack */}
       <div className="absolute inset-y-0 left-0 w-3/5 bg-gradient-to-r from-surface via-surface/80 to-transparent pointer-events-none" />
 
-      <div className="container-wide relative z-10 pt-24 pb-16">
-        <div className="max-w-[640px]">
-          <h1 className="text-white leading-tight mb-12">
+      {/* Layout Figma:
+          - mobile: flex column a tutta altezza, titolo+desc in alto e
+            quiz+bottone "pinnati" in basso (justify-between)
+          - desktop: layout naturale (titolo, desc, quiz, bottone in sequenza)
+            con max-w sul testo per non sovrapporsi allo stack di card a destra */}
+      <div className="container-wide relative z-10 min-h-[calc(100vh-4rem)] pt-10 pb-8 lg:pt-24 lg:pb-16 flex flex-col justify-between lg:block">
+        <div className="lg:max-w-[640px]">
+          <h1 className="text-white leading-tight mb-6 lg:mb-12">
             Impara dai migliori,
             <br />
             dai il meglio di te.
           </h1>
 
-          <p className="text-muted mb-14 max-w-[495px]">
+          <p className="text-muted lg:mb-14 lg:max-w-[495px]">
             L&apos;autorità formativa dedicata esclusivamente
             <br />
             al network delle Holding italiane.
           </p>
+        </div>
 
+        <div className="lg:max-w-[640px]">
           {/* Selettore argomenti */}
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-4 lg:mb-6">
             <span className="w-0.5 h-6 bg-[#60FDE8] shrink-0" />
             <h6 className="text-white">Cosa ti porta oggi in Academy?</h6>
           </div>
 
-          <div className="space-y-1.5 mb-9 max-w-[525px]">
+          <div className="space-y-1.5 mb-4 lg:mb-9 lg:max-w-[525px]">
             {TOPICS.map((topic, i) => (
               <button
                 key={topic}
@@ -81,11 +88,11 @@ export default function Hero() {
                     : undefined
                 }
                 className={`w-full flex items-center gap-4 px-4 h-[53px] rounded-[15px] text-left backdrop-blur-[15px] transition-colors duration-200 ${
-                  selected === i ? 'text-white' : 'bg-[#1B1B1B] text-muted hover:text-white'
+                  selected === i ? 'text-white' : 'bg-card text-muted hover:text-white'
                 }`}
               >
                 <span
-                  className={`w-[25px] h-[25px] rounded-md flex items-center justify-center shrink-0 ${
+                  className={`w-[25px] h-[25px] rounded-[7px] flex items-center justify-center shrink-0 ${
                     selected === i ? 'bg-white' : 'bg-surface-elevated'
                   }`}
                 >
@@ -96,18 +103,26 @@ export default function Hero() {
             ))}
           </div>
 
+          {/* Bottone Continua: a tutta larghezza su mobile (Figma),
+              225×65 su desktop. */}
           <Link
             href="/corsi"
-            className="inline-flex items-center justify-center w-[225px] h-[65px] bg-white text-black rounded-[15px] backdrop-blur-[15px] hover:bg-white/80 transition-colors"
+            className="flex items-center justify-center w-full lg:w-[225px] h-[53px] lg:h-[65px] bg-white text-black rounded-[15px] backdrop-blur-[15px] hover:bg-white/80 transition-colors"
           >
             Continua
           </Link>
         </div>
       </div>
 
-      {/* Pill assistente AI */}
-      <div className="absolute bottom-10 right-10 z-10 hidden lg:flex items-center gap-2.5 bg-surface-elevated border border-surface-border rounded-full px-5 py-3 backdrop-blur-sm">
-        <Sparkles className="w-4 h-4 text-white" />
+      {/* Pill assistente AI (Figma: 290×60, radius 15, blur, gradiente tenue) */}
+      <div
+        className="absolute bottom-10 right-10 z-10 hidden lg:flex items-center gap-3 h-[60px] px-6 rounded-[15px] border border-surface-border backdrop-blur-[7.5px]"
+        style={{
+          background:
+            'radial-gradient(138.67% 252.83% at -6.76% -72.64%, rgba(115, 115, 115, 0.2) 0%, rgba(217, 217, 217, 0.2) 100%)',
+        }}
+      >
+        <Sparkles className="w-5 h-5 text-white" />
         <span className="text-white">Chiedi all&apos;assistente AI</span>
       </div>
     </section>

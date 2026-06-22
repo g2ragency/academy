@@ -11,13 +11,8 @@ interface Props {
   threshold?: number
 }
 
-/** Rileva se la stringa contiene HTML (output del rich editor) */
 function isHtml(s: string) { return /<[a-z][\s\S]*>/i.test(s) }
 
-/** Testo/HTML lungo con clamp + fade verso il nero e toggle "Mostra di più".
-    L'apertura/chiusura è animata: misuro `scrollHeight` runtime e animo
-    `max-height` da `collapsedHeight` al valore reale (CSS non sa animare
-    `auto`, servono px). */
 export default function ExpandableText({ text, collapsedHeight = 260, threshold = 500 }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [fullHeight, setFullHeight] = useState(0)

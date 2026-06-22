@@ -15,7 +15,7 @@ export default function InstructorCard({ instructor }: { instructor: Instructor 
   return (
     <Link
       href={`/docenti/${instructor.slug}`}
-      className="group relative block aspect-[268/345] rounded-[30px] overflow-hidden bg-surface-card"
+      className="group relative block aspect-[148/210] md:aspect-[268/345] rounded-[10px] md:rounded-[30px] overflow-hidden bg-card"
     >
       {avatar ? (
         <Image
@@ -30,11 +30,11 @@ export default function InstructorCard({ instructor }: { instructor: Instructor 
         </div>
       )}
 
-      {/* Riquadro nome + descrizione */}
-      <div className="absolute inset-x-[14px] bottom-[14px] rounded-[20px] bg-[#D9D9D9]/[0.61] backdrop-blur-[4px] shadow-[0_4px_4px_0_rgba(0,0,0,0.11)] px-[14px] py-2">
+      {/* Riquadro nome + descrizione (Figma: vetro chiaro, titolo per intero) */}
+      <div className="absolute inset-x-2.5 bottom-2.5 md:inset-x-[14px] md:bottom-[14px] rounded-[10px] md:rounded-[20px] bg-[#D9D9D9]/[0.61] backdrop-blur-[7.5px] shadow-[0_4px_4px_0_rgba(0,0,0,0.11)] px-3 py-2">
         <h5 className="text-black leading-tight">{instructor.full_name}</h5>
         {instructor.title && (
-          <p className="text-black/70 text-sm mt-1 line-clamp-3">{instructor.title}</p>
+          <p className="text-black/70 text-[11px] md:text-sm mt-1 leading-snug line-clamp-4">{instructor.title}</p>
         )}
       </div>
     </Link>

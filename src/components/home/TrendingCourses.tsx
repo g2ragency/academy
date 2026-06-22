@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ChevronDown, GraduationCap, Presentation, ShieldCheck, Zap, Briefcase } from 'lucide-react'
-import CourseCard from '@/components/courses/CourseCard'
+import { ChevronDown } from 'lucide-react'
+import AnimatedCourseGrid from '@/components/courses/AnimatedCourseGrid'
+import CourseTypeIcon from '@/components/icons/CourseTypeIcon'
 import type { Course, CourseType } from '@/types'
 
 const FILTER_TABS: { label: string; value: CourseType | 'all' }[] = [
@@ -14,12 +15,12 @@ const FILTER_TABS: { label: string; value: CourseType | 'all' }[] = [
   { label: 'Executive Master', value: 'executive_master' },
 ]
 
-const TYPE_CHIPS: { label: string; value: CourseType; icon: React.ElementType }[] = [
-  { label: 'Webinar', value: 'webinar', icon: Presentation },
-  { label: 'Masterclass', value: 'masterclass', icon: GraduationCap },
-  { label: 'Fast Focus', value: 'fast_focus', icon: Zap },
-  { label: 'Short Master', value: 'short_master', icon: Briefcase },
-  { label: 'Executive Master', value: 'executive_master', icon: ShieldCheck },
+const TYPE_CHIPS: { label: string; value: CourseType }[] = [
+  { label: 'Webinar', value: 'webinar' },
+  { label: 'Masterclass', value: 'masterclass' },
+  { label: 'Fast Focus', value: 'fast_focus' },
+  { label: 'Short Master', value: 'short_master' },
+  { label: 'Executive Master', value: 'executive_master' },
 ]
 
 interface Props {
@@ -32,17 +33,19 @@ export default function TrendingCourses({ courses }: Props) {
   const filtered = activeFilter === 'all' ? courses : courses.filter((c) => c.type === activeFilter)
 
   return (
-    <section id="trending" className="py-16 bg-surface border-t border-surface-border scroll-mt-16">
-      <div className="container-wide">
+    <section id="trending" className="bg-surface scroll-mt-16">
+      <div className="section-divider" />
+      <div className="container-wide py-16">
         <h3 className="text-white text-center mb-12">Di tendenza in Academy</h3>
 
-        {/* Tab a tutta larghezza con riga sotto l'etichetta */}
-        <div className="hidden md:grid grid-cols-5 mb-10">
+        {/* Tab: riga scrollabile su mobile, griglia a 5 colonne a tutta
+            larghezza da md in su (Figma mostra i tab anche su mobile) */}
+        <div className="flex md:grid md:grid-cols-5 gap-7 md:gap-0 overflow-x-auto scrollbar-hide mb-10 -mx-5 px-5 md:mx-0 md:px-0 fade-x-right md:[mask-image:none] md:[-webkit-mask-image:none]">
           {FILTER_TABS.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setActiveFilter(tab.value)}
-              className={`pb-4 border-b-2 transition-colors ${
+              className={`shrink-0 md:shrink whitespace-nowrap pb-4 border-b-2 text-base md:text-[22px] transition-colors ${
                 activeFilter === tab.value
                   ? 'text-white border-white'
                   : 'text-muted border-surface-border hover:text-white'
@@ -54,24 +57,23 @@ export default function TrendingCourses({ courses }: Props) {
         </div>
 
         {/* Chip filtro per tipologia (valori Figma: radius 15, gap 12, padding 10/8) */}
-        <div className="flex items-center gap-3 overflow-x-auto pb-2 mb-10 scrollbar-hide">
+        <div className="flex items-center gap-3 overflow-x-auto pb-2 mb-10 scrollbar-hide -mx-5 px-5 md:mx-0 md:px-0 fade-x-right">
           {TYPE_CHIPS.map((chip) => {
-            const Icon = chip.icon
             const active = activeFilter === chip.value
             return (
               <button
                 key={chip.value}
                 onClick={() => setActiveFilter(active ? 'all' : chip.value)}
-                className={`shrink-0 inline-flex items-center gap-2.5 px-2 py-2.5 rounded-[15px] transition-colors ${
-                  active ? 'bg-[#F4F3F3] text-black' : 'bg-[#1B1B1B] backdrop-blur-[20px] text-muted'
+                className={`shrink-0 inline-flex items-center gap-2.5 h-[50px] pl-2 pr-4 rounded-[15px] text-lg transition-colors ${
+                  active ? 'bg-white text-black' : 'bg-card backdrop-blur-[20px] text-muted'
                 }`}
               >
                 <span
-                  className={`w-8 h-8 rounded-[10px] flex items-center justify-center ${
+                  className={`w-[35px] h-[35px] rounded-[10px] flex items-center justify-center ${
                     active ? 'bg-[#989898] text-white' : 'bg-[#888888] text-black'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <CourseTypeIcon type={chip.value} className="w-[18px] h-[18px]" />
                 </span>
                 {chip.label}
               </button>
@@ -79,15 +81,14 @@ export default function TrendingCourses({ courses }: Props) {
           })}
         </div>
 
-        {/* Griglia corsi */}
+        {/* Griglia corsi con entrata/uscita animata al cambio filtro */}
         {filtered.length === 0 ? (
           <p className="text-center text-muted py-16">Nessun corso trovato.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filtered.slice(0, 4).map((course) => (
-              <CourseCard key={course.id} course={course} />
-            ))}
-          </div>
+          <AnimatedCourseGrid
+            courses={filtered.slice(0, 4)}
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
+          />
         )}
 
         <div className="mt-16 text-center">

@@ -41,7 +41,7 @@ export default async function DocentiPreferiti() {
               <Link
                 key={instructor!.id}
                 href={`/docenti/${instructor!.slug}`}
-                className="flex flex-col items-center text-center gap-3 p-5 rounded-[20px] bg-[#1B1B1B] hover:bg-[#222] transition-colors"
+                className="flex flex-col items-center text-center gap-3 p-5 rounded-[20px] bg-card hover:bg-card-hover transition-colors"
               >
                 <div className="w-20 h-20 rounded-full overflow-hidden relative bg-surface-elevated border border-surface-border shrink-0">
                   {avatar ? (
