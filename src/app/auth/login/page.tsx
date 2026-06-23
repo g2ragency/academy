@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/client'
 import { safeRedirect } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import AuthField from '../AuthField'
+import AuthCheckbox from '../AuthCheckbox'
 import SocialButtons from '../SocialButtons'
 
 const schema = z.object({
@@ -85,7 +86,7 @@ export default function LoginPage() {
 
         <div className="flex items-center justify-between pt-1">
           <label className="flex items-center gap-2 text-sm text-muted cursor-pointer">
-            <input type="checkbox" {...register('remember')} className="w-4 h-4 accent-brand rounded" />
+            <AuthCheckbox {...register('remember')} />
             Ricorda
           </label>
           <Link
@@ -96,7 +97,7 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <Button type="submit" loading={isSubmitting} className="w-full mt-2" size="lg">
+        <Button type="submit" loading={isSubmitting} className="w-full mt-2 h-10" size="lg">
           Entra
         </Button>
       </form>

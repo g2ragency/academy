@@ -10,6 +10,7 @@ import { Briefcase, Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import AuthField from '../AuthField'
+import AuthCheckbox from '../AuthCheckbox'
 import SocialButtons from '../SocialButtons'
 
 const schema = z.object({
@@ -136,7 +137,7 @@ export default function RegistratiPage() {
 
         <div className="pt-1">
           <label className="flex items-start gap-2.5 text-sm text-muted cursor-pointer">
-            <input type="checkbox" {...register('accept_terms')} className="w-4 h-4 accent-brand rounded mt-0.5" />
+            <AuthCheckbox {...register('accept_terms')} className="mt-0.5" />
             <span>
               Accetto i{' '}
               <Link href="/termini" className="text-white underline underline-offset-4 hover:text-white/70">Termini e Condizioni</Link>
@@ -147,7 +148,7 @@ export default function RegistratiPage() {
           {errors.accept_terms && <p className="text-xs text-red-400 mt-1.5">{errors.accept_terms.message}</p>}
         </div>
 
-        <Button type="submit" loading={isSubmitting} className="w-full mt-2" size="lg">
+        <Button type="submit" loading={isSubmitting} className="w-full mt-2 h-10" size="lg">
           Registrati
         </Button>
       </form>

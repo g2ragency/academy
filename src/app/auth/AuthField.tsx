@@ -13,14 +13,14 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
 const AuthField = forwardRef<HTMLInputElement, Props>(({ icon, rightSlot, error, ...props }, ref) => (
   <div>
     <div
-      className={`flex items-center gap-3 bg-surface-elevated border rounded-xl px-4 h-12 focus-within:border-white/30 transition-colors ${
-        error ? 'border-red-500/50' : 'border-surface-border'
+      className={`flex items-center gap-3 bg-surface backdrop-blur-[20px] border-[0.5px] rounded-[10px] px-4 h-12 transition-colors ${
+        error ? 'border-red-500' : 'border-white'
       }`}
     >
-      <span className="text-white/40 shrink-0 [&>svg]:w-4 [&>svg]:h-4">{icon}</span>
+      <span className="text-muted shrink-0 [&>svg]:w-4 [&>svg]:h-4">{icon}</span>
       <input
         ref={ref}
-        className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-white/40 focus:outline-none"
+        className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-muted focus:outline-none"
         {...props}
       />
       {rightSlot}

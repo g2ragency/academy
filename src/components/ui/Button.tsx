@@ -14,7 +14,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          'inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
+          'inline-flex items-center justify-center font-semibold rounded-[10px] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
           variant === 'primary' && 'bg-brand text-black hover:bg-brand-light',
           variant === 'secondary' && 'bg-surface-elevated text-white border border-surface-border hover:bg-surface-card',
           variant === 'ghost' && 'text-white/70 hover:text-white hover:bg-surface-elevated',

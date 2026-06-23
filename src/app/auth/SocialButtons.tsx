@@ -41,7 +41,7 @@ export default function SocialButtons({ label, redirect = '/dashboard' }: Props)
         <button
           type="button"
           onClick={() => signInWith('google')}
-          className="flex items-center justify-center gap-2.5 h-12 rounded-xl bg-white text-black text-sm hover:bg-white/80 transition-colors"
+          className="flex items-center justify-center gap-2.5 h-10 rounded-[10px] bg-white text-black text-sm hover:bg-white/80 transition-colors"
         >
           <GoogleIcon />
           Google
@@ -49,7 +49,7 @@ export default function SocialButtons({ label, redirect = '/dashboard' }: Props)
         <button
           type="button"
           onClick={() => signInWith('apple')}
-          className="flex items-center justify-center gap-2.5 h-12 rounded-xl bg-white text-black text-sm hover:bg-white/80 transition-colors"
+          className="flex items-center justify-center gap-2.5 h-10 rounded-[10px] bg-white text-black text-sm hover:bg-white/80 transition-colors"
         >
           <AppleIcon />
           Apple
