@@ -32,9 +32,12 @@ export default function InstructorCard({ instructor }: { instructor: Instructor 
 
       {/* Riquadro nome + descrizione (Figma: vetro chiaro, titolo per intero) */}
       <div className="absolute inset-x-2.5 bottom-2.5 md:inset-x-[14px] md:bottom-[14px] rounded-[10px] md:rounded-[20px] bg-[#D9D9D9]/[0.61] backdrop-blur-[7.5px] shadow-[0_4px_4px_0_rgba(0,0,0,0.11)] px-3 py-2">
-        <h5 className="text-black leading-tight">{instructor.full_name}</h5>
+        <h5
+          className="text-black leading-[22px] md:leading-[35px]"
+          style={{ fontSize: 'clamp(1rem, 0.778rem + 0.902vw, 1.5rem)' }}
+        >{instructor.full_name}</h5>
         {instructor.title && (
-          <p className="text-black/70 text-[11px] md:text-sm mt-1 leading-snug line-clamp-4">{instructor.title}</p>
+          <p className="text-black/70 text-[clamp(0.625rem,0.514rem+0.451vw,0.875rem)] leading-none mt-1 line-clamp-4">{instructor.title}</p>
         )}
       </div>
     </Link>

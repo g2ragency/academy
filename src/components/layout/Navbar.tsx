@@ -4,15 +4,18 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import {
-  Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Shield, Search,
+  X, ChevronDown, User, LogOut, LayoutDashboard, Shield, Search,
   Presentation, GraduationCap, Zap, Briefcase, ShieldCheck, BookOpen, Tag,
 } from 'lucide-react'
+import HamburgerIcon from '@/components/icons/HamburgerIcon'
 import { createClient } from '@/lib/supabase/client'
 import CartButton from '@/components/cart/CartButton'
 import { useCart } from '@/context/CartContext'
 import { buildTermTree, TAXONOMY_PARAM_PREFIX } from '@/lib/taxonomy'
 import type { Profile, Taxonomy } from '@/types'
 import { cn } from '@/lib/utils'
+import LogoWithName from '@/components/icons/LogoWithName'
+import LogoIcon from '@/components/icons/LogoIcon'
 
 interface MenuItem {
   icon: React.ElementType
@@ -160,11 +163,9 @@ export default function Navbar() {
       <div className="container-wide">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center font-bold text-black text-sm">
-              A
-            </div>
-            <span className="font-bold text-white text-lg hidden sm:block">Academy</span>
+          <Link href="/" className="flex items-center shrink-0" aria-label="Academy">
+            <LogoIcon className="h-8 w-auto text-white lg:hidden" />
+            <LogoWithName className="hidden lg:block h-8 w-auto text-white" />
           </Link>
 
           {/* Menu centrale (design Figma): Corsi + tassonomie dinamiche + In tendenza + Cerca */}
@@ -260,13 +261,13 @@ export default function Navbar() {
               <>
                 <Link
                   href="/auth/login"
-                  className="px-5 py-2 rounded-full border border-white/40 text-sm text-white hover:border-white transition-colors"
+                  className="flex items-center justify-center h-[45px] min-w-[95px] px-5 rounded-[15px] border border-white/40 text-[18px] leading-none text-white hover:border-white transition-colors"
                 >
                   Log In
                 </Link>
                 <Link
                   href="/auth/registrati"
-                  className="px-5 py-2 rounded-full bg-white text-sm text-black hover:bg-white/80 transition-colors"
+                  className="flex items-center justify-center h-[45px] min-w-[95px] px-5 rounded-[15px] bg-white text-[18px] leading-none text-black hover:bg-white/80 transition-colors"
                 >
                   Iscriviti
                 </Link>
@@ -282,7 +283,7 @@ export default function Navbar() {
               className="p-2 rounded-lg hover:bg-surface-elevated transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
             >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileOpen ? <X className="w-5 h-5" /> : <HamburgerIcon className="text-white" />}
             </button>
           </div>
         </div>
@@ -344,19 +345,19 @@ export default function Navbar() {
               In tendenza
             </Link>
 
-            <div className="border-t border-surface-border pt-3 mt-3 flex flex-col gap-2 px-4">
+            <div className="border-t border-surface-border pt-3 mt-3 flex flex-wrap gap-2 px-4">
               {profile ? (
                 <>
-                  <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="btn-secondary text-center text-sm py-2">Dashboard</Link>
+                  <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="flex items-center justify-center h-[30px] min-w-[74px] px-4 rounded-[10px] border border-white/40 text-[16px] leading-none text-white">Dashboard</Link>
                   {profile.role === 'admin' && (
-                    <Link href="/admin" onClick={() => setMobileOpen(false)} className="text-center text-sm py-2 text-brand border border-brand/30 rounded-lg">Admin</Link>
+                    <Link href="/admin" onClick={() => setMobileOpen(false)} className="flex items-center justify-center h-[30px] min-w-[74px] px-4 rounded-[10px] border border-brand/30 text-[16px] leading-none text-brand">Admin</Link>
                   )}
-                  <button onClick={() => { handleSignOut(); setMobileOpen(false) }} className="text-sm text-red-400 py-2">Esci</button>
+                  <button onClick={() => { handleSignOut(); setMobileOpen(false) }} className="flex items-center justify-center h-[30px] px-4 text-[16px] leading-none text-red-400">Esci</button>
                 </>
               ) : (
                 <>
-                  <Link href="/auth/login" onClick={() => setMobileOpen(false)} className="btn-secondary text-center text-sm py-2">Log In</Link>
-                  <Link href="/auth/registrati" onClick={() => setMobileOpen(false)} className="btn-primary text-center text-sm py-2">Iscriviti</Link>
+                  <Link href="/auth/login" onClick={() => setMobileOpen(false)} className="flex items-center justify-center h-[30px] min-w-[74px] px-4 rounded-[10px] border border-white/40 text-[16px] leading-none text-white">Log In</Link>
+                  <Link href="/auth/registrati" onClick={() => setMobileOpen(false)} className="flex items-center justify-center h-[30px] min-w-[74px] px-4 rounded-[10px] bg-white text-[16px] leading-none text-black">Iscriviti</Link>
                 </>
               )}
             </div>

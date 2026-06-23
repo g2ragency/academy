@@ -65,7 +65,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-6 min-h-[53px] py-3 text-left"
       >
-        <span className="text-muted text-base md:text-lg pr-4">{q}</span>
+        <span className="text-muted text-[clamp(0.75rem,0.584rem+0.677vw,1.125rem)] leading-none pr-4">{q}</span>
         <ChevronDown
           className={cn(
             'w-4 h-4 text-muted shrink-0 ml-4 transition-transform duration-300',
@@ -93,12 +93,12 @@ export default function FAQ() {
     <section className="bg-surface">
       <div className="section-divider" />
       <div className="container-wide py-16">
-        <h3 className="text-white text-center mb-14">FAQ</h3>
+        <h3 className="text-white md:text-center mb-14">FAQ</h3>
 
         <div className="mx-auto max-w-[1068px] space-y-10">
           {FAQ_SECTIONS.map((section) => (
             <div key={section.title}>
-              <h6 className="text-white mb-5">{section.title}</h6>
+              <h6 className="text-white leading-none mb-5">{section.title}</h6>
               <div className="space-y-1.5">
                 {section.items.map((item) => (
                   <FAQItem key={item.q} q={item.q} a={item.a} />

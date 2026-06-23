@@ -52,18 +52,18 @@ export default function CourseCard({ course, enrolled, progress, mobileWide }: P
 
         {/* Pannello informazioni in sovraimpressione (Figma: vetro bianco 50% + blur) */}
         <div className="absolute left-2.5 right-2.5 bottom-2 md:left-[14px] md:right-[14px] md:bottom-3 rounded-[10px] md:rounded-[30px] bg-white/50 backdrop-blur-[7.5px] p-3 md:py-4 md:px-[26px]">
-          <h5 className="text-black leading-snug line-clamp-2 mb-2 md:mb-4">{course.title}</h5>
-          <div className="border-t border-black/40 pt-2 md:pt-3 flex items-center gap-1.5 text-black/60 text-sm">
+          <h5 className="text-black leading-[22px] md:leading-[35px] line-clamp-2 mb-2 md:mb-4">{course.title}</h5>
+          <div className="border-t border-black/40 pt-2 md:pt-3 flex items-center gap-1 md:gap-1.5 text-black/60 text-[clamp(0.625rem,0.514rem+0.451vw,0.875rem)] leading-none">
             {enrolled ? (
               <>
                 <div className="flex-1 h-1.5 rounded-full bg-black/20 overflow-hidden">
                   <div className="h-full bg-black/50 transition-all" style={{ width: `${progress ?? 0}%` }} />
                 </div>
-                <span className="text-xs shrink-0">{progress ?? 0}%</span>
+                <span className="shrink-0">{progress ?? 0}%</span>
               </>
             ) : (
               <>
-                <Clock className="w-3.5 h-3.5" />
+                <Clock className="w-3 h-3 md:w-4 md:h-4 shrink-0" />
                 {course.duration_minutes ? formatHours(course.duration_minutes) : 'On demand'}
               </>
             )}

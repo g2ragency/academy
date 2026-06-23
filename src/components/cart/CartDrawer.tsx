@@ -29,8 +29,8 @@ export default function CartDrawer() {
 
       {/* Pannello */}
       <aside
-        className={`fixed top-16 bottom-0 right-0 z-40 w-[360px] max-w-[90vw] bg-surface/50 backdrop-blur-[10px] border-l border-y border-surface-border rounded-l-3xl flex flex-col transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-[76px] bottom-3 right-3 z-40 w-[360px] max-w-[calc(100vw-1.5rem)] bg-surface/50 backdrop-blur-[10px] border border-surface-border rounded-3xl flex flex-col transition-transform duration-300 ${
+          isOpen ? 'translate-x-0' : 'translate-x-[calc(100%+0.75rem)]'
         }`}
         role="dialog"
         aria-label="Carrello"

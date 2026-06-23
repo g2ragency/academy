@@ -54,13 +54,13 @@ export default function Hero() {
             con max-w sul testo per non sovrapporsi allo stack di card a destra */}
       <div className="container-wide relative z-10 min-h-[calc(100vh-4rem)] pt-10 pb-8 lg:pt-24 lg:pb-16 flex flex-col justify-between lg:block">
         <div className="lg:max-w-[640px]">
-          <h1 className="text-white leading-tight mb-6 lg:mb-12">
+          <h1 className="text-white mb-6 lg:mb-12">
             Impara dai migliori,
             <br />
             dai il meglio di te.
           </h1>
 
-          <p className="text-muted lg:mb-14 lg:max-w-[495px]">
+          <p className="p-hero text-muted lg:mb-14 lg:max-w-[495px]">
             L&apos;autorità formativa dedicata esclusivamente
             <br />
             al network delle Holding italiane.
@@ -71,7 +71,7 @@ export default function Hero() {
           {/* Selettore argomenti */}
           <div className="flex items-center gap-3 mb-4 lg:mb-6">
             <span className="w-0.5 h-6 bg-[#60FDE8] shrink-0" />
-            <h6 className="text-white">Cosa ti porta oggi in Academy?</h6>
+            <p className="p-hero leading-none text-white">Cosa ti porta oggi in Academy?</p>
           </div>
 
           <div className="space-y-1.5 mb-4 lg:mb-9 lg:max-w-[525px]">
@@ -87,7 +87,7 @@ export default function Hero() {
                       }
                     : undefined
                 }
-                className={`w-full flex items-center gap-4 px-4 h-[53px] rounded-[15px] text-left backdrop-blur-[15px] transition-colors duration-200 ${
+                className={`w-full flex items-center gap-4 px-4 h-[53px] rounded-[15px] text-left text-[clamp(1rem,0.9446rem+0.2256vw,1.125rem)] leading-none backdrop-blur-[15px] transition-colors duration-200 ${
                   selected === i ? 'text-white' : 'bg-card text-muted hover:text-white'
                 }`}
               >
@@ -107,7 +107,7 @@ export default function Hero() {
               225×65 su desktop. */}
           <Link
             href="/corsi"
-            className="flex items-center justify-center w-full lg:w-[225px] h-[53px] lg:h-[65px] bg-white text-black rounded-[15px] backdrop-blur-[15px] hover:bg-white/80 transition-colors"
+            className="flex items-center justify-center w-full lg:w-[225px] h-10 lg:h-[65px] bg-white text-black text-[clamp(1rem,0.8338rem+0.677vw,1.375rem)] leading-none rounded-[10px] lg:rounded-[15px] backdrop-blur-[15px] hover:bg-white/80 transition-colors"
           >
             Continua
           </Link>

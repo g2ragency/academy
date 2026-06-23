@@ -19,16 +19,16 @@ export default function CourseTypes() {
       <section className="hidden md:block bg-surface">
         <div className="section-divider" />
         <div className="container-wide py-16">
-          <h3 className="text-white text-center mb-14">I nostri corsi</h3>
+          <h3 className="text-white md:text-center mb-14">I nostri corsi</h3>
 
           <div className="space-y-4">
             {CHIP_ROWS.map((row, rowIndex) => (
-              <div key={rowIndex} className="flex flex-wrap justify-center gap-4">
+              <div key={rowIndex} className="flex flex-wrap justify-center gap-[14px]">
                 {row.map((type, i) => (
                   <Link
                     key={`${type}-${i}`}
                     href={`/corsi?tipo=${type}`}
-                    className="flex items-center gap-3 pl-2.5 pr-6 h-[60px] rounded-[15px] bg-card text-muted text-lg md:text-[22px] hover:bg-card-hover hover:text-white transition-colors"
+                    className="flex items-center gap-3 py-[17px] pl-[17px] pr-9 rounded-[15px] bg-card backdrop-blur-[20px] text-muted text-[22px] leading-none hover:bg-card-hover hover:text-white transition-colors"
                   >
                     <span className="w-9 h-9 rounded-lg bg-surface-elevated flex items-center justify-center shrink-0">
                       <CourseTypeIcon type={type} className="w-[18px] h-[18px]" />

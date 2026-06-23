@@ -36,16 +36,16 @@ export default function TrendingCourses({ courses }: Props) {
     <section id="trending" className="bg-surface scroll-mt-16">
       <div className="section-divider" />
       <div className="container-wide py-16">
-        <h3 className="text-white text-center mb-12">Di tendenza in Academy</h3>
+        <h3 className="text-white md:text-center mb-12">Di tendenza in Academy</h3>
 
         {/* Tab: riga scrollabile su mobile, griglia a 5 colonne a tutta
             larghezza da md in su (Figma mostra i tab anche su mobile) */}
-        <div className="flex md:grid md:grid-cols-5 gap-7 md:gap-0 overflow-x-auto scrollbar-hide mb-10 -mx-5 px-5 md:mx-0 md:px-0 fade-x-right md:[mask-image:none] md:[-webkit-mask-image:none]">
+        <div className="flex md:grid md:grid-cols-5 gap-0 overflow-x-auto scrollbar-hide mb-10 -mx-5 px-5 md:mx-0 md:px-0 fade-x-right md:[mask-image:none] md:[-webkit-mask-image:none]">
           {FILTER_TABS.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setActiveFilter(tab.value)}
-              className={`shrink-0 md:shrink whitespace-nowrap pb-4 border-b-2 text-base md:text-[22px] transition-colors ${
+              className={`shrink-0 md:shrink whitespace-nowrap pb-4 px-[14px] first:pl-0 last:pr-0 md:px-0 border-b-2 md:border-b-[4px] text-base md:text-[22px] leading-none transition-colors ${
                 activeFilter === tab.value
                   ? 'text-white border-white'
                   : 'text-muted border-surface-border hover:text-white'
@@ -64,8 +64,8 @@ export default function TrendingCourses({ courses }: Props) {
               <button
                 key={chip.value}
                 onClick={() => setActiveFilter(active ? 'all' : chip.value)}
-                className={`shrink-0 inline-flex items-center gap-2.5 h-[50px] pl-2 pr-4 rounded-[15px] text-lg transition-colors ${
-                  active ? 'bg-white text-black' : 'bg-card backdrop-blur-[20px] text-muted'
+                className={`shrink-0 inline-flex items-center gap-2.5 h-[50px] pl-[11px] pr-[14px] rounded-[10px] md:rounded-[15px] text-sm md:text-lg leading-none transition-colors ${
+                  active ? 'bg-white text-black' : 'bg-card backdrop-blur-[20px] text-white'
                 }`}
               >
                 <span
