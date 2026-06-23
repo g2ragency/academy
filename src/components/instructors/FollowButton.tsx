@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, BellOff } from 'lucide-react'
+import BellIcon from '@/components/icons/BellIcon'
 import { toast } from 'sonner'
 
 interface Props {
@@ -63,11 +63,12 @@ export default function FollowButton({
 
   return (
     <div className="flex items-center gap-2 shrink-0">
+      {/* Segui: ~70px × ~30px su mobile, 175px × 50px su desktop */}
       <button
         onClick={handleFollow}
         disabled={loadingFollow}
         style={{ backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
-        className={`w-[88px] sm:w-[175px] h-10 sm:h-[50px] rounded-[10px] sm:rounded-[15px] text-xs sm:text-sm transition-colors disabled:opacity-50 ${
+        className={`w-[clamp(60px,18vw,70px)] sm:w-[175px] h-[clamp(26px,8vw,30px)] sm:h-[50px] rounded-[8px] sm:rounded-[15px] text-[14px] sm:text-[22px] leading-none transition-colors disabled:opacity-50 ${
           following
             ? 'bg-card text-white border border-white/10'
             : 'bg-[#F4F3F3] text-black'
@@ -75,18 +76,19 @@ export default function FollowButton({
       >
         {following ? 'Stai seguendo' : 'Segui'}
       </button>
+      {/* Campanella: ~30×30 su mobile, 50×50 su desktop */}
       <button
         onClick={handleNotify}
         disabled={loadingNotify}
         aria-label={notify ? 'Disattiva notifiche' : 'Attiva notifiche'}
         style={{ backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
-        className={`w-10 sm:w-[50px] h-10 sm:h-[50px] shrink-0 rounded-[10px] sm:rounded-[15px] flex items-center justify-center transition-colors disabled:opacity-50 ${
+        className={`w-[clamp(26px,8vw,30px)] sm:w-[50px] h-[clamp(26px,8vw,30px)] sm:h-[50px] shrink-0 rounded-[8px] sm:rounded-[15px] flex items-center justify-center transition-colors disabled:opacity-50 ${
           notify
             ? 'bg-card text-white'
             : 'bg-[#F4F3F3] text-black hover:opacity-80'
         }`}
       >
-        {notify ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+        <BellIcon className="w-5 h-5 sm:w-8 sm:h-8" />
       </button>
     </div>
   )

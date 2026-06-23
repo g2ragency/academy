@@ -96,9 +96,11 @@ export default async function InstructorPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-surface pt-24 pb-20">
       <div className="container-wide">
-        {/* Header: avatar + nome + ruolo + segui — tutto su una riga */}
-        <div className="flex items-center gap-3 sm:gap-5">
-          <div className="w-16 sm:w-24 h-16 sm:h-24 rounded-full overflow-hidden relative bg-surface-elevated border border-surface-border shrink-0">
+        {/* Header: avatar | colonna destra (nome → titolo → pulsanti su mobile;
+            nome + pulsanti sulla stessa riga su desktop) */}
+        <div className="flex items-start sm:items-center gap-4 sm:gap-5">
+          {/* Avatar: scala con il viewport, ~108px mobile → ~180px desktop */}
+          <div className="w-[clamp(108px,76px+8.12vw,180px)] h-[clamp(108px,76px+8.12vw,180px)] rounded-full overflow-hidden relative bg-surface-elevated border border-surface-border shrink-0">
             {avatar ? (
               <Image src={avatar} alt={instructor.full_name} fill className="object-cover" />
             ) : (
@@ -107,43 +109,51 @@ export default async function InstructorPage({ params }: Props) {
               </div>
             )}
           </div>
-          <div className="flex-1 min-w-0">
-            <h5 className="text-white">{instructor.full_name}</h5>
-            {instructor.title && <p className="text-sm text-muted mt-1 line-clamp-2">{instructor.title}</p>}
+
+          {/* Colonna destra: su mobile flex-col (nome → titolo → pulsanti),
+              su desktop flex-row (nome a sx, LinkedIn + pulsanti a destra) */}
+          <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <div className="flex-1 min-w-0">
+              <h5 className="text-white text-[18px] leading-[22px] sm:text-[32px] sm:leading-[56px]">{instructor.full_name}</h5>
+              {instructor.title && <p className="text-[14px] sm:text-[26px] leading-none text-muted mt-0.5 line-clamp-2">{instructor.title}</p>}
+            </div>
+            {instructor.linkedin_url && (
+              <a
+                href={instructor.linkedin_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`LinkedIn di ${instructor.full_name}`}
+                className="hidden sm:flex w-10 h-10 rounded-full border border-surface-border text-white/60 hover:text-white hover:border-white/30 transition-colors items-center justify-center shrink-0"
+              >
+                <Linkedin className="w-4 h-4" />
+              </a>
+            )}
+            <FollowButton
+              instructorId={instructor.id}
+              instructorSlug={instructor.slug}
+              isLoggedIn={isLoggedIn}
+              initialFollowing={isFollowing}
+              initialNotify={isNotifying}
+            />
           </div>
-          {instructor.linkedin_url && (
-            <a
-              href={instructor.linkedin_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`LinkedIn di ${instructor.full_name}`}
-              className="hidden sm:flex w-10 h-10 rounded-full border border-surface-border text-white/60 hover:text-white hover:border-white/30 transition-colors items-center justify-center shrink-0"
-            >
-              <Linkedin className="w-4 h-4" />
-            </a>
-          )}
-          <FollowButton
-            instructorId={instructor.id}
-            instructorSlug={instructor.slug}
-            isLoggedIn={isLoggedIn}
-            initialFollowing={isFollowing}
-            initialNotify={isNotifying}
-          />
         </div>
 
         {/* Informazioni */}
         {instructor.bio && (
           <section className="mt-10">
             <div className="border-t border-muted mb-10" />
-            <h5 className="text-white mb-6">Informazioni</h5>
-            <ExpandableText text={instructor.bio} />
+            <h5 className="text-white leading-none mb-6" style={{ fontSize: 'clamp(1.125rem, 0.737rem + 1.579vw, 2rem)' }}>Informazioni</h5>
+            <ExpandableText
+              text={instructor.bio}
+              textClassName="text-white/60 text-[14px] sm:text-[24px] leading-[18px] sm:leading-[32px]"
+            />
           </section>
         )}
 
         {/* Corsi del docente — griglia 2×2 con carica di più */}
         <section className="mt-12">
           <div className="border-t border-muted mb-10" />
-          <h5 className="text-white mb-8">Corsi</h5>
+          <h5 className="text-white leading-none mb-8" style={{ fontSize: 'clamp(1.125rem, 0.737rem + 1.579vw, 2rem)' }}>Corsi</h5>
           {((courses ?? []) as Course[]).length === 0 ? (
             <p className="text-white/40">Nessun corso disponibile al momento.</p>
           ) : (
@@ -155,7 +165,7 @@ export default async function InstructorPage({ params }: Props) {
         {otherCourses.length > 0 && (
           <section className="mt-16">
             <div className="border-t border-muted mb-12" />
-            <h5 className="text-white mb-8">Gli altri utenti hanno seguito anche</h5>
+            <h5 className="text-white leading-none mb-8" style={{ fontSize: 'clamp(1.125rem, 0.737rem + 1.579vw, 2rem)' }}>Gli altri utenti hanno seguito anche</h5>
             <div className="space-y-2.5 sm:space-y-5">
               {otherCourses.map((course) => (
                 <CourseRowCard key={course.id} course={course} />

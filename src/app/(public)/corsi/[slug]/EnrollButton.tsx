@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ShoppingCart, LogIn, Check } from 'lucide-react'
+import { LogIn, Check } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useCart } from '@/context/CartContext'
 import type { Course } from '@/types'
@@ -57,9 +57,12 @@ export default function EnrollButton({ course, isLoggedIn }: Props) {
     openCart()
   }
 
+  // Stile bottone Figma: alto 65px, testo 22px/100%, radius 20
+  const ctaClass = 'w-full h-[65px] text-[22px] leading-none rounded-[20px]'
+
   if (course.price_cents === 0) {
     return (
-      <Button onClick={handleClick} loading={loading} className="w-full" size="lg">
+      <Button onClick={handleClick} loading={loading} className={ctaClass} size="lg">
         {!isLoggedIn && <LogIn className="w-4 h-4" />}
         Iscriviti gratis
       </Button>
@@ -68,7 +71,7 @@ export default function EnrollButton({ course, isLoggedIn }: Props) {
 
   if (inCart) {
     return (
-      <Button onClick={openCart} variant="secondary" className="w-full" size="lg">
+      <Button onClick={openCart} variant="secondary" className={ctaClass} size="lg">
         <Check className="w-4 h-4" />
         Nel carrello — apri
       </Button>
@@ -76,8 +79,7 @@ export default function EnrollButton({ course, isLoggedIn }: Props) {
   }
 
   return (
-    <Button onClick={handleClick} className="w-full rounded-[20px] backdrop-blur-[15px]" size="lg">
-      <ShoppingCart className="w-4 h-4" />
+    <Button onClick={handleClick} className={`${ctaClass} backdrop-blur-[15px]`} size="lg">
       Acquista
     </Button>
   )

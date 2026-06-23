@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import DownArrowIcon from '@/components/icons/DownArrowIcon'
 
 interface Props {
   text: string
@@ -9,11 +9,13 @@ interface Props {
   collapsedHeight?: number
   /** Sotto questa lunghezza il toggle non serve */
   threshold?: number
+  /** Classi Tailwind applicate al div testo interno (sovrascrivono il default) */
+  textClassName?: string
 }
 
 function isHtml(s: string) { return /<[a-z][\s\S]*>/i.test(s) }
 
-export default function ExpandableText({ text, collapsedHeight = 260, threshold = 500 }: Props) {
+export default function ExpandableText({ text, collapsedHeight = 260, threshold = 500, textClassName = 'text-white/60 leading-relaxed' }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [fullHeight, setFullHeight] = useState(0)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -48,20 +50,20 @@ export default function ExpandableText({ text, collapsedHeight = 260, threshold 
       >
         {isHtml(text) ? (
           <div
-            className="rich-content text-white/60 leading-relaxed"
+            className={`rich-content ${textClassName}`}
             dangerouslySetInnerHTML={{ __html: text }}
           />
         ) : (
-          <div className="text-white/60 leading-relaxed whitespace-pre-line">{text}</div>
+          <div className={`whitespace-pre-line ${textClassName}`}>{text}</div>
         )}
       </div>
       {isLong && (
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="mt-3 flex items-center gap-1.5 text-sm text-white hover:text-white/70 transition-colors"
+          className="mt-3 flex items-center gap-2 text-[14px] sm:text-[24px] leading-[32px] text-white hover:text-white/70 transition-colors"
         >
           {expanded ? 'Mostra meno' : 'Mostra di più'}
-          {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          <DownArrowIcon className={`shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
         </button>
       )}
     </div>

@@ -22,6 +22,11 @@ interface Props {
  * arrotondato sul <div> interno: tenerli separati evita il flash degli
  * angoli a punta che Chrome produce quando anima un transform sullo stesso
  * elemento che fa overflow-hidden + border-radius.
+ *
+ * In più il <div> interno è forzato su un proprio layer di compositing
+ * (`translateZ(0)` + `backface-visibility:hidden`): senza, all'avvio del
+ * translate del <Link> Chrome ricrea il layer del sottoalbero e per un
+ * frame perde il clip arrotondato (angoli a punta che poi si ri-stondano).
  */
 export default function CourseCard({ course, enrolled, progress, mobileWide }: Props) {
   const thumb = getMediaUrl(course.thumbnail_url)
@@ -36,7 +41,7 @@ export default function CourseCard({ course, enrolled, progress, mobileWide }: P
       href={`/corsi/${course.slug}`}
       className="group block transition-transform duration-300 hover:-translate-y-1"
     >
-      <div className={`relative overflow-hidden bg-card border border-surface-border ${aspectAndRadius}`}>
+      <div className={`relative overflow-hidden bg-card border border-surface-border transform-gpu [backface-visibility:hidden] ${aspectAndRadius}`}>
         {thumb ? (
           <Image
             src={thumb}

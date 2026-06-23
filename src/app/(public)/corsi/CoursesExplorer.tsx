@@ -86,16 +86,16 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
   // desktop e drawer mobile
   const extendedFilters = (
     <>
-      <div className="relative mb-5">
+      <div className="flex items-center gap-3 bg-surface backdrop-blur-[20px] border-[0.5px] border-white rounded-[10px] px-4 h-12 mb-5">
+        <Search className="w-4 h-4 text-muted shrink-0" />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Cerca corsi..."
-          className="input pl-9 text-sm"
+          className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-muted focus:outline-none"
         />
-        <Search className="absolute left-3 top-3.5 w-4 h-4 text-white/30" />
       </div>
-      <div className="divide-y divide-surface-border">
+      <div className="divide-y divide-muted">
         <FilterGroup title="Livello">
           {LEVELS.map((level) => (
             <FilterItem
@@ -139,16 +139,16 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
       {/* Sidebar filtri (sticky) — desktop only */}
       <aside className="hidden lg:block lg:w-60 shrink-0">
         <div className="sticky top-24">
-          <div className="relative mb-5">
+          <div className="flex items-center gap-3 bg-surface backdrop-blur-[20px] border-[0.5px] border-white rounded-[10px] px-4 h-12 mb-5">
+            <Search className="w-4 h-4 text-muted shrink-0" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Cerca corsi..."
-              className="input pl-9 text-sm"
+              className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-muted focus:outline-none"
             />
-            <Search className="absolute left-3 top-3.5 w-4 h-4 text-white/30" />
           </div>
-          <div className="divide-y divide-surface-border">
+          <div className="divide-y divide-muted">
             <FilterGroup title="Corsi">
               <FilterItem active={!tipo} onClick={() => setTipo(undefined)}>
                 Tutti i corsi
@@ -204,7 +204,8 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
 
       {/* Colonna corsi */}
       <div className="flex-1 min-w-0">
-        <h5 className="text-white mb-6 md:mb-8">I nostri corsi</h5>
+        {/* Titolo: 32px desktop, nascosto su mobile (Figma) */}
+        <h5 className="hidden md:block text-white leading-none mb-6 md:mb-8" style={{ fontSize: '32px' }}>I nostri corsi</h5>
 
         <MobileFiltersBar
           tipoOptions={tipoOptions}
@@ -247,7 +248,7 @@ function FilterGroup({ title, children }: { title: string; children: React.React
   )
 }
 
-/** Voce filtro: barretta verticale a sinistra quando attiva */
+/** Voce filtro: lineetta verticale #D7C8FF (2px, alta quanto il testo) quando attiva */
 function FilterItem({ active, onClick, className = '', children }: {
   active: boolean
   onClick: () => void
@@ -257,11 +258,12 @@ function FilterItem({ active, onClick, className = '', children }: {
   return (
     <button
       onClick={onClick}
-      className={`block w-full text-left border-l-2 pl-2.5 py-1 text-sm transition-colors ${
-        active ? 'border-white text-white' : 'border-transparent text-muted hover:text-white'
-      } ${className}`}
+      className={`flex items-center gap-2.5 w-full text-left py-1 text-[18px] leading-[1.5] transition-colors ${
+        active ? 'text-white' : 'text-muted hover:text-white'
+      }`}
     >
-      {children}
+      <span className={`w-0.5 h-[18px] shrink-0 ${active ? 'bg-[#D7C8FF]' : 'bg-transparent'}`} />
+      <span className={className}>{children}</span>
     </button>
   )
 }

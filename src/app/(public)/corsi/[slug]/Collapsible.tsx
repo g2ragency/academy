@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import DownArrowIcon from '@/components/icons/DownArrowIcon'
 
 interface Props {
   children: React.ReactNode
@@ -63,10 +63,10 @@ export default function Collapsible({ children, collapsedHeight = 140 }: Props) 
       {needsToggle && (
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="mt-3 flex items-center gap-1.5 text-sm text-white hover:text-white/70 transition-colors"
+          className="mt-3 flex items-center gap-2 text-[14px] sm:text-[24px] leading-[32px] text-white hover:text-white/70 transition-colors"
         >
           {expanded ? 'Mostra meno' : 'Mostra di più'}
-          {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          <DownArrowIcon className={`shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
         </button>
       )}
     </div>

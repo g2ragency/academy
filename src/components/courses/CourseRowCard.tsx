@@ -48,11 +48,11 @@ export default function CourseRowCard({ course, href, progress }: Props) {
               18×8 + r10 su desktop, valori Figma) */}
           <CourseTypeBadge
             type={course.type}
-            className="bg-[#F4F3F3]/15 backdrop-blur-[20px] !px-2.5 !py-1 !rounded-[5px] sm:!px-[18px] sm:!py-2 sm:!rounded-[10px]"
+            className="bg-[#F4F3F3]/15 backdrop-blur-[20px] !px-2.5 !py-1 !rounded-[5px] !text-[18px] !leading-none sm:!px-[18px] sm:!py-2 sm:!rounded-[10px]"
           />
           {/* Durata: solo da sm in su (su mobile la card resta compatta) */}
           {course.duration_minutes ? (
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-[18px] py-2 rounded-[10px] bg-[#F4F3F3]/15 backdrop-blur-[20px] text-xs text-[#989898]">
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-[18px] py-2 rounded-[10px] bg-[#F4F3F3]/15 backdrop-blur-[20px] text-[18px] leading-none text-[#989898]">
               <Clock className="w-3.5 h-3.5" />
               {formatHours(course.duration_minutes)}
             </span>
@@ -61,12 +61,12 @@ export default function CourseRowCard({ course, href, progress }: Props) {
         {/* Titolo: +2px su mobile (18px). Uso `max-sm:` così l'override esiste
             solo sotto sm; da sm in su l'utility scompare e l'h6 torna alla
             scala fluida base definita in globals.css. */}
-        <h6 className="max-sm:text-[18px] text-white mt-1.5 sm:mt-2.5 line-clamp-2 sm:line-clamp-1">
+        <h6 className="text-white mt-1.5 sm:mt-2.5 line-clamp-2 sm:line-clamp-1" style={{ fontSize: '32px', lineHeight: '35px' }}>
           {course.title}
         </h6>
         {/* Descrizione: solo desktop (Figma mobile la omette) */}
         {course.short_description && (
-          <p className="hidden sm:block text-sm text-muted mt-2 line-clamp-2">{stripHtml(course.short_description)}</p>
+          <p className="hidden sm:block text-muted mt-2 line-clamp-2" style={{ fontSize: '18px', lineHeight: '26px' }}>{stripHtml(course.short_description)}</p>
         )}
       </div>
     </Link>

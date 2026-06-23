@@ -186,7 +186,7 @@ export default async function CourseDetailPage({ params }: Props) {
           },
           { icon: BookOpen, label: `${totalLessons} ${totalLessons === 1 ? 'lezione' : 'lezioni'}` },
         ].map((row) => (
-          <li key={row.label} className="flex items-center gap-3 text-sm text-white/70">
+          <li key={row.label} className="flex items-center gap-3 text-[18px] leading-none text-white/70">
             <span className="w-8 h-8 rounded-[10px] bg-[#888888] flex items-center justify-center shrink-0">
               <row.icon className="w-4 h-4 text-white" />
             </span>
@@ -195,15 +195,15 @@ export default async function CourseDetailPage({ params }: Props) {
         ))}
       </ul>
 
-      <div className="flex items-baseline gap-2 mt-6 pb-6 border-b border-surface-border">
-        <span className="text-4xl text-white">{formatPrice(course.price_cents)}</span>
-        {course.price_cents > 0 && <span className="text-xs text-muted">IVA Inclusa</span>}
+      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 mt-8 md:mt-[60px] pb-6 border-b border-surface-border">
+        <span className="text-5xl lg:text-[64px] leading-none text-white">{formatPrice(course.price_cents)}</span>
+        {course.price_cents > 0 && <span className="text-[18px] leading-none text-muted">IVA Inclusa</span>}
       </div>
 
-      <ul className="mt-6 space-y-2.5">
+      <ul className="mt-6 space-y-[18px]">
         {checklist.map((f) => (
-          <li key={f.label} className="flex items-center gap-2.5 text-sm text-white/60">
-            <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
+          <li key={f.label} className="flex items-center gap-2.5 text-[18px] leading-none text-white/60">
+            <CheckCircle2 className="w-4 h-4 fill-white text-black shrink-0" />
             {f.label}
           </li>
         ))}
@@ -213,7 +213,7 @@ export default async function CourseDetailPage({ params }: Props) {
         {isEnrolled ? (
           <Link
             href={`/dashboard/corsi/${course.slug}`}
-            className="btn-primary w-full flex items-center justify-center gap-2 text-sm py-3 rounded-[20px] backdrop-blur-[15px]"
+            className="btn-primary w-full flex items-center justify-center gap-2 h-[65px] text-[22px] leading-none rounded-[20px] backdrop-blur-[15px]"
           >
             <Play className="w-4 h-4" />
             Continua a studiare
@@ -228,7 +228,7 @@ export default async function CourseDetailPage({ params }: Props) {
           href={programPdf}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-4 flex items-center justify-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+          className="mt-4 flex items-center justify-center gap-2 text-center text-[22px] leading-none text-white/60 hover:text-white transition-colors"
         >
           <Download className="w-4 h-4" />
           Scarica il programma
@@ -297,7 +297,7 @@ export default async function CourseDetailPage({ params }: Props) {
             {perChiTerms.length > 0 && (
               <section className="mt-10 lg:mt-12">
                 <div className="border-t border-muted mb-10" />
-                <h5 className="text-white mb-6">Per chi è pensato il corso</h5>
+                <h5 className="text-white leading-none mb-6" style={{ fontSize: 'clamp(1.125rem, 0.737rem + 1.579vw, 2rem)' }}>Per chi è pensato il corso</h5>
                 {/* Mobile: carosello a tutta larghezza con fade nero a destra.
                     Desktop: flex-wrap (i chip vanno a capo). */}
                 <div className="flex md:flex-wrap gap-3 overflow-x-auto md:overflow-visible scrollbar-hide -mx-5 px-5 md:mx-0 md:px-0 fade-x-right md:[mask-image:none] md:[-webkit-mask-image:none]">
@@ -305,7 +305,7 @@ export default async function CourseDetailPage({ params }: Props) {
                     <Link
                       key={term.id}
                       href={`/corsi?${TAXONOMY_PARAM_PREFIX}${term.taxonomy.slug}=${term.slug}`}
-                      className="shrink-0 flex items-center gap-2 px-[18px] py-4 rounded-[15px] bg-card backdrop-blur-[20px] text-sm text-white hover:text-white/70 transition-colors"
+                      className="shrink-0 flex items-center gap-2 px-[18px] py-4 rounded-[15px] bg-card backdrop-blur-[20px] text-[14px] md:text-[22px] leading-none text-white hover:text-white/70 transition-colors"
                     >
                       <Users className="w-4 h-4 text-muted" />
                       {term.name}
@@ -319,12 +319,12 @@ export default async function CourseDetailPage({ params }: Props) {
             {course.topics && course.topics.length > 0 && (
               <section className="mt-10 lg:mt-12">
                 <div className="border-t border-muted mb-10" />
-                <h5 className="text-white mb-6">Gli argomenti trattati</h5>
+                <h5 className="text-white leading-none mb-6" style={{ fontSize: 'clamp(1.125rem, 0.737rem + 1.579vw, 2rem)' }}>Gli argomenti trattati</h5>
                 <Collapsible collapsedHeight={140}>
                   <ul className="space-y-3">
                     {course.topics.map((topic: string) => (
-                      <li key={topic} className="flex gap-3 text-white/60 leading-relaxed">
-                        <span className="text-muted shrink-0 mt-0.5">•</span>
+                      <li key={topic} className="flex gap-3 text-white/60 text-[14px] sm:text-[24px] leading-[18px] sm:leading-[32px]">
+                        <span className="text-muted shrink-0">•</span>
                         {topic}
                       </li>
                     ))}
@@ -337,8 +337,11 @@ export default async function CourseDetailPage({ params }: Props) {
             {course.description && (
               <section className="mt-10 lg:mt-12">
                 <div className="border-t border-muted mb-10" />
-                <h5 className="text-white mb-6">Descrizione del corso</h5>
-                <ExpandableText text={course.description} />
+                <h5 className="text-white leading-none mb-6" style={{ fontSize: 'clamp(1.125rem, 0.737rem + 1.579vw, 2rem)' }}>Descrizione del corso</h5>
+                <ExpandableText
+                  text={course.description}
+                  textClassName="text-white/60 text-[14px] sm:text-[24px] leading-[18px] sm:leading-[32px]"
+                />
               </section>
             )}
 
@@ -346,7 +349,7 @@ export default async function CourseDetailPage({ params }: Props) {
             {modules.length > 0 && (
               <section className="mt-10 lg:mt-12">
                 <div className="border-t border-muted mb-10" />
-                <h5 className="text-white mb-6">Programma del corso</h5>
+                <h5 className="text-white leading-none mb-6" style={{ fontSize: 'clamp(1.125rem, 0.737rem + 1.579vw, 2rem)' }}>Programma del corso</h5>
                 <div className="space-y-3">
                   {modules.map((module) => (
                     <ModuleAccordion key={module.id} module={module} isEnrolled={isEnrolled} />
@@ -368,7 +371,7 @@ export default async function CourseDetailPage({ params }: Props) {
               perché sostituita dall'accordion sotto il titolo) */}
           <div className="hidden lg:block lg:col-span-1">
             <div className="rounded-[40px] bg-card p-6 sticky top-24">
-              <h6 className="text-white mb-6">Riepilogo del corso</h6>
+              <h6 className="text-white leading-none mb-6" style={{ fontSize: '29px' }}>Riepilogo del corso</h6>
               {summaryContent}
             </div>
           </div>
@@ -378,7 +381,7 @@ export default async function CourseDetailPage({ params }: Props) {
         {relatedCourses.length > 0 && (
           <section className="mt-16">
             <div className="border-t border-muted mb-12" />
-            <h5 className="text-white mb-8">Gli altri utenti hanno seguito anche</h5>
+            <h5 className="text-white leading-none mb-8" style={{ fontSize: 'clamp(1.125rem, 0.737rem + 1.579vw, 2rem)' }}>Gli altri utenti hanno seguito anche</h5>
             <div className="space-y-2.5 sm:space-y-5">
               {relatedCourses.slice(0, 4).map((related) => (
                 <CourseRowCard key={related.id} course={related} />

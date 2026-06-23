@@ -14,7 +14,7 @@ export default function InstructorCarousel({ instructors }: { instructors: Instr
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h5 className="text-white">Relatori</h5>
+        <h5 className="text-white leading-none" style={{ fontSize: 'clamp(1.125rem, 0.737rem + 1.579vw, 2rem)' }}>Relatori</h5>
         {/* Frecce: solo da md in su (su mobile il carosello scorre con il dito,
             come "I nostri docenti" in homepage) */}
         {instructors.length > 1 && (
