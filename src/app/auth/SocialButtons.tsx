@@ -28,12 +28,12 @@ export default function SocialButtons({ label, redirect = '/dashboard' }: Props)
 
   return (
     <div>
-      <div className="relative my-8">
+      <div className="relative my-[50px]">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-surface-border" />
         </div>
         <div className="relative flex justify-center">
-          <span className="px-4 bg-surface text-xs text-muted">{label}</span>
+          <span className="px-4 bg-surface text-[14px] sm:text-[18px] leading-none text-muted">{label}</span>
         </div>
       </div>
 
@@ -41,7 +41,7 @@ export default function SocialButtons({ label, redirect = '/dashboard' }: Props)
         <button
           type="button"
           onClick={() => signInWith('google')}
-          className="flex items-center justify-center gap-2.5 h-10 rounded-[10px] bg-white text-black text-sm hover:bg-white/80 transition-colors"
+          className="flex items-center justify-center gap-2.5 h-10 sm:h-[65px] rounded-[10px] sm:rounded-[20px] bg-white text-black text-[16px] sm:text-[18px] leading-none hover:bg-white/80 transition-colors"
         >
           <GoogleIcon />
           Google
@@ -49,7 +49,7 @@ export default function SocialButtons({ label, redirect = '/dashboard' }: Props)
         <button
           type="button"
           onClick={() => signInWith('apple')}
-          className="flex items-center justify-center gap-2.5 h-10 rounded-[10px] bg-white text-black text-sm hover:bg-white/80 transition-colors"
+          className="flex items-center justify-center gap-2.5 h-10 sm:h-[65px] rounded-[10px] sm:rounded-[20px] bg-white text-black text-[16px] sm:text-[18px] leading-none hover:bg-white/80 transition-colors"
         >
           <AppleIcon />
           Apple

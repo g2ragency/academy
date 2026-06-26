@@ -6,12 +6,15 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Briefcase, Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
+import { Briefcase, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import AuthField from '../AuthField'
 import AuthCheckbox from '../AuthCheckbox'
 import SocialButtons from '../SocialButtons'
+import LockIcon from '@/components/icons/LockIcon'
+import MailIcon from '@/components/icons/MailIcon'
+import EyeIcon from '@/components/icons/EyeIcon'
 
 const schema = z.object({
   full_name: z.string().min(2, 'Inserisci il tuo nome completo'),
@@ -64,8 +67,8 @@ export default function RegistratiPage() {
         <div className="w-16 h-16 rounded-full bg-surface-elevated border border-surface-border flex items-center justify-center mx-auto mb-6">
           <span className="text-white text-2xl">✓</span>
         </div>
-        <h5 className="text-white mb-3">Controlla la tua email</h5>
-        <p className="text-base text-muted mb-8">
+        <h5 className="text-white text-[18px] leading-[22px] sm:text-[32px] sm:leading-[56px] mb-3">Controlla la tua email</h5>
+        <p className="text-[16px] sm:text-[24px] leading-none text-muted mb-8">
           Ti abbiamo inviato un link di conferma. Clicca sul link per attivare il tuo account.
         </p>
         <Link href="/auth/login" className="btn-primary inline-flex">
@@ -76,16 +79,16 @@ export default function RegistratiPage() {
   }
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full max-w-[554px]">
       <div className="text-center mb-10">
-        <h5 className="text-white mb-2">Crea il tuo account</h5>
-        <p className="text-base text-muted">Inserisci i tuoi dati per registrarti.</p>
+        <h5 className="text-white text-[18px] leading-[22px] sm:text-[32px] sm:leading-[56px] mb-2">Crea il tuo account</h5>
+        <p className="text-[16px] sm:text-[24px] leading-none text-muted">Inserisci i tuoi dati per registrarti.</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <AuthField
           {...register('full_name')}
-          icon={<User />}
+          icon={<User className="w-[18px] h-[18px] sm:w-[22px] sm:h-[22px]" />}
           placeholder="Nome e cognome*"
           autoComplete="name"
           error={errors.full_name?.message}
@@ -93,7 +96,7 @@ export default function RegistratiPage() {
 
         <AuthField
           {...register('email')}
-          icon={<Mail />}
+          icon={<MailIcon />}
           type="email"
           placeholder="Inserisci la tua Email*"
           autoComplete="email"
@@ -102,14 +105,14 @@ export default function RegistratiPage() {
 
         <AuthField
           {...register('company')}
-          icon={<Briefcase />}
+          icon={<Briefcase className="w-[18px] h-[18px] sm:w-[22px] sm:h-[22px]" />}
           placeholder="Azienda / Holding (opzionale)"
           autoComplete="organization"
         />
 
         <AuthField
           {...register('password')}
-          icon={<Lock />}
+          icon={<LockIcon />}
           type={showPassword ? 'text' : 'password'}
           placeholder="Crea una password*"
           autoComplete="new-password"
@@ -119,24 +122,24 @@ export default function RegistratiPage() {
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? 'Nascondi password' : 'Mostra password'}
-              className="text-white/40 hover:text-white transition-colors shrink-0"
+              className="text-muted hover:text-white transition-colors shrink-0"
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              <EyeIcon className="w-[18px] h-[18px] sm:w-6 sm:h-6" />
             </button>
           }
         />
 
         <AuthField
           {...register('confirm_password')}
-          icon={<Lock />}
+          icon={<LockIcon />}
           type={showPassword ? 'text' : 'password'}
           placeholder="Conferma password*"
           autoComplete="new-password"
           error={errors.confirm_password?.message}
         />
 
-        <div className="pt-1">
-          <label className="flex items-start gap-2.5 text-sm text-muted cursor-pointer">
+        <div className="!mt-6">
+          <label className="flex items-start gap-2.5 text-[14px] sm:text-[18px] leading-none text-muted cursor-pointer">
             <AuthCheckbox {...register('accept_terms')} className="mt-0.5" />
             <span>
               Accetto i{' '}
@@ -148,14 +151,14 @@ export default function RegistratiPage() {
           {errors.accept_terms && <p className="text-xs text-red-400 mt-1.5">{errors.accept_terms.message}</p>}
         </div>
 
-        <Button type="submit" loading={isSubmitting} className="w-full mt-2 h-10" size="lg">
+        <Button type="submit" loading={isSubmitting} className="w-full !mt-[40px] h-10 sm:h-[65px] sm:rounded-[20px] text-[16px] sm:text-[18px] leading-none" size="lg">
           Registrati
         </Button>
       </form>
 
       <SocialButtons label="Oppure registrati con" />
 
-      <p className="text-center text-sm text-muted mt-10">
+      <p className="text-center text-[16px] sm:text-[24px] leading-none text-muted mt-[40px]">
         Hai già un account?{' '}
         <Link href="/auth/login" className="text-white underline underline-offset-4 hover:text-white/70 transition-colors">
           Accedi

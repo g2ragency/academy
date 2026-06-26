@@ -16,6 +16,7 @@ import type { Profile, Taxonomy } from '@/types'
 import { cn } from '@/lib/utils'
 import LogoWithName from '@/components/icons/LogoWithName'
 import LogoIcon from '@/components/icons/LogoIcon'
+import UserIcon from '@/components/icons/UserIcon'
 
 interface MenuItem {
   icon: React.ElementType
@@ -161,11 +162,11 @@ export default function Navbar() {
       )}
     >
       <div className="container-wide">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-[50px] lg:h-[70px]">
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0" aria-label="Academy">
-            <LogoIcon className="h-8 w-auto text-white lg:hidden" />
-            <LogoWithName className="hidden lg:block h-8 w-auto text-white" />
+            <LogoIcon className="h-[34px] w-auto text-white lg:hidden" />
+            <LogoWithName className="hidden lg:block h-[40px] w-auto text-white" />
           </Link>
 
           {/* Menu centrale (design Figma): Corsi + tassonomie dinamiche + In tendenza + Cerca */}
@@ -194,7 +195,7 @@ export default function Navbar() {
 
             <Link
               href="/#trending"
-              className="px-4 py-2 rounded-lg text-sm text-white/70 hover:text-white transition-colors"
+              className="px-4 py-2 rounded-lg text-[18px] leading-none text-white/70 hover:text-white transition-colors"
             >
               In tendenza
             </Link>
@@ -202,7 +203,7 @@ export default function Navbar() {
             <button
               onClick={() => setSearchOpen((v) => !v)}
               className={cn(
-                'flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-colors',
+                'flex items-center gap-1.5 px-4 py-2 rounded-lg text-[18px] leading-none transition-colors',
                 searchOpen ? 'text-white' : 'text-white/70 hover:text-white'
               )}
             >
@@ -226,9 +227,7 @@ export default function Navbar() {
                       className="w-12 h-12 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-black font-semibold text-lg">
-                      {profile.full_name?.[0]?.toUpperCase() ?? profile.email[0].toUpperCase()}
-                    </div>
+                    <UserIcon className="w-12 h-12" />
                   )}
                 </button>
 
@@ -276,9 +275,17 @@ export default function Navbar() {
             <CartButton />
           </div>
 
-          {/* Mobile: carrello + hamburger */}
-          <div className="lg:hidden flex items-center gap-1">
+          {/* Mobile: carrello + login (se non loggato) + hamburger */}
+          <div className="lg:hidden flex items-center gap-2">
             <CartButton />
+            {!profile && (
+              <Link
+                href="/auth/login"
+                className="flex items-center justify-center h-[30px] w-[75px] rounded-[10px] bg-white text-[16px] leading-none text-black"
+              >
+                Log In
+              </Link>
+            )}
             <button
               className="p-2 rounded-lg hover:bg-surface-elevated transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -306,7 +313,7 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="lg:hidden border-t border-surface-border py-4 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className="lg:hidden border-t border-surface-border py-4 space-y-1 max-h-[calc(100vh-50px)] overflow-y-auto">
             <form onSubmit={submitSearch} className="px-4 pb-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
@@ -381,7 +388,7 @@ function NavDropdown({ label, items, open, onOpen, active }: {
       <button
         onClick={onOpen}
         className={cn(
-          'flex items-center gap-1 px-4 py-2 rounded-lg text-sm transition-colors',
+          'flex items-center gap-1 px-4 py-2 rounded-lg text-[18px] leading-none transition-colors',
           active || open ? 'text-white' : 'text-white/70 hover:text-white'
         )}
       >
@@ -390,17 +397,20 @@ function NavDropdown({ label, items, open, onOpen, active }: {
       {open && (
         // pt-2 (non mt-2): il padding fa da "ponte" hoverable tra bottone e
         // pannello, così muovendo il mouse sulle voci il menu non si chiude
-        <div className="absolute top-full left-0 pt-2 w-60">
-          <div className="bg-surface/50 backdrop-blur-[10px] border border-surface-border rounded-2xl shadow-2xl overflow-hidden">
-            <div className="p-2">
+        <div className="absolute top-full left-0 pt-2 w-72">
+          <div
+            className="backdrop-blur-[20px] rounded-[30px] shadow-2xl"
+            style={{ background: '#00000080', border: '0.5px solid #F4F3F3' }}
+          >
+            <div className="p-6">
               {items.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-3 px-3 py-2 text-sm text-white/60 hover:text-white rounded-xl transition-colors group"
+                  className="flex items-center gap-[10px] py-2 text-[18px] leading-none text-white hover:text-white/70 rounded-xl transition-colors group"
                 >
-                  <span className="w-8 h-8 rounded-lg bg-surface-elevated border border-surface-border flex items-center justify-center shrink-0 group-hover:bg-white group-hover:text-black transition-colors">
-                    <item.icon className="w-4 h-4" />
+                  <span className="w-[35px] h-[35px] rounded-[10px] bg-[#888888] flex items-center justify-center shrink-0 group-hover:bg-white transition-colors">
+                    <item.icon className="w-6 h-6 text-black" />
                   </span>
                   {item.label}
                 </Link>

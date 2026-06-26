@@ -5,8 +5,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import UserIcon from '@/components/icons/UserIcon'
 import AvatarCropModal from '@/components/dashboard/AvatarCropModal'
 import type { Profile } from '@/types'
 
@@ -171,13 +171,13 @@ export default function ProfiloPage() {
 
       <div className="grid lg:grid-cols-[260px_1fr] gap-10 items-start">
       <div className="border-b border-surface-border pb-8 mb-8 lg:border-b-0 lg:pb-0 lg:mb-0">
-        <p className="text-sm font-medium text-white/60 mb-4">Foto profilo</p>
+        <p className="text-[14px] sm:text-[16px] leading-none text-muted mb-4">Foto profilo</p>
         <div className="flex items-center gap-6 lg:flex-col lg:items-start">
-          <div className="w-20 h-20 rounded-full bg-surface-elevated border border-surface-border flex items-center justify-center overflow-hidden shrink-0">
+          <div className="w-20 h-20 rounded-full overflow-hidden shrink-0">
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
-              <User className="w-8 h-8 text-white/30" />
+              <UserIcon className="w-full h-full" />
             )}
           </div>
           <div>
@@ -185,7 +185,7 @@ export default function ProfiloPage() {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={avatarUploading}
-                className="px-4 py-2 text-sm font-medium text-white bg-surface-elevated border border-surface-border rounded-lg hover:border-white/30 transition-colors disabled:opacity-50"
+                className="inline-flex items-center justify-center h-11 md:h-[50px] px-5 text-[14px] sm:text-[16px] leading-none text-white bg-surface-elevated border border-surface-border rounded-[10px] hover:border-white/30 transition-colors disabled:opacity-50"
               >
                 {avatarUploading ? 'Caricamento...' : 'Carica Immagine'}
               </button>
@@ -193,13 +193,13 @@ export default function ProfiloPage() {
                 <>
                   <button
                     onClick={handleEditCrop}
-                    className="px-4 py-2 text-sm font-medium text-white bg-surface-elevated border border-surface-border rounded-lg hover:border-white/30 transition-colors"
+                    className="inline-flex items-center justify-center h-11 md:h-[50px] px-5 text-[14px] sm:text-[16px] leading-none text-white bg-surface-elevated border border-surface-border rounded-[10px] hover:border-white/30 transition-colors"
                   >
                     Modifica ritaglio
                   </button>
                   <button
                     onClick={handleRemoveAvatar}
-                    className="px-4 py-2 text-sm font-medium text-white bg-surface-elevated border border-surface-border rounded-lg hover:border-white/30 transition-colors"
+                    className="inline-flex items-center justify-center h-11 md:h-[50px] px-5 text-[14px] sm:text-[16px] leading-none text-white bg-surface-elevated border border-surface-border rounded-[10px] hover:border-white/30 transition-colors"
                   >
                     Rimuovi
                   </button>
@@ -215,48 +215,48 @@ export default function ProfiloPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">Nome</label>
+            <label className="label">Nome</label>
             <input
               {...register('first_name')}
               placeholder="Mario"
-              className="w-full bg-surface-elevated border border-surface-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-brand/50 transition-colors"
+              className="input"
             />
             {errors.first_name && <p className="text-xs text-red-400 mt-1">{errors.first_name.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">Cognome</label>
+            <label className="label">Cognome</label>
             <input
               {...register('last_name')}
               placeholder="Rossi"
-              className="w-full bg-surface-elevated border border-surface-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-brand/50 transition-colors"
+              className="input"
             />
             {errors.last_name && <p className="text-xs text-red-400 mt-1">{errors.last_name.message}</p>}
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-white/70 mb-1.5">Email</label>
+          <label className="label">Email</label>
           <div className="flex gap-3">
             <input
               type="email"
               value={changingEmail ? newEmail : profile.email}
               onChange={(e) => changingEmail && setNewEmail(e.target.value)}
               readOnly={!changingEmail}
-              className="flex-1 bg-surface-elevated border border-surface-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-brand/50 transition-colors read-only:opacity-60"
+              className="input flex-1 read-only:opacity-60"
             />
             {changingEmail ? (
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={handleChangeEmail}
-                  className="px-4 py-2 text-sm font-medium text-black bg-white rounded-lg hover:bg-white/90 transition-colors"
+                  className="inline-flex items-center justify-center h-11 md:h-[50px] px-6 text-[14px] sm:text-[16px] leading-none text-black bg-white rounded-[10px] hover:bg-white/90 transition-colors"
                 >
                   Conferma
                 </button>
                 <button
                   type="button"
                   onClick={() => { setChangingEmail(false); setNewEmail('') }}
-                  className="px-4 py-2 text-sm font-medium text-white bg-surface-elevated border border-surface-border rounded-lg hover:border-white/30 transition-colors"
+                  className="inline-flex items-center justify-center h-11 md:h-[50px] px-5 text-[14px] sm:text-[16px] leading-none text-white bg-surface-elevated border border-surface-border rounded-[10px] hover:border-white/30 transition-colors"
                 >
                   Annulla
                 </button>
@@ -265,7 +265,7 @@ export default function ProfiloPage() {
               <button
                 type="button"
                 onClick={() => setChangingEmail(true)}
-                className="px-4 py-2 text-sm font-medium text-white bg-surface-elevated border border-surface-border rounded-lg hover:border-white/30 transition-colors whitespace-nowrap"
+                className="inline-flex items-center justify-center h-11 md:h-[50px] px-5 text-[14px] sm:text-[16px] leading-none text-white bg-surface-elevated border border-surface-border rounded-[10px] hover:border-white/30 transition-colors whitespace-nowrap"
               >
                 Cambia Email
               </button>
@@ -274,30 +274,30 @@ export default function ProfiloPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-white/70 mb-1.5">Su di te</label>
+          <label className="label">Su di te</label>
           <textarea
             {...register('bio')}
             rows={4}
             placeholder="Mario"
-            className="w-full bg-surface-elevated border border-surface-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-brand/50 transition-colors resize-none"
+            className="input resize-none"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">Azienda</label>
+            <label className="label">Azienda</label>
             <input
               {...register('company')}
               placeholder="Lorem Ipsum"
-              className="w-full bg-surface-elevated border border-surface-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-brand/50 transition-colors"
+              className="input"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">Sito web</label>
+            <label className="label">Sito web</label>
             <input
               {...register('website')}
               placeholder="www.rossi.it"
-              className="w-full bg-surface-elevated border border-surface-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-brand/50 transition-colors"
+              className="input"
             />
           </div>
         </div>
@@ -306,7 +306,7 @@ export default function ProfiloPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-2.5 text-sm font-medium text-black bg-white rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50"
+            className="inline-flex items-center justify-center h-11 md:h-[50px] px-6 text-[14px] sm:text-[16px] leading-none text-black bg-white rounded-[10px] hover:bg-white/90 transition-colors disabled:opacity-50"
           >
             {isSubmitting ? 'Salvataggio...' : 'Salva modifiche'}
           </button>

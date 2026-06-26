@@ -54,7 +54,7 @@ export default function ChangePasswordForm() {
           onChange={(e) => setConfirm(e.target.value)}
         />
       </div>
-      <Button onClick={save} loading={saving} size="sm" className="gap-1.5">
+      <Button onClick={save} loading={saving} size="sm" className="gap-1.5 h-11 md:h-[50px] px-5">
         <Save className="w-3.5 h-3.5" /> Aggiorna password
       </Button>
     </div>

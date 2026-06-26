@@ -54,7 +54,7 @@ export default function BillingForm({ profile }: { profile: Profile }) {
         <Input id="sdi" label="Codice SDI" value={form.sdi_code} onChange={set('sdi_code')} placeholder="es. 0000000" />
         <Input id="addr" label="Indirizzo di fatturazione" value={form.billing_address} onChange={set('billing_address')} />
       </div>
-      <Button onClick={save} loading={saving} size="sm" className="gap-1.5">
+      <Button onClick={save} loading={saving} size="sm" className="gap-1.5 h-11 md:h-[50px] px-5">
         <Save className="w-3.5 h-3.5" /> Salva
       </Button>
     </div>

@@ -36,7 +36,7 @@ export default function DeleteAccountSection() {
           Elimina definitivamente account, iscrizioni, progressi e attestati. Operazione irreversibile.
         </p>
       </div>
-      <Button onClick={() => setOpen(true)} variant="secondary" size="sm" className="gap-1.5 text-red-400">
+      <Button onClick={() => setOpen(true)} variant="secondary" size="sm" className="gap-1.5 text-red-400 h-11 md:h-[50px] px-5">
         <Trash2 className="w-3.5 h-3.5" /> Elimina il mio account
       </Button>
 

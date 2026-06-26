@@ -29,7 +29,7 @@ export default function DashboardSidebar() {
           <input
             type="text"
             placeholder="Cerca"
-            className="w-full bg-surface-elevated border border-surface-border rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-brand/50 transition-colors"
+            className="w-full bg-surface border-[0.5px] border-white rounded-[10px] pl-9 pr-3 py-2 text-[14px] sm:text-[16px] leading-none text-white placeholder:text-muted focus:outline-none focus:border-white transition-colors"
           />
         </div>
       </div>
@@ -41,9 +41,9 @@ export default function DashboardSidebar() {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors mb-0.5 ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] sm:text-[16px] leading-none transition-colors mb-0.5 ${
                 isActive
-                  ? 'bg-surface-elevated text-white font-medium'
+                  ? 'bg-surface-elevated text-white'
                   : 'text-white/50 hover:text-white hover:bg-surface-elevated/50'
               }`}
             >

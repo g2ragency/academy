@@ -79,28 +79,34 @@ optgroup {
     mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent 100%);
   }
 
+  /* Bottoni: stesso linguaggio dei bottoni auth/navbar (bianco/nero, radius 10px,
+     weight 400 come tutto il sito). Altezza ~50px desktop / 44px mobile.
+     I call-site con altezza esplicita (es. h-[65px] pagina corso) la sovrascrivono. */
   .btn-primary {
-    @apply bg-white text-black font-semibold px-6 py-3 rounded-lg hover:bg-white/80 transition-colors duration-200;
+    @apply inline-flex items-center justify-center h-11 md:h-[50px] px-6 rounded-[10px] bg-white text-black hover:bg-white/80 transition-colors duration-200;
   }
 
   .btn-secondary {
-    @apply bg-surface-elevated text-white font-medium px-6 py-3 rounded-lg border border-surface-border hover:bg-surface-card transition-colors duration-200;
+    @apply inline-flex items-center justify-center h-11 md:h-[50px] px-6 rounded-[10px] bg-surface-elevated text-white border border-surface-border hover:bg-surface-card transition-colors duration-200;
   }
 
   .btn-ghost {
-    @apply text-white/70 font-medium px-6 py-3 rounded-lg hover:text-white hover:bg-surface-elevated transition-colors duration-200;
+    @apply inline-flex items-center justify-center h-11 md:h-[50px] px-6 rounded-[10px] text-white/70 hover:text-white hover:bg-surface-elevated transition-colors duration-200;
   }
 
   .card {
     @apply bg-surface-card border border-surface-border rounded-xl overflow-hidden;
   }
 
+  /* Input: stesso trattamento delle pagine auth (bordo 0.5px bianco, sfondo nero,
+     placeholder muted, testo 16→18px). Radius 15px (più contenuto del 20px auth,
+     adatto ai form densi della dashboard). */
   .input {
-    @apply w-full bg-surface-elevated border border-surface-border rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-brand/60 focus:ring-1 focus:ring-brand/40 transition-colors;
+    @apply w-full bg-surface border-[0.5px] border-white rounded-[15px] px-4 py-3 text-[16px] sm:text-[18px] leading-none text-white placeholder:text-muted focus:outline-none focus:border-white transition-colors;
   }
 
   .label {
-    @apply block text-sm font-medium text-white/70 mb-1.5;
+    @apply block text-[14px] sm:text-[16px] leading-none text-muted mb-2;
   }
 
   .badge {
