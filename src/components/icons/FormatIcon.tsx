@@ -1,13 +1,12 @@
-import type { CourseType } from '@/types'
-
 /**
- * Icone dei tipi corso estratte dal Figma (libreria icone del progetto).
- * Inline come SVG per ereditare `currentColor`: così l'icona segue il colore
- * del testo del contenitore (nero su chip attivo, scuro su chip inattivo).
- * Stile "duotone": alcune parti a opacity 0.4 come nel design.
- * Sorgente SVG anche in public/icons/ (per usi statici via <img>).
+ * Icona di una tipologia formativa (course_formats).
+ * - Se il formato ha `iconUrl` (SVG caricato da admin) → render come <img>
+ *   (colore fisso, niente theming).
+ * - Altrimenti lookup per slug nella mappa interna degli SVG default
+ *   (inline → ereditano `currentColor`: nero su chip attivo, scuro su inattivo).
+ * - Slug sconosciuto senza iconUrl → fallback generico.
  */
-const ICONS: Record<CourseType, { viewBox: string; paths: React.ReactNode }> = {
+const ICONS: Record<string, { viewBox: string; paths: React.ReactNode }> = {
   webinar: {
     viewBox: '0 0 23 23',
     paths: (
@@ -58,15 +57,51 @@ const ICONS: Record<CourseType, { viewBox: string; paths: React.ReactNode }> = {
       </>
     ),
   },
+  // Documento con righe (0-03 del set Figma)
+  guide_vademecum: {
+    viewBox: '0 0 50 50',
+    paths: (
+      <>
+        <path opacity="0.4" d="M30.24,12.5h-10.48c-4.55,0-7.26,2.71-7.26,7.26v10.46c0,4.56,2.71,7.27,7.26,7.27h10.46c4.55,0,7.26-2.71,7.26-7.26v-10.48c.01-4.55-2.7-7.26-7.25-7.26Z" fill="currentColor" />
+        <path d="M31.26,20.31h-12.5c-.51,0-.94-.42-.94-.94s.43-.94.94-.94h12.5c.51,0,.94.42.94.94s-.43.94-.94.94Z" fill="currentColor" />
+        <path d="M31.26,25.94h-12.5c-.51,0-.94-.42-.94-.94s.43-.94.94-.94h12.5c.51,0,.94.42.94.94s-.43.94-.94.94Z" fill="currentColor" />
+        <path d="M31.26,31.56h-12.5c-.51,0-.94-.42-.94-.94s.43-.94.94-.94h12.5c.51,0,.94.42.94.94s-.43.94-.94.94Z" fill="currentColor" />
+      </>
+    ),
+  },
+  // Lavagna/agenda con clip (0-06 del set Figma)
+  convegni: {
+    viewBox: '0 0 50 50',
+    paths: (
+      <>
+        <path opacity="0.4" d="M30.31,14.56h-10.6c-3.09,0-5.59,2.51-5.59,5.59v11.76c0,3.08,2.51,5.59,5.59,5.59h10.59c3.09,0,5.59-2.51,5.59-5.59v-11.76c.01-3.09-2.5-5.59-5.58-5.59Z" fill="currentColor" />
+        <path d="M27.94,12.5h-5.87c-1.3,0-2.36,1.05-2.36,2.35v1.18c0,1.3,1.05,2.35,2.35,2.35h5.89c1.3,0,2.35-1.05,2.35-2.35v-1.18c.01-1.3-1.05-2.35-2.35-2.35Z" fill="currentColor" />
+        <path d="M28.76,26.19h-8.75c-.51,0-.94-.42-.94-.94s.43-.94.94-.94h8.75c.51,0,.94.42.94.94s-.43.94-.94.94Z" fill="currentColor" />
+        <path d="M25.48,31.19h-5.47c-.51,0-.94-.42-.94-.94s.43-.94.94-.94h5.47c.51,0,.94.42.94.94s-.42.94-.94.94Z" fill="currentColor" />
+      </>
+    ),
+  },
+}
+
+// Fallback generico per slug senza icona dedicata (es. formati nuovi/custom
+// finché non si carica un SVG): un semplice tag stondato.
+const FALLBACK = {
+  viewBox: '0 0 24 24',
+  paths: <path d="M5 4h9.2a2 2 0 0 1 1.5.7l4.3 5a2 2 0 0 1 0 2.6l-4.3 5a2 2 0 0 1-1.5.7H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" fill="currentColor" opacity="0.6" />,
 }
 
 interface Props {
-  type: CourseType
+  slug: string
+  iconUrl?: string | null
   className?: string
 }
 
-export default function CourseTypeIcon({ type, className = 'w-4 h-4' }: Props) {
-  const icon = ICONS[type]
+export default function FormatIcon({ slug, iconUrl, className = 'w-4 h-4' }: Props) {
+  if (iconUrl) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={iconUrl} alt="" aria-hidden className={`${className} object-contain`} />
+  }
+  const icon = ICONS[slug] ?? FALLBACK
   return (
     <svg viewBox={icon.viewBox} fill="none" className={className} aria-hidden>
       {icon.paths}

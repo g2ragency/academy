@@ -15,8 +15,8 @@ import TermsPicker from '@/components/admin/TermsPicker'
 import InstructorFormModal from '../docenti/InstructorFormModal'
 import { slugify } from '@/lib/utils'
 import RichTextEditor from '@/components/ui/RichTextEditor'
-import type { Course, CourseType, Taxonomy } from '@/types'
-import { COURSE_TYPE_LABELS } from '@/types'
+import { useFormats } from '@/context/FormatsContext'
+import type { Course, Taxonomy } from '@/types'
 
 const schema = z.object({
   title: z.string().min(3, 'Titolo obbligatorio'),
@@ -25,7 +25,7 @@ const schema = z.object({
   description: z.string().optional(),
   /** "Gli argomenti trattati": un argomento per riga */
   topics_text: z.string().optional(),
-  type: z.enum(['webinar', 'masterclass', 'fast_focus', 'short_master', 'executive_master']),
+  type: z.string().min(1, 'Tipo obbligatorio'),
   status: z.enum(['draft', 'published', 'archived']),
   price_euros: z.coerce.number().min(0),
   duration_minutes: z.coerce.number().optional(),
@@ -54,6 +54,7 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
   const [instructorList, setInstructorList] = useState(instructors)
   const router = useRouter()
   const supabase = createClient()
+  const formats = useFormats()
   const isEditing = !!course
 
   const toggleInstructor = (id: string) => {
@@ -216,8 +217,8 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
           <div>
             <label className="label">Tipo corso</label>
             <select {...register('type')} className="input">
-              {(Object.entries(COURSE_TYPE_LABELS) as [CourseType, string][]).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
+              {formats.map((f) => (
+                <option key={f.slug} value={f.slug}>{f.name}</option>
               ))}
             </select>
           </div>

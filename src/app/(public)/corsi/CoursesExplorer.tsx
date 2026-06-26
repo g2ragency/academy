@@ -5,9 +5,9 @@ import { Search } from 'lucide-react'
 import AnimatedCourseGrid from '@/components/courses/AnimatedCourseGrid'
 import MobileFiltersBar from './MobileFiltersBar'
 import { buildTermTree, resolveTermWithDescendants, TAXONOMY_PARAM_PREFIX } from '@/lib/taxonomy'
-import { COURSE_TYPE_LABELS, type Course, type CourseType, type Taxonomy, type Term } from '@/types'
+import { useFormats } from '@/context/FormatsContext'
+import type { Course, Taxonomy } from '@/types'
 
-const COURSE_TYPES = Object.entries(COURSE_TYPE_LABELS) as [CourseType, string][]
 const LEVELS = ['base', 'intermedio', 'avanzato'] as const
 
 /** Corso con gli id dei term associati (per filtrare le tassonomie in memoria) */
@@ -28,6 +28,7 @@ interface Props {
  * senza navigazione).
  */
 export default function CoursesExplorer({ courses, taxonomies, initial }: Props) {
+  const formats = useFormats()
   const [tipo, setTipo] = useState<string | undefined>(initial.tipo)
   const [livello, setLivello] = useState<string | undefined>(initial.livello)
   const [q, setQ] = useState(initial.q ?? '')
@@ -74,12 +75,42 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
   const setTerm = (taxSlug: string, termSlug: string | null) =>
     setTerms((prev) => ({ ...prev, [taxSlug]: termSlug ?? undefined }))
 
+  // Filtro di una tassonomia: categorie (radice) + sottocategorie raggruppate
+  // sotto una "spina" verticale a sinistra, indentate e più piccole, così la
+  // gerarchia è leggibile. Condiviso tra sidebar desktop e drawer mobile.
+  const renderTaxonomy = (taxonomy: Taxonomy) => {
+    const tree = buildTermTree(taxonomy.terms ?? [])
+    if (tree.length === 0) return null
+    const active = terms[taxonomy.slug]
+    const toggle = (slug: string) => setTerm(taxonomy.slug, active === slug ? null : slug)
+    return (
+      <FilterGroup key={taxonomy.id} title={taxonomy.name}>
+        {tree.map((cat) => (
+          <div key={cat.id} className="mb-1.5 last:mb-0">
+            <FilterItem active={active === cat.slug} onClick={() => toggle(cat.slug)}>
+              {cat.name}
+            </FilterItem>
+            {cat.children && cat.children.length > 0 && (
+              <div className="ml-[7px] pl-3 mt-0.5 border-l border-white/15 space-y-0.5">
+                {cat.children.map((child) => (
+                  <FilterItem key={child.id} sub active={active === child.slug} onClick={() => toggle(child.slug)}>
+                    {child.name}
+                  </FilterItem>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </FilterGroup>
+    )
+  }
+
   const hasActiveExtra =
     !!livello || !!q.trim() || Object.values(terms).some(Boolean)
 
   const tipoOptions = [
     { value: null, label: 'Tutti' },
-    ...COURSE_TYPES.map(([value, label]) => ({ value: value as string, label })),
+    ...formats.map((f) => ({ value: f.slug, label: f.name })),
   ]
 
   // Controlli "estesi" (search + livello + tassonomie), condivisi tra sidebar
@@ -109,27 +140,7 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
           ))}
         </FilterGroup>
 
-        {taxonomies.map((taxonomy) => {
-          const tree = buildTermTree(taxonomy.terms ?? [])
-          if (tree.length === 0) return null
-          const active = terms[taxonomy.slug]
-          const renderTerm = (term: Term, depth: number): React.ReactNode => (
-            <div key={term.id} className={depth ? 'ml-3' : ''}>
-              <FilterItem
-                active={active === term.slug}
-                onClick={() => setTerm(taxonomy.slug, active === term.slug ? null : term.slug)}
-              >
-                {term.name}
-              </FilterItem>
-              {term.children?.map((child) => renderTerm(child, depth + 1))}
-            </div>
-          )
-          return (
-            <FilterGroup key={taxonomy.id} title={taxonomy.name}>
-              {tree.map((term) => renderTerm(term, 0))}
-            </FilterGroup>
-          )
-        })}
+        {taxonomies.map(renderTaxonomy)}
       </div>
     </>
   )
@@ -153,13 +164,13 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
               <FilterItem active={!tipo} onClick={() => setTipo(undefined)}>
                 Tutti i corsi
               </FilterItem>
-              {COURSE_TYPES.map(([type, label]) => (
+              {formats.map((f) => (
                 <FilterItem
-                  key={type}
-                  active={tipo === type}
-                  onClick={() => setTipo(tipo === type ? undefined : type)}
+                  key={f.slug}
+                  active={tipo === f.slug}
+                  onClick={() => setTipo(tipo === f.slug ? undefined : f.slug)}
                 >
-                  {label}
+                  {f.name}
                 </FilterItem>
               ))}
             </FilterGroup>
@@ -177,27 +188,7 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
               ))}
             </FilterGroup>
 
-            {taxonomies.map((taxonomy) => {
-              const tree = buildTermTree(taxonomy.terms ?? [])
-              if (tree.length === 0) return null
-              const active = terms[taxonomy.slug]
-              const renderTerm = (term: Term, depth: number): React.ReactNode => (
-                <div key={term.id} className={depth ? 'ml-3' : ''}>
-                  <FilterItem
-                    active={active === term.slug}
-                    onClick={() => setTerm(taxonomy.slug, active === term.slug ? null : term.slug)}
-                  >
-                    {term.name}
-                  </FilterItem>
-                  {term.children?.map((child) => renderTerm(child, depth + 1))}
-                </div>
-              )
-              return (
-                <FilterGroup key={taxonomy.id} title={taxonomy.name}>
-                  {tree.map((term) => renderTerm(term, 0))}
-                </FilterGroup>
-              )
-            })}
+            {taxonomies.map(renderTaxonomy)}
           </div>
         </div>
       </aside>
@@ -249,20 +240,22 @@ function FilterGroup({ title, children }: { title: string; children: React.React
 }
 
 /** Voce filtro: lineetta verticale #D7C8FF (2px, alta quanto il testo) quando attiva */
-function FilterItem({ active, onClick, className = '', children }: {
+function FilterItem({ active, onClick, className = '', sub = false, children }: {
   active: boolean
   onClick: () => void
   className?: string
+  /** Sottocategoria: testo più piccolo (la spina + indent la rendono figlia) */
+  sub?: boolean
   children: React.ReactNode
 }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2.5 w-full text-left py-1 text-[18px] leading-[1.5] transition-colors ${
-        active ? 'text-white' : 'text-muted hover:text-white'
-      }`}
+      className={`flex items-center gap-2.5 w-full text-left py-1 leading-[1.5] transition-colors ${
+        sub ? 'text-[15px]' : 'text-[18px]'
+      } ${active ? 'text-white' : 'text-muted hover:text-white'}`}
     >
-      <span className={`w-0.5 h-[18px] shrink-0 ${active ? 'bg-[#D7C8FF]' : 'bg-transparent'}`} />
+      <span className={`w-0.5 shrink-0 ${sub ? 'h-[15px]' : 'h-[18px]'} ${active ? 'bg-[#D7C8FF]' : 'bg-transparent'}`} />
       <span className={className}>{children}</span>
     </button>
   )

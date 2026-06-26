@@ -1,4 +1,5 @@
-export type CourseType = 'webinar' | 'masterclass' | 'fast_focus' | 'short_master' | 'executive_master'
+/** @deprecated lo slug del formato non è più un enum fisso: usa course_formats. Resta `string` per compat. */
+export type CourseType = string
 export type CourseStatus = 'draft' | 'published' | 'archived'
 export type LessonType = 'video' | 'text' | 'pdf' | 'quiz'
 export type EnrollmentStatus = 'active' | 'expired' | 'cancelled'
@@ -103,6 +104,18 @@ export interface Lesson {
   quiz_questions?: QuizQuestion[]
 }
 
+/** Formato corso ("Tipologia Formativa") gestibile da admin. Lo slug è la
+ *  chiave referenziata da courses.type. icon_url: SVG caricato (NULL = icona
+ *  interna di FormatIcon per gli slug di default). */
+export interface CourseFormat {
+  id: string
+  name: string
+  slug: string
+  icon_url: string | null
+  sort_order: number
+  created_at?: string
+}
+
 export interface Taxonomy {
   id: string
   name: string
@@ -180,19 +193,14 @@ export interface CourseProgress {
   progress_percentage: number
 }
 
-export const COURSE_TYPE_LABELS: Record<CourseType, string> = {
+/** Label di fallback per gli slug di default (usata solo se il formato non è
+ *  ancora caricato nel context; la fonte autorevole è course_formats). */
+export const DEFAULT_FORMAT_LABELS: Record<string, string> = {
   webinar: 'Webinar',
   masterclass: 'Masterclass',
   fast_focus: 'Fast Focus',
   short_master: 'Short Master',
   executive_master: 'Executive Master',
-}
-
-// Palette a 3 colori (CLAUDE.md): targhette neutre, nessun colore per tipo
-export const COURSE_TYPE_COLORS: Record<CourseType, string> = {
-  webinar: 'bg-surface-elevated text-white border-surface-border',
-  masterclass: 'bg-surface-elevated text-white border-surface-border',
-  fast_focus: 'bg-surface-elevated text-white border-surface-border',
-  short_master: 'bg-surface-elevated text-white border-surface-border',
-  executive_master: 'bg-surface-elevated text-white border-surface-border',
+  guide_vademecum: 'Guide e Vademecum',
+  convegni: 'Convegni & Tavole Rotonde',
 }

@@ -3,6 +3,7 @@ import localFont from 'next/font/local'
 import './globals.css'
 import { Toaster } from 'sonner'
 import Providers from './Providers'
+import { getCourseFormats } from '@/lib/formats.server'
 
 // Regola cliente: tutto il sito a font-weight 400 → carichiamo solo Regular.
 // Gli altri pesi sono in src/fonts/, da riaggiungere qui se la regola cambia.
@@ -24,11 +25,12 @@ export const metadata: Metadata = {
   keywords: ['holding', 'formazione', 'e-learning', 'webinar', 'masterclass', 'fiscale', 'governance'],
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const formats = await getCourseFormats()
   return (
     <html lang="it" className="dark">
       <body className={`${aeonik.variable} font-sans`}>
-        <Providers>{children}</Providers>
+        <Providers formats={formats}>{children}</Providers>
         <Toaster
           position="top-right"
           theme="dark"

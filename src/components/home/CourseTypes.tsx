@@ -1,17 +1,16 @@
-import Link from 'next/link'
-import CourseTypeIcon from '@/components/icons/CourseTypeIcon'
-import type { CourseType } from '@/types'
-import { COURSE_TYPE_LABELS } from '@/types'
+'use client'
 
-// Nuvola di chip come nel design: le tipologie ripetute su quattro righe
-const CHIP_ROWS: CourseType[][] = [
-  ['webinar', 'masterclass', 'fast_focus', 'short_master', 'executive_master'],
-  ['masterclass', 'executive_master', 'fast_focus', 'webinar'],
-  ['executive_master', 'masterclass', 'webinar', 'fast_focus', 'short_master'],
-  ['webinar', 'executive_master', 'masterclass', 'fast_focus'],
-]
+import Link from 'next/link'
+import FormatIcon from '@/components/icons/FormatIcon'
+import { useFormats } from '@/context/FormatsContext'
 
 export default function CourseTypes() {
+  const formats = useFormats()
+  // Nuvola di chip come nel design: i formati ripetuti su quattro righe sfalsate
+  const rows = formats.length
+    ? [0, 2, 4, 1].map((off) => formats.map((_, i) => formats[(i + off) % formats.length]))
+    : []
+
   return (
     <>
       {/* Nuvola di chip: solo da md in su (il Figma mobile omette questa
@@ -22,18 +21,18 @@ export default function CourseTypes() {
           <h3 className="text-white md:text-center mb-14">I nostri corsi</h3>
 
           <div className="space-y-4">
-            {CHIP_ROWS.map((row, rowIndex) => (
+            {rows.map((row, rowIndex) => (
               <div key={rowIndex} className="flex flex-wrap justify-center gap-[14px]">
-                {row.map((type, i) => (
+                {row.map((f, i) => (
                   <Link
-                    key={`${type}-${i}`}
-                    href={`/corsi?tipo=${type}`}
+                    key={`${f.slug}-${i}`}
+                    href={`/corsi?tipo=${f.slug}`}
                     className="flex items-center gap-3 py-[17px] pl-[17px] pr-9 rounded-[15px] bg-card backdrop-blur-[20px] text-muted text-[22px] leading-none hover:bg-card-hover hover:text-white transition-colors"
                   >
                     <span className="w-9 h-9 rounded-lg bg-surface-elevated flex items-center justify-center shrink-0">
-                      <CourseTypeIcon type={type} className="w-[18px] h-[18px]" />
+                      <FormatIcon slug={f.slug} iconUrl={f.icon_url} className="w-[18px] h-[18px]" />
                     </span>
-                    {COURSE_TYPE_LABELS[type]}
+                    {f.name}
                   </Link>
                 ))}
               </div>

@@ -1,9 +1,10 @@
 import Link from 'next/link'
-import { LayoutDashboard, BookOpen, Users, UserCheck, Tags, Award, Settings } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Users, UserCheck, Tags, Award, Settings, Shapes } from 'lucide-react'
 
 const NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/corsi', label: 'Corsi', icon: BookOpen },
+  { href: '/admin/formati', label: 'Formati', icon: Shapes },
   { href: '/admin/docenti', label: 'Docenti', icon: UserCheck },
   { href: '/admin/tassonomie', label: 'Tassonomie', icon: Tags },
   { href: '/admin/attestati', label: 'Attestati', icon: Award },

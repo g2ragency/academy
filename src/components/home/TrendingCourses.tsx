@@ -4,31 +4,19 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
 import AnimatedCourseGrid from '@/components/courses/AnimatedCourseGrid'
-import CourseTypeIcon from '@/components/icons/CourseTypeIcon'
-import type { Course, CourseType } from '@/types'
-
-const FILTER_TABS: { label: string; value: CourseType | 'all' }[] = [
-  { label: 'In tendenza', value: 'all' },
-  { label: 'Fast Focus', value: 'fast_focus' },
-  { label: 'Webinar', value: 'webinar' },
-  { label: 'Master', value: 'short_master' },
-  { label: 'Executive Master', value: 'executive_master' },
-]
-
-const TYPE_CHIPS: { label: string; value: CourseType }[] = [
-  { label: 'Webinar', value: 'webinar' },
-  { label: 'Masterclass', value: 'masterclass' },
-  { label: 'Fast Focus', value: 'fast_focus' },
-  { label: 'Short Master', value: 'short_master' },
-  { label: 'Executive Master', value: 'executive_master' },
-]
+import FormatIcon from '@/components/icons/FormatIcon'
+import { useFormats } from '@/context/FormatsContext'
+import type { Course } from '@/types'
 
 interface Props {
   courses: Course[]
 }
 
 export default function TrendingCourses({ courses }: Props) {
-  const [activeFilter, setActiveFilter] = useState<CourseType | 'all'>('all')
+  const formats = useFormats()
+  const [activeFilter, setActiveFilter] = useState<string>('all')
+
+  const filterTabs = [{ label: 'In tendenza', value: 'all' }, ...formats.map((f) => ({ label: f.name, value: f.slug }))]
 
   const filtered = activeFilter === 'all' ? courses : courses.filter((c) => c.type === activeFilter)
 
@@ -40,8 +28,8 @@ export default function TrendingCourses({ courses }: Props) {
 
         {/* Tab: riga scrollabile su mobile, griglia a 5 colonne a tutta
             larghezza da md in su (Figma mostra i tab anche su mobile) */}
-        <div className="flex md:grid md:grid-cols-5 gap-0 overflow-x-auto scrollbar-hide mb-10 -mx-5 px-5 md:mx-0 md:px-0 fade-x-right md:[mask-image:none] md:[-webkit-mask-image:none]">
-          {FILTER_TABS.map((tab) => (
+        <div className="flex md:flex-wrap md:justify-center gap-0 md:gap-x-8 overflow-x-auto scrollbar-hide mb-10 -mx-5 px-5 md:mx-0 md:px-0 fade-x-right md:[mask-image:none] md:[-webkit-mask-image:none]">
+          {filterTabs.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setActiveFilter(tab.value)}
@@ -58,12 +46,12 @@ export default function TrendingCourses({ courses }: Props) {
 
         {/* Chip filtro per tipologia (valori Figma: radius 15, gap 12, padding 10/8) */}
         <div className="flex items-center gap-3 overflow-x-auto pb-2 mb-10 scrollbar-hide -mx-5 px-5 md:mx-0 md:px-0 fade-x-right">
-          {TYPE_CHIPS.map((chip) => {
-            const active = activeFilter === chip.value
+          {formats.map((f) => {
+            const active = activeFilter === f.slug
             return (
               <button
-                key={chip.value}
-                onClick={() => setActiveFilter(active ? 'all' : chip.value)}
+                key={f.slug}
+                onClick={() => setActiveFilter(active ? 'all' : f.slug)}
                 className={`shrink-0 inline-flex items-center gap-2.5 h-[50px] pl-[11px] pr-[14px] rounded-[10px] md:rounded-[15px] text-sm md:text-lg leading-none transition-colors ${
                   active ? 'bg-white text-black' : 'bg-card backdrop-blur-[20px] text-white'
                 }`}
@@ -73,9 +61,9 @@ export default function TrendingCourses({ courses }: Props) {
                     active ? 'bg-[#989898] text-white' : 'bg-[#888888] text-black'
                   }`}
                 >
-                  <CourseTypeIcon type={chip.value} className="w-[18px] h-[18px]" />
+                  <FormatIcon slug={f.slug} iconUrl={f.icon_url} className="w-[18px] h-[18px]" />
                 </span>
-                {chip.label}
+                {f.name}
               </button>
             )
           })}

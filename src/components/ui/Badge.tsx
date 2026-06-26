@@ -1,5 +1,8 @@
+'use client'
+
 import { cn } from '@/lib/utils'
-import { type CourseType, COURSE_TYPE_LABELS } from '@/types'
+import { useFormat } from '@/context/FormatsContext'
+import { DEFAULT_FORMAT_LABELS } from '@/types'
 
 interface BadgeProps {
   children: React.ReactNode
@@ -22,9 +25,12 @@ export function Badge({ children, className, variant = 'default' }: BadgeProps) 
   )
 }
 
-export function CourseTypeBadge({ type, className }: { type: CourseType; className?: string }) {
+export function CourseTypeBadge({ type, className }: { type: string; className?: string }) {
   // Targhetta tipo corso (Figma): radius 10, #1B1B1B + blur 15, testo #989898.
-  // className opzionale per varianti (es. sfondo chiaro nelle row card).
+  // La label arriva dal formato (course_formats via context); fallback agli
+  // slug di default e infine allo slug grezzo.
+  const format = useFormat(type)
+  const label = format?.name ?? DEFAULT_FORMAT_LABELS[type] ?? type
   return (
     <span
       className={cn(
@@ -32,7 +38,7 @@ export function CourseTypeBadge({ type, className }: { type: CourseType; classNa
         className
       )}
     >
-      {COURSE_TYPE_LABELS[type]}
+      {label}
     </span>
   )
 }

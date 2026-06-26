@@ -4,10 +4,11 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import {
-  X, ChevronDown, User, LogOut, LayoutDashboard, Shield, Search,
-  Presentation, GraduationCap, Zap, Briefcase, ShieldCheck, BookOpen, Tag,
+  X, ChevronDown, User, LogOut, LayoutDashboard, Shield, Search, BookOpen, Tag,
 } from 'lucide-react'
 import HamburgerIcon from '@/components/icons/HamburgerIcon'
+import FormatIcon from '@/components/icons/FormatIcon'
+import { useFormats } from '@/context/FormatsContext'
 import { createClient } from '@/lib/supabase/client'
 import CartButton from '@/components/cart/CartButton'
 import { useCart } from '@/context/CartContext'
@@ -19,19 +20,13 @@ import LogoIcon from '@/components/icons/LogoIcon'
 import UserIcon from '@/components/icons/UserIcon'
 
 interface MenuItem {
-  icon: React.ElementType
+  icon?: React.ElementType
+  /** Per le voci formato: render con FormatIcon (slug + eventuale SVG caricato) */
+  formatSlug?: string
+  iconUrl?: string | null
   label: string
   href: string
 }
-
-const COURSE_ITEMS: MenuItem[] = [
-  { icon: BookOpen, label: 'Tutti i corsi', href: '/corsi' },
-  { icon: Presentation, label: 'Webinar', href: '/corsi?tipo=webinar' },
-  { icon: GraduationCap, label: 'Masterclass', href: '/corsi?tipo=masterclass' },
-  { icon: Zap, label: 'Fast Focus', href: '/corsi?tipo=fast_focus' },
-  { icon: Briefcase, label: 'Short Master', href: '/corsi?tipo=short_master' },
-  { icon: ShieldCheck, label: 'Executive Master', href: '/corsi?tipo=executive_master' },
-]
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
@@ -48,8 +43,15 @@ export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
   const { isOpen: cartOpen, closeCart } = useCart()
+  const formats = useFormats()
   // Istanza stabile: se ricreato a ogni render, lo useEffect con dep [supabase] rifetcha in loop
   const [supabase] = useState(() => createClient())
+
+  // Voci dropdown "Corsi": "Tutti i corsi" + un formato per voce (course_formats)
+  const courseItems: MenuItem[] = [
+    { icon: BookOpen, label: 'Tutti i corsi', href: '/corsi' },
+    ...formats.map((f) => ({ formatSlug: f.slug, iconUrl: f.icon_url, label: f.name, href: `/corsi?tipo=${f.slug}` })),
+  ]
 
   // Sidecart e menu account sono mutuamente esclusivi: se si apre il carrello, chiudi il profilo
   useEffect(() => {
@@ -173,7 +175,7 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center gap-1" onMouseLeave={() => setOpenMenu(null)}>
             <NavDropdown
               label="Corsi"
-              items={COURSE_ITEMS}
+              items={courseItems}
               open={openMenu === 'corsi'}
               onOpen={() => setOpenMenu('corsi')}
               active={pathname.startsWith('/corsi')}
@@ -327,7 +329,7 @@ export default function Navbar() {
             </form>
 
             <p className="px-4 pt-1 pb-1 text-xs text-white/40 uppercase tracking-wider">Corsi</p>
-            {COURSE_ITEMS.map((item) => (
+            {courseItems.map((item) => (
               <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-surface-elevated rounded-lg">
                 {item.label}
               </Link>
@@ -410,7 +412,9 @@ function NavDropdown({ label, items, open, onOpen, active }: {
                   className="flex items-center gap-[10px] py-2 text-[18px] leading-none text-white hover:text-white/70 rounded-xl transition-colors group"
                 >
                   <span className="w-[35px] h-[35px] rounded-[10px] bg-[#888888] flex items-center justify-center shrink-0 group-hover:bg-white transition-colors">
-                    <item.icon className="w-6 h-6 text-black" />
+                    {item.formatSlug
+                      ? <FormatIcon slug={item.formatSlug} iconUrl={item.iconUrl} className="w-6 h-6 text-black" />
+                      : item.icon ? <item.icon className="w-6 h-6 text-black" /> : null}
                   </span>
                   {item.label}
                 </Link>
