@@ -2,19 +2,17 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  Clock,
-  BookOpen,
   Lock,
   Play,
   CheckCircle2,
   Users,
-  GraduationCap,
   Download,
   MonitorSmartphone,
   WifiOff,
   Subtitles,
   Award,
 } from 'lucide-react'
+import { ClockIcon, TeacherIcon, FolderIcon } from '@/components/icons/FigmaIcons'
 import { createServerClient, getProfile } from '@/lib/supabase/server'
 import { TAXONOMY_PARAM_PREFIX } from '@/lib/taxonomy'
 import { getMediaUrl } from '@/lib/media'
@@ -178,13 +176,13 @@ export default async function CourseDetailPage({ params }: Props) {
       <ul className="space-y-3">
         {[
           ...(course.duration_minutes
-            ? [{ icon: Clock, label: formatHours(course.duration_minutes) }]
+            ? [{ icon: ClockIcon, label: formatHours(course.duration_minutes) }]
             : []),
           {
-            icon: GraduationCap,
+            icon: TeacherIcon,
             label: `${relatori.length} ${relatori.length === 1 ? 'docente' : 'docenti'}`,
           },
-          { icon: BookOpen, label: `${totalLessons} ${totalLessons === 1 ? 'lezione' : 'lezioni'}` },
+          { icon: FolderIcon, label: `${totalLessons} ${totalLessons === 1 ? 'lezione' : 'lezioni'}` },
         ].map((row) => (
           <li key={row.label} className="flex items-center gap-3 text-[18px] leading-none text-white/70">
             <span className="w-8 h-8 rounded-[10px] bg-[#888888] flex items-center justify-center shrink-0">
