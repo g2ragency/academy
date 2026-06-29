@@ -16,7 +16,7 @@ export default async function AdminAttestatiPage() {
 
   return (
     <div className="px-10 py-8">
-      <h1 className="font-bold text-white mb-8">Attestati emessi</h1>
+      <h4 className="font-bold text-white mb-8">Attestati emessi</h4>
 
       {certs.length === 0 ? (
         <p className="text-white/40 text-sm">Nessun attestato emesso finora.</p>

@@ -25,7 +25,7 @@ export default async function AcquistiPage() {
     <div className="py-10">
       <div className="container-wide">
         <div className="mb-10">
-          <h1 className="font-bold text-white">Acquisti e fatture</h1>
+          <h4 className="font-bold text-white">Acquisti e fatture</h4>
           <p className="text-white/50 mt-1">Lo storico dei tuoi acquisti, con le ricevute Stripe.</p>
         </div>
 

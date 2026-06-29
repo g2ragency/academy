@@ -2,11 +2,13 @@
  * Icone duotone del set Figma (assoholding academy), mono via `currentColor`:
  * le parti "chiare" (#f4f3f3) sono rese a opacity 0.4, quelle "scure" piene,
  * così seguono il colore del testo del contenitore (come FormatIcon).
- * viewBox 0 0 50 50 per tutte.
+ * viewBox ritagliato a "12 12 26 26": il disegno vive nella metà centrale del
+ * frame 50×50 (~12–38), quindi croppiamo i margini vuoti così l'icona riempie
+ * il box renderizzato (con 0 0 50 50 appariva minuscola).
  */
 type P = { className?: string }
 const Svg = ({ className, children }: P & { children: React.ReactNode }) => (
-  <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden>
+  <svg viewBox="12 12 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden>
     {children}
   </svg>
 )

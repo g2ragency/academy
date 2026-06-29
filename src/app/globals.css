@@ -98,15 +98,18 @@ optgroup {
     @apply bg-surface-card border border-surface-border rounded-xl overflow-hidden;
   }
 
-  /* Input: stesso trattamento delle pagine auth (bordo 0.5px bianco, sfondo nero,
-     placeholder muted, testo 16→18px). Radius 15px (più contenuto del 20px auth,
-     adatto ai form densi della dashboard). */
+  /* Input area riservata + admin (Figma): bordo 0.5px #989898, sfondo nero,
+     radius 10px, placeholder muted, testo 16→18px. Il focus schiarisce il bordo.
+     (L'auth NON usa questa classe: ha i suoi AuthField con bordo bianco r15/20.) */
   .input {
-    @apply w-full bg-surface border-[0.5px] border-white rounded-[15px] px-4 py-3 text-[16px] sm:text-[18px] leading-none text-white placeholder:text-muted focus:outline-none focus:border-white transition-colors;
+    @apply w-full bg-surface border-[0.5px] border-muted rounded-[10px] px-4 py-3 text-[16px] sm:text-[18px] leading-none text-white placeholder:text-muted focus:outline-none focus:border-white transition-colors;
   }
 
+  /* Label area riservata (Figma): bianca. Dimensione moderata 16→18px:
+     il Figma profilo usa 22px ma su form densi (admin) sarebbe sproporzionato;
+     le pagine sparse possono salire a 22px con override locale. */
   .label {
-    @apply block text-[14px] sm:text-[16px] leading-none text-muted mb-2;
+    @apply block text-[16px] sm:text-[18px] leading-none text-white mb-2;
   }
 
   .badge {

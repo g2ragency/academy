@@ -4,14 +4,16 @@ import { type InputHTMLAttributes, forwardRef } from 'react'
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
+  /** override stile label (es. checkout: 22px bianca) */
+  labelClassName?: string
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, id, ...props }, ref) => {
+  ({ className, label, error, id, labelClassName, ...props }, ref) => {
     return (
       <div className="space-y-1.5">
         {label && (
-          <label htmlFor={id} className="label">
+          <label htmlFor={id} className={cn('label', labelClassName)}>
             {label}
           </label>
         )}

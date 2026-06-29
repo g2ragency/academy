@@ -17,7 +17,7 @@ export default async function AdminUtentiPage() {
 
   return (
     <div className="px-10 py-8">
-      <h1 className="font-bold text-white mb-8">Gestione Utenti</h1>
+      <h4 className="font-bold text-white mb-8">Gestione Utenti</h4>
 
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">

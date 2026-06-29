@@ -18,7 +18,7 @@ export default async function AdminCorsiPage() {
   return (
     <div className="px-10 py-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="font-bold text-white">Gestione Corsi</h1>
+        <h4 className="font-bold text-white">Gestione Corsi</h4>
         <Link href="/admin/corsi/nuovo" className="btn-primary text-sm gap-2 inline-flex items-center">
           <Plus className="w-4 h-4" />
           Nuovo corso

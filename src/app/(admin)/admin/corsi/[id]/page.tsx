@@ -25,7 +25,7 @@ export default async function EditCorsoPage({ params }: Props) {
   return (
     <div className="px-10 py-8 space-y-8">
       <div>
-        <h1 className="font-bold text-white mb-8">Modifica corso</h1>
+        <h4 className="font-bold text-white mb-8">Modifica corso</h4>
         <CourseForm
           instructors={instructors ?? []}
           course={course}
@@ -36,7 +36,7 @@ export default async function EditCorsoPage({ params }: Props) {
       </div>
 
       <div>
-        <h2 className="font-bold text-white mb-6">Moduli e lezioni</h2>
+        <h5 className="font-bold text-white mb-6">Moduli e lezioni</h5>
         <ModulesManager courseId={course.id} initialModules={modules ?? []} />
       </div>
     </div>

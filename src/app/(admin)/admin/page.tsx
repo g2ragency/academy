@@ -58,7 +58,7 @@ export default async function AdminDashboard() {
 
   return (
     <div className="px-10 py-8">
-      <h1 className="font-bold text-white mb-8">Dashboard Admin</h1>
+      <h4 className="font-bold text-white mb-8">Dashboard Admin</h4>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -77,7 +77,7 @@ export default async function AdminDashboard() {
         {/* Recent enrollments */}
         <div className="card">
           <div className="p-5 border-b border-surface-border">
-            <h2 className="font-semibold text-white">Ultime iscrizioni</h2>
+            <h5 className="font-semibold text-white">Ultime iscrizioni</h5>
           </div>
           <div className="divide-y divide-surface-border">
             {(recentEnrollments ?? []).slice(0, 8).map((e: any) => (
@@ -103,7 +103,7 @@ export default async function AdminDashboard() {
         {/* Popular courses */}
         <div className="card">
           <div className="p-5 border-b border-surface-border flex items-center justify-between">
-            <h2 className="font-semibold text-white">Corsi più iscritti</h2>
+            <h5 className="font-semibold text-white">Corsi più iscritti</h5>
           </div>
           <div className="divide-y divide-surface-border">
             {(popularCourses ?? []).map((e: any, i: number) => (

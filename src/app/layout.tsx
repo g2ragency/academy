@@ -5,13 +5,16 @@ import { Toaster } from 'sonner'
 import Providers from './Providers'
 import { getCourseFormats } from '@/lib/formats.server'
 
-// Regola cliente: tutto il sito a font-weight 400 → carichiamo solo Regular.
-// Gli altri pesi sono in src/fonts/, da riaggiungere qui se la regola cambia.
+// Regola cliente: tutto il sito a font-weight 400 → di base solo Regular.
+// Eccezione autorizzata: il Bold (700) serve per i prezzi delle card carrello
+// (style={{fontWeight:700}} mirato). Senza questa faccia il browser farebbe
+// un fake-bold sintetico. Gli altri pesi restano in src/fonts/.
 const aeonik = localFont({
   variable: '--font-aeonik',
   src: [
     { path: '../fonts/AeonikSoftTRIAL-Regular.woff2', weight: '400', style: 'normal' },
     { path: '../fonts/AeonikSoftTRIAL-RegularItalic.woff2', weight: '400', style: 'italic' },
+    { path: '../fonts/AeonikSoftTRIAL-Bold.woff2', weight: '700', style: 'normal' },
   ],
 })
 

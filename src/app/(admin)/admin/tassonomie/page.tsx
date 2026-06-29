@@ -15,7 +15,7 @@ export default async function AdminTassonomiePage() {
   return (
     <div className="px-10 py-8">
       <div className="mb-8">
-        <h1 className="font-bold text-white">Tassonomie</h1>
+        <h4 className="font-bold text-white">Tassonomie</h4>
         <p className="text-sm text-white/40 mt-2 max-w-2xl">
           Crea gruppi di classificazione (es. &ldquo;Argomenti&rdquo;, &ldquo;Ruoli&rdquo;) con categorie, sottocategorie e tag.
           Tutto ciò che crei qui appare automaticamente nei filtri della pagina Corsi e, se attivato, in homepage.

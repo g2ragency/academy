@@ -167,7 +167,7 @@ export default function ProfiloPage() {
 
   return (
     <div className="px-10 py-8 max-w-5xl">
-      <h5 className="text-white mb-8">Account</h5>
+      <h4 className="text-white mb-8">Account</h4>
 
       <div className="grid lg:grid-cols-[260px_1fr] gap-10 items-start">
       <div className="border-b border-surface-border pb-8 mb-8 lg:border-b-0 lg:pb-0 lg:mb-0">

@@ -25,7 +25,7 @@ export default async function AdminDocentiPage() {
   return (
     <div className="px-10 py-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="font-bold text-white">Gestione Docenti</h1>
+        <h4 className="font-bold text-white">Gestione Docenti</h4>
         <InstructorFormModal taxonomies={taxonomies} />
       </div>
 

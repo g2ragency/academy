@@ -21,32 +21,32 @@ export default function DashboardSidebar() {
   if (pathname.includes('/lezione/')) return null
 
   return (
-    <aside className="w-64 shrink-0 border-r border-surface-border flex flex-col h-full">
+    <aside className="w-[300px] shrink-0 border-r border-surface-border flex flex-col h-full">
       <div className="p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
           <input
             type="text"
             placeholder="Cerca"
-            className="w-full bg-surface border-[0.5px] border-white rounded-[10px] pl-9 pr-3 py-2 text-[14px] sm:text-[16px] leading-none text-white placeholder:text-muted focus:outline-none focus:border-white transition-colors"
+            className="w-full h-[50px] bg-surface border-[0.5px] border-white rounded-[10px] pl-12 pr-3 text-[18px] leading-none text-white placeholder:text-muted focus:outline-none focus:border-white transition-colors"
           />
         </div>
       </div>
 
-      <nav className="flex-1 px-2 pb-4">
+      <nav className="flex-1 px-4 pb-4 space-y-1">
         {navItems.map(({ href, label, icon: Icon, exact }) => {
           const isActive = exact ? pathname === href : pathname.startsWith(href)
           return (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] sm:text-[16px] leading-none transition-colors mb-0.5 ${
+              className={`flex items-center gap-3 h-[50px] px-4 rounded-[10px] text-[18px] leading-none transition-colors ${
                 isActive
-                  ? 'bg-surface-elevated text-white'
-                  : 'text-white/50 hover:text-white hover:bg-surface-elevated/50'
+                  ? 'bg-white/20 text-white'
+                  : 'text-muted hover:text-white hover:bg-white/10'
               }`}
             >
-              <Icon className="w-4 h-4 shrink-0" />
+              <Icon className="w-6 h-6 shrink-0" />
               {label}
             </Link>
           )

@@ -14,7 +14,7 @@ export default async function NuovoCorsoPage() {
 
   return (
     <div className="px-10 py-8">
-      <h1 className="font-bold text-white mb-8">Nuovo corso</h1>
+      <h4 className="font-bold text-white mb-8">Nuovo corso</h4>
       <CourseForm instructors={instructors ?? []} taxonomies={taxonomies} initialTermIds={[]} />
     </div>
   )

@@ -15,7 +15,7 @@ export default async function ImpostazioniPage() {
     <div className="py-10">
       <div className="container-wide">
         <div className="mb-10">
-          <h1 className="text-white">Impostazioni</h1>
+          <h4 className="text-white">Impostazioni</h4>
           <p className="text-white/50 mt-1">
             Sicurezza, dati di fatturazione e gestione dell&apos;account. Nome, foto ed email si modificano dal{' '}
             <a href="/dashboard/profilo" className="text-white/70 hover:text-white underline">profilo</a>.

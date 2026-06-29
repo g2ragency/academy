@@ -153,7 +153,7 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
       <div className="xl:col-span-2 space-y-6">
       {/* Basic info */}
       <div className="card p-6 space-y-4">
-        <h3 className="font-semibold text-white border-b border-surface-border pb-3">Informazioni base</h3>
+        <h5 className="font-semibold text-white border-b border-surface-border pb-3">Informazioni base</h5>
 
         <Input
           {...register('title')}
@@ -211,7 +211,7 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
 
       {/* Settings */}
       <div className="card p-6 space-y-4">
-        <h3 className="font-semibold text-white border-b border-surface-border pb-3">Impostazioni</h3>
+        <h5 className="font-semibold text-white border-b border-surface-border pb-3">Impostazioni</h5>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -283,7 +283,7 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
       {/* Relatori */}
       <div className="card p-6">
         <div className="flex items-center justify-between border-b border-surface-border pb-3 mb-4">
-          <h3 className="font-semibold text-white">Relatori</h3>
+          <h5 className="font-semibold text-white">Relatori</h5>
           <InstructorFormModal
             compact
             onCreated={(i) => {
@@ -316,13 +316,13 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
 
       {/* Classificazioni */}
       <div className="card p-6">
-        <h3 className="font-semibold text-white border-b border-surface-border pb-3 mb-4">Classificazioni</h3>
+        <h5 className="font-semibold text-white border-b border-surface-border pb-3 mb-4">Classificazioni</h5>
         <TermsPicker taxonomies={taxonomies} value={termIds} onChange={setTermIds} />
       </div>
 
       {/* Thumbnail */}
       <div className="card p-6">
-        <h3 className="font-semibold text-white border-b border-surface-border pb-3 mb-4">Immagine copertina</h3>
+        <h5 className="font-semibold text-white border-b border-surface-border pb-3 mb-4">Immagine copertina</h5>
         <FileUpload
           accept="image/*"
           maxSizeMB={2}
@@ -342,7 +342,7 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
 
       {/* Video anteprima */}
       <div className="card p-6 space-y-4">
-        <h3 className="font-semibold text-white border-b border-surface-border pb-3">Video anteprima</h3>
+        <h5 className="font-semibold text-white border-b border-surface-border pb-3">Video anteprima</h5>
         <div>
           <label className="label">Link video (YouTube, Vimeo o URL diretto)</label>
           <input
@@ -377,7 +377,7 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
 
       {/* PDF programma */}
       <div className="card p-6">
-        <h3 className="font-semibold text-white border-b border-surface-border pb-3 mb-4">Programma (PDF)</h3>
+        <h5 className="font-semibold text-white border-b border-surface-border pb-3 mb-4">Programma (PDF)</h5>
         <FileUpload
           accept="application/pdf"
           maxSizeMB={10}

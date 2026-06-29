@@ -10,7 +10,7 @@ export default async function FormatiPage() {
   return (
     <div className="px-10 py-8">
       <div className="mb-8">
-        <h1 className="text-white">Tipologie formative</h1>
+        <h4 className="text-white">Tipologie formative</h4>
         <p className="text-white/50 mt-1 max-w-2xl">
           I formati dei corsi (Webinar, Master, Convegni…). Crea, riordina e assegna un&apos;icona.
           Lo slug è la chiave referenziata dai corsi: un formato in uso non può essere eliminato.

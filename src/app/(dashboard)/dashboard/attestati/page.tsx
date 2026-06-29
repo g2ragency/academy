@@ -49,7 +49,7 @@ export default async function AttestatiPage() {
     <div className="py-10">
       <div className="container-wide">
         <div className="mb-10">
-          <h1 className="font-bold text-white">Attestati</h1>
+          <h4 className="font-bold text-white">Attestati</h4>
           <p className="text-white/50 mt-1">Gli attestati dei corsi che hai completato.</p>
         </div>
 
