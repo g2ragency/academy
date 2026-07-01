@@ -2,7 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, BookOpen, Users, UserCheck, Tags, Award, Shapes, ArrowLeft } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Users, UserCheck, Tags, Award, Shapes, ArrowLeft, ShoppingBag, ExternalLink } from 'lucide-react'
+
+/** Ordini/rimborsi/pagamenti falliti sono gestiti su Stripe (link esterno). */
+const STRIPE_ORDERS_URL = 'https://dashboard.stripe.com/payments'
 
 const NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
@@ -34,6 +37,12 @@ export default function AdminNav() {
             </Link>
           )
         })}
+        {/* Ordini gestiti su Stripe (rimborsi, pagamenti falliti, dispute) */}
+        <a href={STRIPE_ORDERS_URL} target="_blank" rel="noopener noreferrer" className={itemClass(false)}>
+          <ShoppingBag className="w-6 h-6 shrink-0" />
+          <span className="flex-1">Ordini</span>
+          <ExternalLink className="w-4 h-4 shrink-0 opacity-60" />
+        </a>
       </nav>
       <div className="p-4 border-t border-surface-border">
         <Link href="/dashboard" className={itemClass(false)}>

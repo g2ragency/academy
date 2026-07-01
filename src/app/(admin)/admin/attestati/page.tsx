@@ -19,12 +19,12 @@ export default async function AdminAttestatiPage() {
       <h4 className="font-bold text-white mb-8">Attestati emessi</h4>
 
       {certs.length === 0 ? (
-        <p className="text-white/40 text-sm">Nessun attestato emesso finora.</p>
+        <p className="text-white/40 text-[16px]">Nessun attestato emesso finora.</p>
       ) : (
         <div className="card overflow-hidden">
-          <table className="w-full text-sm">
+          <table className="w-full text-[16px]">
             <thead>
-              <tr className="border-b border-surface-border text-left text-white/40">
+              <tr className="border-b border-surface-border text-left text-[13px] text-white/40 uppercase tracking-wide">
                 <th className="px-5 py-3">Numero</th>
                 <th className="px-5 py-3">Utente</th>
                 <th className="px-5 py-3">Corso</th>
@@ -37,10 +37,10 @@ export default async function AdminAttestatiPage() {
                   <td className="px-5 py-3 text-white/70">{cert.certificate_number}</td>
                   <td className="px-5 py-3">
                     <p className="text-white">{cert.profile?.full_name}</p>
-                    <p className="text-xs text-white/40">{cert.profile?.email}</p>
+                    <p className="text-[14px] text-muted">{cert.profile?.email}</p>
                   </td>
                   <td className="px-5 py-3 text-white/70">{cert.course?.title}</td>
-                  <td className="px-5 py-3 text-white/50">{formatDate(cert.issued_at)}</td>
+                  <td className="px-5 py-3 text-muted">{formatDate(cert.issued_at)}</td>
                 </tr>
               ))}
             </tbody>

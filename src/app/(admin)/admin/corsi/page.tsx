@@ -30,28 +30,28 @@ export default async function AdminCorsiPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-surface-border">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-white/40 uppercase tracking-wide">Titolo</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-white/40 uppercase tracking-wide">Tipo</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-white/40 uppercase tracking-wide">Docente</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-white/40 uppercase tracking-wide">Prezzo</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-white/40 uppercase tracking-wide">Stato</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-white/40 uppercase tracking-wide">Azioni</th>
+                <th className="text-left px-4 py-3 text-[13px] text-white/40 uppercase tracking-wide">Titolo</th>
+                <th className="text-left px-4 py-3 text-[13px] text-white/40 uppercase tracking-wide">Tipo</th>
+                <th className="text-left px-4 py-3 text-[13px] text-white/40 uppercase tracking-wide">Docente</th>
+                <th className="text-left px-4 py-3 text-[13px] text-white/40 uppercase tracking-wide">Prezzo</th>
+                <th className="text-left px-4 py-3 text-[13px] text-white/40 uppercase tracking-wide">Stato</th>
+                <th className="text-right px-4 py-3 text-[13px] text-white/40 uppercase tracking-wide">Azioni</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-border">
               {(courses ?? []).map((course: any) => (
                 <tr key={course.id} className="hover:bg-surface-elevated transition-colors">
                   <td className="px-4 py-3">
-                    <p className="text-sm font-medium text-white max-w-[250px] truncate">{course.title}</p>
-                    <p className="text-xs text-white/30">{course.slug}</p>
+                    <p className="text-[16px] text-white max-w-[250px] truncate">{course.title}</p>
+                    <p className="text-[14px] text-white/30">{course.slug}</p>
                   </td>
                   <td className="px-4 py-3">
                     <CourseTypeBadge type={course.type} />
                   </td>
-                  <td className="px-4 py-3 text-sm text-white/60">
+                  <td className="px-4 py-3 text-[16px] text-white/70">
                     {course.instructor?.full_name ?? '—'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-white/60">
+                  <td className="px-4 py-3 text-[16px] text-white/70">
                     {formatPrice(course.price_cents)}
                   </td>
                   <td className="px-4 py-3">
@@ -74,7 +74,7 @@ export default async function AdminCorsiPage() {
               ))}
               {!(courses?.length) && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-white/30 text-sm">
+                  <td colSpan={6} className="px-4 py-12 text-center text-white/30 text-[16px]">
                     Nessun corso ancora. <Link href="/admin/corsi/nuovo" className="text-brand hover:underline">Creane uno</Link>
                   </td>
                 </tr>

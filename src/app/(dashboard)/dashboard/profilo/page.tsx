@@ -171,7 +171,7 @@ export default function ProfiloPage() {
 
       <div className="grid lg:grid-cols-[260px_1fr] gap-10 items-start">
       <div className="border-b border-surface-border pb-8 mb-8 lg:border-b-0 lg:pb-0 lg:mb-0">
-        <p className="text-[14px] sm:text-[16px] leading-none text-muted mb-4">Foto profilo</p>
+        <p className="label !mb-4">Foto profilo</p>
         <div className="flex items-center gap-6 lg:flex-col lg:items-start">
           <div className="w-20 h-20 rounded-full overflow-hidden shrink-0">
             {profile.avatar_url ? (

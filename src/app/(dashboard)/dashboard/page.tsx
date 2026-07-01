@@ -8,9 +8,12 @@ import type { Course, CourseProgress, Enrollment } from '@/types'
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Corsi' }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: { q?: string } }) {
   const profile = await getProfile()
   if (!profile) redirect('/auth/login')
+
+  const query = (searchParams.q ?? '').trim()
+  const q = query.toLowerCase()
 
   const supabase = createServerClient()
 
@@ -34,6 +37,7 @@ export default async function DashboardPage() {
 
   const enrolled: EnrolledItem[] = ((enrollments ?? []) as (Enrollment & { course: Course })[])
     .filter((e) => e.course)
+    .filter((e) => !q || e.course.title.toLowerCase().includes(q))
     .map((e) => ({ course: e.course, progress: progressMap.get(e.course_id) ?? 0 }))
 
   // "Adatti a te": corsi pubblicati non acquistati, ordinati per popolarità poi evidenza
@@ -47,6 +51,7 @@ export default async function DashboardPage() {
     .eq('status', 'published')
   const recommended = ((allCourses ?? []) as Course[])
     .filter((c) => !enrolledIds.has(c.id))
+    .filter((c) => !q || c.title.toLowerCase().includes(q))
     .sort(
       (a, b) =>
         (counts.get(b.id) ?? 0) - (counts.get(a.id) ?? 0) ||
@@ -60,8 +65,8 @@ export default async function DashboardPage() {
       <Suspense fallback={null}>
         <ClearCartOnSuccess />
       </Suspense>
-      <h5 className="text-white mb-8">Corsi</h5>
-      <MyCoursesTabs enrolled={enrolled} recommended={recommended} />
+      <h4 className="text-white mb-8">Corsi</h4>
+      <MyCoursesTabs enrolled={enrolled} recommended={recommended} query={query} />
     </div>
   )
 }

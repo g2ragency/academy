@@ -50,8 +50,8 @@ export default function FormatsManager({ initialFormats }: { initialFormats: Cou
             <FormatIcon slug={format.slug} iconUrl={format.icon_url} className="w-6 h-6" />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-white truncate">{format.name}</p>
-            <p className="text-xs text-white/30">/{format.slug}</p>
+            <p className="text-[16px] text-white truncate">{format.name}</p>
+            <p className="text-[14px] text-white/30">/{format.slug}</p>
           </div>
           <button onClick={() => setEditing(format)} className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-surface-elevated transition-colors">
             <Edit2 className="w-4 h-4" />

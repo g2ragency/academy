@@ -1,6 +1,6 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/utils'
-import { Users, BookOpen, TrendingUp, DollarSign } from 'lucide-react'
+import { Users, BookOpen, TrendingUp, DollarSign, ExternalLink } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Admin Dashboard' }
@@ -68,7 +68,7 @@ export default async function AdminDashboard() {
               <s.icon className="w-4 h-4" />
             </div>
             <p className="text-2xl font-bold text-white">{s.value}</p>
-            <p className="text-xs text-white/40 mt-0.5">{s.label}</p>
+            <p className="text-[14px] text-muted mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
@@ -76,8 +76,17 @@ export default async function AdminDashboard() {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Recent enrollments */}
         <div className="card">
-          <div className="p-5 border-b border-surface-border">
+          <div className="p-5 border-b border-surface-border flex items-center justify-between gap-3">
             <h5 className="font-semibold text-white">Ultime iscrizioni</h5>
+            <a
+              href="https://dashboard.stripe.com/payments"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors shrink-0"
+            >
+              Ordini e rimborsi su Stripe
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
           </div>
           <div className="divide-y divide-surface-border">
             {(recentEnrollments ?? []).slice(0, 8).map((e: any) => (
@@ -86,16 +95,16 @@ export default async function AdminDashboard() {
                   {e.user?.full_name?.[0] ?? e.user?.email?.[0]?.toUpperCase() ?? '?'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">{e.user?.full_name ?? e.user?.email}</p>
-                  <p className="text-xs text-white/40 truncate">{e.course?.title}</p>
+                  <p className="text-[16px] text-white truncate">{e.user?.full_name ?? e.user?.email}</p>
+                  <p className="text-[14px] text-muted truncate">{e.course?.title}</p>
                 </div>
-                <span className="text-xs text-white/30 shrink-0">
+                <span className="text-[13px] text-white/30 shrink-0">
                   {new Date(e.enrolled_at).toLocaleDateString('it-IT')}
                 </span>
               </div>
             ))}
             {!(recentEnrollments?.length) && (
-              <p className="px-5 py-6 text-sm text-white/30 text-center">Nessuna iscrizione</p>
+              <p className="px-5 py-6 text-[16px] text-white/30 text-center">Nessuna iscrizione</p>
             )}
           </div>
         </div>
@@ -108,13 +117,13 @@ export default async function AdminDashboard() {
           <div className="divide-y divide-surface-border">
             {(popularCourses ?? []).map((e: any, i: number) => (
               <div key={e.course_id ?? i} className="flex items-center gap-3 px-5 py-3">
-                <span className="text-sm font-bold text-white/20 w-5 shrink-0">#{i + 1}</span>
-                <p className="text-sm text-white/70 flex-1 truncate">{e.title}</p>
-                <span className="text-xs text-white/30 shrink-0">{e.enrollment_count} iscritti</span>
+                <span className="text-[16px] font-bold text-white/20 w-6 shrink-0">#{i + 1}</span>
+                <p className="text-[16px] text-white/70 flex-1 truncate">{e.title}</p>
+                <span className="text-[13px] text-white/30 shrink-0">{e.enrollment_count} iscritti</span>
               </div>
             ))}
             {!(popularCourses?.length) && (
-              <p className="px-5 py-6 text-sm text-white/30 text-center">Nessun dato</p>
+              <p className="px-5 py-6 text-[16px] text-white/30 text-center">Nessun dato</p>
             )}
           </div>
         </div>

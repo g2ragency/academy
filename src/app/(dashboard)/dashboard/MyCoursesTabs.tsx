@@ -14,6 +14,8 @@ interface Props {
   enrolled: EnrolledItem[]
   /** Corsi suggeriti non acquistati (tab "Adatti a te") */
   recommended: Course[]
+  /** Query di ricerca attiva (dalla search in sidebar), per il messaggio vuoto */
+  query?: string
 }
 
 const TABS = ['Acquistati', 'Completati', 'Da vedere', 'Adatti a te'] as const
@@ -27,7 +29,7 @@ const EMPTY_MESSAGES: Record<Tab, string> = {
 }
 
 /** Tab "Corsi" dell'area riservata (design Figma): Acquistati / Completati / Da vedere / Adatti a te */
-export default function MyCoursesTabs({ enrolled, recommended }: Props) {
+export default function MyCoursesTabs({ enrolled, recommended, query }: Props) {
   const [active, setActive] = useState<Tab>('Acquistati')
 
   const lists: Record<Tab, { course: Course; progress?: number; href?: string }[]> = {
@@ -65,7 +67,9 @@ export default function MyCoursesTabs({ enrolled, recommended }: Props) {
 
       {items.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-white/40 mb-4">{EMPTY_MESSAGES[active]}</p>
+          <p className="text-white/40 mb-4">
+            {query ? `Nessun corso trovato per “${query}”.` : EMPTY_MESSAGES[active]}
+          </p>
           <Link href="/corsi" className="btn-primary inline-flex text-sm">
             Esplora i corsi
           </Link>

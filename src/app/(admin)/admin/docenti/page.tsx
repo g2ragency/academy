@@ -42,8 +42,8 @@ export default async function AdminDocentiPage() {
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
               <div className="absolute bottom-3 left-3 right-3">
-                <p className="font-semibold text-white text-sm leading-tight">{instructor.full_name}</p>
-                {instructor.title && <p className="text-xs text-white/50 mt-0.5 line-clamp-1">{instructor.title}</p>}
+                <p className="text-white text-[16px] leading-tight">{instructor.full_name}</p>
+                {instructor.title && <p className="text-[14px] text-muted mt-0.5 line-clamp-1">{instructor.title}</p>}
               </div>
             </div>
             <div className="p-3 flex justify-end">

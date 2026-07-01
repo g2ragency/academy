@@ -47,8 +47,8 @@ export default function TaxonomyManager({ initialTaxonomies }: { initialTaxonomi
         <div key={taxonomy.id} className="card overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 bg-surface-elevated">
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-white">{taxonomy.name}</span>
-              <span className="text-xs text-white/30">/{taxonomy.slug}</span>
+              <span className="text-[16px] text-white">{taxonomy.name}</span>
+              <span className="text-[14px] text-white/30">/{taxonomy.slug}</span>
               {taxonomy.show_in_filters && <FlagBadge label="Filtri corsi" />}
               {taxonomy.show_in_home && <FlagBadge label="Homepage" />}
               {taxonomy.applies_to_instructors && <FlagBadge label="Docenti" />}

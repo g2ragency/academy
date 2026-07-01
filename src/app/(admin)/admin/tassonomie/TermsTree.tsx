@@ -98,7 +98,7 @@ export default function TermsTree({ taxonomyId, initialTerms }: Props) {
   return (
     <div className="space-y-1">
       {tree.length === 0 && (
-        <p className="text-sm text-white/30 pb-2">Nessuna voce: aggiungi la prima categoria qui sotto.</p>
+        <p className="text-[16px] text-white/30 pb-2">Nessuna voce: aggiungi la prima categoria qui sotto.</p>
       )}
       {tree.map((root) => (
         <div key={root.id}>
@@ -138,7 +138,7 @@ function TermRow({ term, depth = 0, onRename, onDelete, onMove, onAddChild }: {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="input text-sm py-1.5 flex-1"
+              className="input py-1.5 flex-1"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') submitRename()
@@ -150,8 +150,8 @@ function TermRow({ term, depth = 0, onRename, onDelete, onMove, onAddChild }: {
           </>
         ) : (
           <>
-            <span className="text-sm text-white/80 flex-1">{term.name}</span>
-            <span className="text-xs text-white/20">{term.slug}</span>
+            <span className="text-[16px] text-white/80 flex-1">{term.name}</span>
+            <span className="text-[14px] text-white/20">{term.slug}</span>
             <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => onMove(term, -1)} title="Sposta su" className="p-1 text-white/30 hover:text-white"><ChevronUp className="w-3.5 h-3.5" /></button>
               <button onClick={() => onMove(term, 1)} title="Sposta giù" className="p-1 text-white/30 hover:text-white"><ChevronDown className="w-3.5 h-3.5" /></button>
