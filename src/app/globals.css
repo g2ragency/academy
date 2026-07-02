@@ -146,6 +146,35 @@ optgroup {
   transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
   pointer-events: none;
   will-change: transform;
+  /* Ingresso: arriva da fuori view (in alto a dx), una card dopo l'altra
+     (--hc-delay, calcolato in JS in base alla posizione nel ventaglio).
+     fill-mode SOLO "backwards" (non "both"): durante il delay resta nello
+     stato iniziale, ma a fine animazione l'effetto si spegne e il transform
+     torna a seguire la regola normale (--rest) qui sopra — altrimenti
+     un'animazione ancora "attiva" avrebbe vinto sulla regola dell'hover
+     più sotto, bloccando il sollevamento al passaggio del mouse. */
+  animation: hc-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: var(--hc-delay, 0ms);
+}
+@keyframes hc-in {
+  /* translate/scale STANDALONE (non dentro transform): si compongono sopra
+     transform:var(--rest) senza bisogno di concatenare var() dentro il
+     keyframe — che i browser interpolano male/non interpolano affatto. */
+  from {
+    opacity: 0;
+    translate: 420px -320px;
+    scale: 0.82;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hc-visual {
+    animation: none;
+  }
 }
 .hc-hitzone {
   pointer-events: none;

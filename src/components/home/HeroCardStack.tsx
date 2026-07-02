@@ -18,12 +18,14 @@ const WHITE_RIM =
 const GREY_FACE =
   'M387.914 77.9984L72.2792 10.508C39.1129 3.41361 22.5297 -0.128624 11.5072 8.78632C0.494629 17.6914 0.494629 34.6506 0.494629 68.559V260.928C0.494629 283.933 0.494629 295.44 7.09426 303.603C13.6939 311.766 24.9439 314.17 47.444 318.979L363.079 386.469C396.245 393.564 412.828 397.106 423.841 388.201C434.863 379.286 434.863 362.337 434.863 328.418V136.049C434.863 113.045 434.863 101.537 428.264 93.3744C421.664 85.2115 410.414 82.8071 387.914 77.9984Z'
 
-const N = 16 // totale card (Figma: 12 + 2 davanti + 2 dietro, fuori view)
-const LEAD_NEUTRAL = 2 // card neutre davanti ai corsi reali (stesso passo uniforme)
+const N = 20 // totale card (+2 davanti e +2 dietro rispetto a prima, tutte fuori view)
+const LEAD_NEUTRAL = 4 // card neutre davanti ai corsi reali (stesso passo uniforme)
 const ASPECT = 394 / 440
 const DESIGN_VW = 1150 // schermo di riferimento per la scala (più basso = card più grandi ovunque)
-const BLEED_BOTTOM = 340 // px di card che escono sotto la view
-const BLEED_TOP = 100 // px di card che escono sopra la view
+const BLEED_BOTTOM = 461 // px di card che escono sotto la view (+121 = +2 step, per assorbire le 2 nuove card davanti senza spostare le altre)
+const BLEED_TOP = 121 // px di card che escono sopra la view (+121 = +2 step, per le 2 nuove card dietro)
+
+const ENTER_STAGGER_MS = 50 // ritardo tra una card e la successiva in ingresso
 
 function Card({ course, i, cardW, transform, z }: {
   course: HeroCourse | null
@@ -36,7 +38,10 @@ function Card({ course, i, cardW, transform, z }: {
   const height = cardW * ASPECT
   const clipId = `hc-clip-${i}`
   const gradId = `hc-grad-${i}`
-  const layerStyle = { '--rest': transform, zIndex: z } as React.CSSProperties
+  // le card vicine all'angolo in alto a destra (indici alti, già quasi lì)
+  // arrivano per prime; quelle davanti (indice 0, più lontane) arrivano per ultime
+  const delay = (N - 1 - i) * ENTER_STAGGER_MS
+  const layerStyle = { '--rest': transform, '--hc-delay': `${delay}ms`, zIndex: z } as React.CSSProperties
 
   return (
     <div className="hc-enter">
@@ -86,15 +91,22 @@ function Card({ course, i, cardW, transform, z }: {
   )
 }
 
-/** Stack di card 3D nella hero (desktop), responsive e con bleed sopra/sotto. */
+/** Stack di card 3D nella hero (desktop), responsive e con bleed sopra/sotto.
+ *  Non renderizza nulla finché non conosce le dimensioni reali della finestra:
+ *  prima si vedeva uno scatto (le card comparivano con la size "indovinata"
+ *  DESIGN_VW/900 e poi saltavano a quella corretta). Ora restano assenti finché
+ *  non si conosce la size vera, poi entrano con l'animazione (mai nel posto
+ *  sbagliato). */
 export default function HeroCardStack({ courses }: { courses: HeroCourse[] }) {
-  const [size, setSize] = useState({ w: DESIGN_VW, h: 900 })
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null)
   useEffect(() => {
     const update = () => setSize({ w: window.innerWidth, h: window.innerHeight })
     update()
     window.addEventListener('resize', update)
     return () => window.removeEventListener('resize', update)
   }, [])
+
+  if (!size) return <div className="hc-stack" />
 
   // fattore responsive (dimensione/spread orizzontale) sulla larghezza
   const f = Math.min(2.3, Math.max(0.78, size.w / DESIGN_VW))
@@ -103,7 +115,7 @@ export default function HeroCardStack({ courses }: { courses: HeroCourse[] }) {
   const lift = cardH * 0.32 // hover: ~1/3 dell'altezza
 
   const frontX = -100 * f
-  const stepX = 90 * f // ~90px equidistanti
+  const stepX = 55 * f // ~55px equidistanti (ridotto: a 90 l'ultima card usciva già oltre il bordo destro molto prima di arrivare in alto)
   const stepScale = 0.045
 
   // verticale legato all'altezza viewport → front esce SOTTO, back esce SOPRA.
