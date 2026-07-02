@@ -117,6 +117,68 @@ optgroup {
   }
 }
 
+/* ── Hero card stack 3D (HeroCardStack.tsx) ──
+   Ventaglio di card in prospettiva; a riposo tutte grigie, all'hover la card
+   si alza, mostra immagine + play + targhetta. Solo desktop. */
+.hc-stack {
+  position: absolute;
+  inset: 0;
+  isolation: isolate; /* confina la guerra di z-index dentro lo stack */
+  pointer-events: none;
+}
+.hc-enter {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+/* Due layer sovrapposti per ogni card, stessa posizione a riposo (--rest):
+   - hitzone: FERMA, cattura hover/clic (così il mouse non "cade" quando la
+     card si alza → niente flicker/rimbalzo)
+   - visual: la card che si vede, si alza all'hover, non intercetta il mouse */
+.hc-visual,
+.hc-hitzone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: var(--rest);
+}
+.hc-visual {
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+  pointer-events: none;
+  will-change: transform;
+}
+.hc-hitzone {
+  pointer-events: none;
+}
+.hc-hitpath {
+  pointer-events: all;
+  cursor: pointer;
+}
+/* targhetta: visibile solo all'hover (l'immagine è sempre visibile) */
+.hc-tag {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 0.25s ease 0.05s;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  height: 50px;
+  padding: 0 18px;
+  border-radius: 14px;
+  background: #d7c8ff;
+  color: #000;
+  font-size: 22px;
+  line-height: 35px;
+  white-space: nowrap;
+}
+/* Hover sulla hitzone ferma → alza la visual (asse Y), senza passare davanti */
+.hc-hitzone:hover ~ .hc-visual {
+  transform: var(--rest) translateY(calc(var(--hc-lift, 200px) * -1));
+}
+.hc-hitzone:hover ~ .hc-visual .hc-tag {
+  opacity: 1;
+}
+
 /* Nasconde la scrollbar mantenendo lo scroll (caroselli, righe di chip) */
 .scrollbar-hide {
   scrollbar-width: none;

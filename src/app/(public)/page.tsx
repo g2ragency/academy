@@ -38,9 +38,15 @@ async function getHomeData() {
 export default async function HomePage() {
   const { courses, instructors } = await getHomeData()
 
+  // Card della hero: featured prima, poi l'ordine esistente (max 12)
+  const heroCourses = [...courses]
+    .sort((a, b) => Number(b.featured) - Number(a.featured))
+    .slice(0, 12)
+    .map((c) => ({ id: c.id, slug: c.slug, title: c.title, thumbnail_url: c.thumbnail_url }))
+
   return (
     <>
-      <Hero />
+      <Hero courses={heroCourses} />
       <TrendingCourses courses={courses} />
       <BrandLogos />
       <Instructors instructors={instructors} />

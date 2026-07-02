@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Check, Sparkles } from 'lucide-react'
+import HeroCardStack, { type HeroCourse } from './HeroCardStack'
 
 const TOPICS = [
   'Sviluppare Best Practices Holding',
@@ -12,47 +12,43 @@ const TOPICS = [
   'Compliance & Sistemi ESG',
 ]
 
-export default function Hero() {
+export default function Hero({ courses }: { courses: HeroCourse[] }) {
   const [selected, setSelected] = useState(2)
 
   return (
     <section className="relative min-h-screen bg-surface overflow-hidden pt-16">
-      {/* Stack di card decorativo (export Figma) sul lato destro */}
-      <div className="absolute inset-y-0 right-0 left-[10%] hidden lg:block pointer-events-none select-none">
-        <Image
-          src="/images/hero-stack.png"
-          alt=""
-          fill
-          priority
-          className="object-cover object-right-top"
-        />
-        {/* Tooltip sul corso in evidenza */}
-        <div className="absolute top-[44%] right-[22%] bg-white text-black rounded-lg px-5 py-2.5">
-          PEX &amp; Regime dei Dividendi
-        </div>
+      {/* Stack di card 3D animato sul lato destro (desktop) */}
+      <div className="absolute top-0 bottom-0 right-0 left-[14%] hidden lg:block">
+        <HeroCardStack courses={courses} />
       </div>
 
-      {/* Blur progressivo sullo stack: sfocato a sinistra, nitido verso destra.
-          Il backdrop-filter è mascherato con un gradiente che si annulla a destra. */}
+      {/* Nero pieno: si interrompe presto (solo vicino al testo) */}
       <div
-        className="absolute inset-y-0 right-0 left-[10%] hidden lg:block pointer-events-none"
+        className="absolute inset-y-0 left-0 w-2/3 bg-surface pointer-events-none z-[1]"
         style={{
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          maskImage: 'linear-gradient(to right, #000 0%, #000 20%, transparent 65%)',
-          WebkitMaskImage: 'linear-gradient(to right, #000 0%, #000 20%, transparent 65%)',
+          maskImage: 'linear-gradient(to right, #000 0%, #000 25%, transparent 60%)',
+          WebkitMaskImage: 'linear-gradient(to right, #000 0%, #000 25%, transparent 60%)',
+        }}
+      />
+      {/* Blur: si estende molto più a destra, oltre il nero, sfumando sulle card */}
+      <div
+        className="absolute inset-y-0 left-0 w-2/3 backdrop-blur-[10px] pointer-events-none z-[1]"
+        style={{
+          maskImage: 'linear-gradient(to right, #000 0%, #000 25%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to right, #000 0%, #000 25%, transparent 100%)',
         }}
       />
 
-      {/* Sfumatura per leggibilità del testo sopra lo stack */}
-      <div className="absolute inset-y-0 left-0 w-3/5 bg-gradient-to-r from-surface via-surface/80 to-transparent pointer-events-none" />
+      {/* Sfumatura sul bordo inferiore (Figma: full width, h ~87px): le card che
+          escono sotto svaniscono nel nero */}
+      <div className="absolute inset-x-0 bottom-0 h-[87px] bg-gradient-to-t from-surface to-transparent pointer-events-none z-[1]" />
 
       {/* Layout Figma:
           - mobile: flex column a tutta altezza, titolo+desc in alto e
             quiz+bottone "pinnati" in basso (justify-between)
           - desktop: layout naturale (titolo, desc, quiz, bottone in sequenza)
             con max-w sul testo per non sovrapporsi allo stack di card a destra */}
-      <div className="container-wide relative z-10 min-h-[calc(100vh-4rem)] pt-10 pb-8 lg:pt-24 lg:pb-16 flex flex-col justify-between lg:block">
+      <div className="container-wide relative z-10 min-h-[calc(100vh-4rem)] pt-10 pb-8 lg:pt-24 lg:pb-16 flex flex-col justify-between lg:block pointer-events-none">
         <div className="lg:max-w-[640px]">
           <h1 className="text-white mb-6 lg:mb-12">
             Impara dai migliori,
@@ -67,7 +63,7 @@ export default function Hero() {
           </p>
         </div>
 
-        <div className="lg:max-w-[640px]">
+        <div className="lg:max-w-[640px] pointer-events-auto">
           {/* Selettore argomenti */}
           <div className="flex items-center gap-3 mb-4 lg:mb-6">
             <span className="w-0.5 h-6 bg-[#60FDE8] shrink-0" />
