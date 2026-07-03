@@ -11,16 +11,18 @@ interface Props {
 }
 
 /** Tutti i corsi pubblicati + gli id dei term associati (per il filtraggio
- *  client-side istantaneo in CoursesExplorer). */
+ *  client-side istantaneo in CoursesExplorer) + n° iscrizioni (per l'ordinamento
+ *  "In tendenza"). */
 async function getCoursesWithTerms(): Promise<CourseWithTerms[]> {
   const supabase = createServerClient()
-  const [{ data: courses }, { data: courseTerms }] = await Promise.all([
+  const [{ data: courses }, { data: courseTerms }, { data: popularity }] = await Promise.all([
     supabase
       .from('courses')
       .select('*, instructor:instructors!courses_instructor_id_fkey(*)')
       .eq('status', 'published')
       .order('sort_order', { ascending: true }),
     supabase.from('course_terms').select('course_id, term_id'),
+    supabase.from('course_popularity').select('course_id, enrollment_count'),
   ])
 
   const termsByCourse = new Map<string, string[]>()
@@ -29,10 +31,14 @@ async function getCoursesWithTerms(): Promise<CourseWithTerms[]> {
     list.push(row.term_id)
     termsByCourse.set(row.course_id, list)
   }
+  const countByCourse = new Map<string, number>(
+    (popularity ?? []).map((p) => [p.course_id as string, (p.enrollment_count as number) ?? 0])
+  )
 
   return ((courses ?? []) as Course[]).map((c) => ({
     ...c,
     termIds: termsByCourse.get(c.id) ?? [],
+    enrollmentCount: countByCourse.get(c.id) ?? 0,
   }))
 }
 

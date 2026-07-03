@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Search } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import AnimatedCourseGrid from '@/components/courses/AnimatedCourseGrid'
 import MobileFiltersBar from './MobileFiltersBar'
 import { buildTermTree, resolveTermWithDescendants, TAXONOMY_PARAM_PREFIX } from '@/lib/taxonomy'
@@ -10,8 +10,9 @@ import type { Course, Taxonomy } from '@/types'
 
 const LEVELS = ['base', 'intermedio', 'avanzato'] as const
 
-/** Corso con gli id dei term associati (per filtrare le tassonomie in memoria) */
-export type CourseWithTerms = Course & { termIds: string[] }
+/** Corso con gli id dei term associati (per filtrare le tassonomie in memoria)
+ *  e il n° iscrizioni (per l'ordinamento "In tendenza") */
+export type CourseWithTerms = Course & { termIds: string[]; enrollmentCount: number }
 
 interface Props {
   courses: CourseWithTerms[]
@@ -32,6 +33,9 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
   const [tipo, setTipo] = useState<string | undefined>(initial.tipo)
   const [livello, setLivello] = useState<string | undefined>(initial.livello)
   const [q, setQ] = useState(initial.q ?? '')
+  // Voci navbar "In tendenza"/"Ultime novità" (?ordina=) e "Certificazioni" (?cert=1)
+  const [ordina, setOrdina] = useState<string | undefined>(initial.ordina)
+  const [soloCert, setSoloCert] = useState(initial.cert === '1')
   const [terms, setTerms] = useState<Record<string, string | undefined>>(() => {
     const t: Record<string, string | undefined> = {}
     for (const tax of taxonomies) {
@@ -41,12 +45,13 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
     return t
   })
 
-  // Lista filtrata in memoria (istantanea, nessuna richiesta al server)
+  // Lista filtrata + ordinata in memoria (istantanea, nessuna richiesta al server)
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase()
-    return courses.filter((c) => {
+    const list = courses.filter((c) => {
       if (tipo && c.type !== tipo) return false
       if (livello && c.level !== livello) return false
+      if (soloCert && !c.issues_certificate) return false
       if (needle && !c.title.toLowerCase().includes(needle)) return false
       for (const [taxSlug, termSlug] of Object.entries(terms)) {
         if (!termSlug) continue
@@ -57,7 +62,14 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
       }
       return true
     })
-  }, [courses, tipo, livello, q, terms, taxonomies])
+    // Ordinamento: tendenza = più iscritti; novita = più recenti; default = sort_order
+    if (ordina === 'tendenza') {
+      list.sort((a, b) => b.enrollmentCount - a.enrollmentCount || a.sort_order - b.sort_order)
+    } else if (ordina === 'novita') {
+      list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    }
+    return list
+  }, [courses, tipo, livello, q, terms, taxonomies, ordina, soloCert])
 
   // Sincronizza l'URL (shareable) senza far ripartire la pagina
   useEffect(() => {
@@ -65,12 +77,14 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
     if (tipo) params.set('tipo', tipo)
     if (livello) params.set('livello', livello)
     if (q.trim()) params.set('q', q.trim())
+    if (ordina) params.set('ordina', ordina)
+    if (soloCert) params.set('cert', '1')
     for (const [taxSlug, termSlug] of Object.entries(terms)) {
       if (termSlug) params.set(`${TAXONOMY_PARAM_PREFIX}${taxSlug}`, termSlug)
     }
     const qs = params.toString()
     window.history.replaceState(null, '', `/corsi${qs ? `?${qs}` : ''}`)
-  }, [tipo, livello, q, terms])
+  }, [tipo, livello, q, terms, ordina, soloCert])
 
   const setTerm = (taxSlug: string, termSlug: string | null) =>
     setTerms((prev) => ({ ...prev, [taxSlug]: termSlug ?? undefined }))
@@ -106,7 +120,17 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
   }
 
   const hasActiveExtra =
-    !!livello || !!q.trim() || Object.values(terms).some(Boolean)
+    !!livello || !!q.trim() || !!ordina || soloCert || Object.values(terms).some(Boolean)
+
+  const clearAll = () => {
+    setTipo(undefined); setLivello(undefined); setQ(''); setTerms({}); setOrdina(undefined); setSoloCert(false)
+  }
+
+  // Etichetta della "vista" attiva dalle voci navbar (In tendenza / Ultime novità / Certificazioni)
+  const vistaLabel = ordina === 'tendenza' ? 'In tendenza'
+    : ordina === 'novita' ? 'Ultime novità'
+    : soloCert ? 'Con certificazione'
+    : null
 
   const tipoOptions = [
     { value: null, label: 'Tutti' },
@@ -196,7 +220,19 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
       {/* Colonna corsi */}
       <div className="flex-1 min-w-0">
         {/* Titolo: 32px desktop, nascosto su mobile (Figma) */}
-        <h5 className="hidden md:block text-white leading-none mb-6 md:mb-8" style={{ fontSize: '32px' }}>I nostri corsi</h5>
+        <div className="hidden md:flex items-center gap-3 mb-6 md:mb-8">
+          <h5 className="text-white leading-none" style={{ fontSize: '32px' }}>
+            {vistaLabel ?? 'I nostri corsi'}
+          </h5>
+          {vistaLabel && (
+            <button
+              onClick={() => { setOrdina(undefined); setSoloCert(false) }}
+              className="inline-flex items-center gap-1 text-sm text-muted hover:text-white transition-colors"
+            >
+              <X className="w-4 h-4" /> togli
+            </button>
+          )}
+        </div>
 
         <MobileFiltersBar
           tipoOptions={tipoOptions}
@@ -211,7 +247,7 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
           <div className="text-center py-20">
             <p className="text-white/30 text-lg mb-2">Nessun corso trovato</p>
             <button
-              onClick={() => { setTipo(undefined); setLivello(undefined); setQ(''); setTerms({}) }}
+              onClick={clearAll}
               className="text-brand text-sm hover:underline"
             >
               Rimuovi i filtri

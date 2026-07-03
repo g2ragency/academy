@@ -8,7 +8,6 @@ import {
 } from 'lucide-react'
 import HamburgerIcon from '@/components/icons/HamburgerIcon'
 import FormatIcon from '@/components/icons/FormatIcon'
-import { useFormats } from '@/context/FormatsContext'
 import { createClient } from '@/lib/supabase/client'
 import CartButton from '@/components/cart/CartButton'
 import { useCart } from '@/context/CartContext'
@@ -43,14 +42,19 @@ export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
   const { isOpen: cartOpen, closeCart } = useCart()
-  const formats = useFormats()
   // Istanza stabile: se ricreato a ogni render, lo useEffect con dep [supabase] rifetcha in loop
   const [supabase] = useState(() => createClient())
 
-  // Voci dropdown "Corsi": "Tutti i corsi" + un formato per voce (course_formats)
+  // Voci dropdown "Corsi": "Tutti i corsi" + un target per voce dalla tassonomia
+  // "Per chi" (Professionisti/Avvocati/Commercialisti/Imprenditori) → filtro per-chi
+  const perChi = taxonomies.find((t) => t.slug === 'per-chi')
   const courseItems: MenuItem[] = [
     { icon: BookOpen, label: 'Tutti i corsi', href: '/corsi' },
-    ...formats.map((f) => ({ formatSlug: f.slug, iconUrl: f.icon_url, label: f.name, href: `/corsi?tipo=${f.slug}` })),
+    ...buildTermTree(perChi?.terms ?? []).map((term) => ({
+      icon: Tag,
+      label: `Corsi per ${term.name}`,
+      href: `/corsi?${TAXONOMY_PARAM_PREFIX}per-chi=${term.slug}`,
+    })),
   ]
 
   // Sidecart e menu account sono mutuamente esclusivi: se si apre il carrello, chiudi il profilo
@@ -181,7 +185,8 @@ export default function Navbar() {
               active={pathname.startsWith('/corsi')}
             />
 
-            {taxonomies.map((taxonomy) => {
+            {/* Dropdown tassonomia (Argomenti, ecc.) — "Per chi" escluso: è dentro "Corsi" */}
+            {taxonomies.filter((t) => t.slug !== 'per-chi').map((taxonomy) => {
               const items = taxonomyItems(taxonomy)
               if (items.length === 0) return null
               return (
@@ -195,17 +200,24 @@ export default function Navbar() {
               )
             })}
 
-            <Link
-              href="/#trending"
-              className="px-4 py-2 rounded-lg text-[18px] leading-none text-white/70 hover:text-white transition-colors"
-            >
-              In tendenza
-            </Link>
+            {[
+              { label: 'In tendenza', href: '/corsi?ordina=tendenza' },
+              { label: 'Novità', href: '/corsi?ordina=novita' },
+              { label: 'Certificazioni', href: '/corsi?cert=1' },
+            ].map((it) => (
+              <Link
+                key={it.href}
+                href={it.href}
+                className="px-2.5 xl:px-4 py-2 rounded-lg text-[16px] xl:text-[18px] leading-none text-white/70 hover:text-white transition-colors whitespace-nowrap"
+              >
+                {it.label}
+              </Link>
+            ))}
 
             <button
               onClick={() => setSearchOpen((v) => !v)}
               className={cn(
-                'flex items-center gap-1.5 px-4 py-2 rounded-lg text-[18px] leading-none transition-colors',
+                'flex items-center gap-1.5 px-2.5 xl:px-4 py-2 rounded-lg text-[16px] xl:text-[18px] leading-none transition-colors',
                 searchOpen ? 'text-white' : 'text-white/70 hover:text-white'
               )}
             >
@@ -262,13 +274,13 @@ export default function Navbar() {
               <>
                 <Link
                   href="/auth/login"
-                  className="flex items-center justify-center h-[45px] min-w-[95px] px-5 rounded-[15px] border border-white/40 text-[18px] leading-none text-white hover:border-white transition-colors"
+                  className="flex items-center justify-center h-[45px] xl:min-w-[95px] px-4 xl:px-5 rounded-[15px] border border-white/40 text-[16px] xl:text-[18px] leading-none text-white hover:border-white transition-colors whitespace-nowrap"
                 >
                   Log In
                 </Link>
                 <Link
                   href="/auth/registrati"
-                  className="flex items-center justify-center h-[45px] min-w-[95px] px-5 rounded-[15px] bg-white text-[18px] leading-none text-black hover:bg-white/80 transition-colors"
+                  className="flex items-center justify-center h-[45px] xl:min-w-[95px] px-4 xl:px-5 rounded-[15px] bg-white text-[16px] xl:text-[18px] leading-none text-black hover:bg-white/80 transition-colors whitespace-nowrap"
                 >
                   Iscriviti
                 </Link>
@@ -335,7 +347,7 @@ export default function Navbar() {
               </Link>
             ))}
 
-            {taxonomies.map((taxonomy) => {
+            {taxonomies.filter((t) => t.slug !== 'per-chi').map((taxonomy) => {
               const items = taxonomyItems(taxonomy)
               if (items.length === 0) return null
               return (
@@ -350,9 +362,15 @@ export default function Navbar() {
               )
             })}
 
-            <Link href="/#trending" onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-surface-elevated rounded-lg">
-              In tendenza
-            </Link>
+            {[
+              { label: 'In tendenza', href: '/corsi?ordina=tendenza' },
+              { label: 'Ultime novità', href: '/corsi?ordina=novita' },
+              { label: 'Certificazioni', href: '/corsi?cert=1' },
+            ].map((it) => (
+              <Link key={it.href} href={it.href} onClick={() => setMobileOpen(false)} className="block px-4 py-2.5 text-sm text-white/70 hover:text-white hover:bg-surface-elevated rounded-lg">
+                {it.label}
+              </Link>
+            ))}
 
             <div className="border-t border-surface-border pt-3 mt-3 flex flex-wrap gap-2 px-4">
               {profile ? (
@@ -390,7 +408,7 @@ function NavDropdown({ label, items, open, onOpen, active }: {
       <button
         onClick={onOpen}
         className={cn(
-          'flex items-center gap-1 px-4 py-2 rounded-lg text-[18px] leading-none transition-colors',
+          'flex items-center gap-1 px-2.5 xl:px-4 py-2 rounded-lg text-[16px] xl:text-[18px] leading-none transition-colors',
           active || open ? 'text-white' : 'text-white/70 hover:text-white'
         )}
       >
