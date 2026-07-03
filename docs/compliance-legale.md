@@ -156,6 +156,7 @@ Non è un obbligo a sé, ma **abilita** il recesso (§6, conferma su supporto du
 ---
 
 ## 11. Note minori
+- **Attestati — completamento verificabile solo lato client `[tecnico, rilevante se l'attestato ha valore]`**: il gating "guarda il video fino in fondo" e il flag `lesson_progress.completed` sono scritti dal **browser dell'utente** (RLS "Users can manage own progress"). Un utente tecnicamente capace può marcare `completed=true` senza guardare (upsert diretto) → `issue_certificate` (che valida il 100% lato server) rilascia comunque l'attestato. Il gating attuale è quindi un **deterrente UI**, non una prova difendibile. Se l'attestato deve certificare l'effettiva fruizione: spostare la scrittura del completamento dietro un RPC `SECURITY DEFINER` con heartbeat di visione validati server-side (o provider video con analytics), e togliere il write diretto su `completed` dalla RLS. Da valutare col legale se serve davvero questo livello.
 - **DSA (Digital Services Act)**: si applica a marketplace/piattaforme di intermediazione e VLOP → **probabilmente non applicabile** ad Academy (venditore diretto, non marketplace). Rivalutare se si introduce UGC/contenuti di terzi.
 - **Piattaforma ODR UE**: obbligo storico di linkarla; la piattaforma è stata **dismessa (2025)** → verificare con il legale cosa indicare al suo posto per la risoluzione controversie.
 

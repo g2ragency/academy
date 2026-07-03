@@ -102,6 +102,18 @@ export interface Lesson {
   created_at: string
   updated_at: string
   quiz_questions?: QuizQuestion[]
+  /** Capitoli del video (marcatori temporali titolati) */
+  chapters?: LessonChapter[]
+}
+
+/** Capitolo di un video-lezione: titolo + secondo d'inizio (stile capitoli YouTube) */
+export interface LessonChapter {
+  id: string
+  lesson_id: string
+  title: string
+  start_seconds: number
+  sort_order: number
+  created_at: string
 }
 
 /** Formato corso ("Tipologia Formativa") gestibile da admin. Lo slug è la

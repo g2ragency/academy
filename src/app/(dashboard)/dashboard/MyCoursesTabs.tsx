@@ -33,13 +33,13 @@ export default function MyCoursesTabs({ enrolled, recommended, query }: Props) {
   const [active, setActive] = useState<Tab>('Acquistati')
 
   const lists: Record<Tab, { course: Course; progress?: number; href?: string }[]> = {
-    'Acquistati': enrolled.map((e) => ({ ...e, href: `/dashboard/corsi/${e.course.slug}` })),
+    'Acquistati': enrolled.map((e) => ({ ...e, href: `/corsi/${e.course.slug}/guarda` })),
     'Completati': enrolled
       .filter((e) => e.progress === 100)
-      .map((e) => ({ ...e, href: `/dashboard/corsi/${e.course.slug}` })),
+      .map((e) => ({ ...e, href: `/corsi/${e.course.slug}/guarda` })),
     'Da vedere': enrolled
       .filter((e) => e.progress < 100)
-      .map((e) => ({ ...e, href: `/dashboard/corsi/${e.course.slug}` })),
+      .map((e) => ({ ...e, href: `/corsi/${e.course.slug}/guarda` })),
     // I suggeriti portano alla pagina pubblica (acquisto)
     'Adatti a te': recommended.map((course) => ({ course })),
   }

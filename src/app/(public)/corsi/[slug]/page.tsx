@@ -16,6 +16,7 @@ import { ClockIcon, TeacherIcon, FolderIcon } from '@/components/icons/FigmaIcon
 import { createServerClient, getProfile } from '@/lib/supabase/server'
 import { TAXONOMY_PARAM_PREFIX } from '@/lib/taxonomy'
 import { getMediaUrl } from '@/lib/media'
+import { getRelatedCourses } from '@/lib/courses.server'
 import { CourseTypeBadge } from '@/components/ui/Badge'
 import CourseRowCard from '@/components/courses/CourseRowCard'
 import { formatPrice, formatHours, formatSeconds } from '@/lib/utils'
@@ -77,24 +78,6 @@ async function getEnrollment(userId: string, courseId: string) {
     .eq('course_id', courseId)
     .single()
   return data
-}
-
-/** Corsi più seguiti dagli altri utenti (view aggregata course_popularity), escluso il corrente */
-async function getRelatedCourses(excludeId: string) {
-  const supabase = createServerClient()
-  const [{ data: courses }, { data: popularity }] = await Promise.all([
-    supabase.from('courses').select('*').eq('status', 'published').neq('id', excludeId),
-    supabase.from('course_popularity').select('*'),
-  ])
-  const counts = new Map<string, number>(
-    (popularity ?? []).map((p: any) => [p.course_id, p.enrollment_count])
-  )
-  return ((courses ?? []) as Course[])
-    .sort(
-      (a, b) =>
-        (counts.get(b.id) ?? 0) - (counts.get(a.id) ?? 0) || a.sort_order - b.sort_order
-    )
-    .slice(0, 4)
 }
 
 export async function generateMetadata({ params }: Props) {
@@ -210,7 +193,7 @@ export default async function CourseDetailPage({ params }: Props) {
       <div className="mt-6">
         {isEnrolled ? (
           <Link
-            href={`/dashboard/corsi/${course.slug}`}
+            href={`/corsi/${course.slug}/guarda`}
             className="btn-primary w-full flex items-center justify-center gap-2 h-[65px] text-[22px] leading-none rounded-[20px] backdrop-blur-[15px]"
           >
             <Play className="w-4 h-4" />

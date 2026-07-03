@@ -5,11 +5,12 @@ import Link from 'next/link'
 import { Check, Sparkles } from 'lucide-react'
 import HeroCardStack, { type HeroCourse } from './HeroCardStack'
 
+// Voci per ruolo (tassonomia "per-chi"): ognuna porta a /corsi col filtro applicato
 const TOPICS = [
-  'Sviluppare Best Practices Holding',
-  'Aggiornamento Fiscale e PEX',
-  'Governance e Family Business',
-  'Compliance & Sistemi ESG',
+  { label: 'Formazione per Professionisti', slug: 'professionisti' },
+  { label: 'Percorsi per Avvocati', slug: 'avvocati' },
+  { label: 'Aggiornamento per Commercialisti', slug: 'commercialisti' },
+  { label: 'Strumenti per Imprenditori', slug: 'imprenditori' },
 ]
 
 export default function Hero({ courses }: { courses: HeroCourse[] }) {
@@ -73,7 +74,7 @@ export default function Hero({ courses }: { courses: HeroCourse[] }) {
           <div className="space-y-1.5 mb-4 lg:mb-9 lg:max-w-[525px]">
             {TOPICS.map((topic, i) => (
               <button
-                key={topic}
+                key={topic.slug}
                 onClick={() => setSelected(i)}
                 style={
                   selected === i
@@ -94,15 +95,15 @@ export default function Hero({ courses }: { courses: HeroCourse[] }) {
                 >
                   {selected === i && <Check className="w-4 h-4 text-black" strokeWidth={3} />}
                 </span>
-                {topic}
+                {topic.label}
               </button>
             ))}
           </div>
 
-          {/* Bottone Continua: a tutta larghezza su mobile (Figma),
-              225×65 su desktop. */}
+          {/* Bottone Continua: porta ai corsi filtrati per il ruolo selezionato.
+              A tutta larghezza su mobile (Figma), 225×65 su desktop. */}
           <Link
-            href="/corsi"
+            href={`/corsi?t_per-chi=${TOPICS[selected].slug}`}
             className="flex items-center justify-center w-full lg:w-[225px] h-10 lg:h-[65px] bg-white text-black text-[clamp(1rem,0.8338rem+0.677vw,1.375rem)] leading-none rounded-[10px] lg:rounded-[15px] backdrop-blur-[15px] hover:bg-white/80 transition-colors"
           >
             Continua

@@ -36,7 +36,7 @@ export default function EnrollButton({ course, isLoggedIn }: Props) {
         const data = await res.json()
         if (!res.ok) throw new Error(data.error)
         toast.success('Iscrizione completata!')
-        router.push(`/dashboard/corsi/${course.slug}`)
+        router.push(`/corsi/${course.slug}/guarda`)
         router.refresh()
       } catch (err: unknown) {
         toast.error(err instanceof Error ? err.message : 'Si è verificato un errore')

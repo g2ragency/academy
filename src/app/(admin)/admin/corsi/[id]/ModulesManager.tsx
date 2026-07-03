@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Trash2, ChevronDown, Save, Video, FileText, BookOpen, HelpCircle, Edit2 } from 'lucide-react'
+import { Plus, Trash2, ChevronDown, Save, Video, FileText, BookOpen, HelpCircle, Edit2, ListVideo } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
@@ -10,7 +10,18 @@ import { Input } from '@/components/ui/Input'
 import FileUpload from '@/components/admin/FileUpload'
 import QuizEditor from './QuizEditor'
 import { PROTECTED_BUCKET } from '@/lib/media'
-import type { Module, Lesson, LessonType } from '@/types'
+import { formatSeconds } from '@/lib/utils'
+import type { Module, Lesson, LessonType, LessonChapter } from '@/types'
+
+/** "mm:ss", "h:mm:ss" o secondi puri → secondi. null se non valido. */
+function parseTimestamp(v: string): number | null {
+  const s = v.trim()
+  if (!s) return null
+  if (/^\d+$/.test(s)) return parseInt(s, 10)
+  const parts = s.split(':')
+  if (parts.some((p) => !/^\d+$/.test(p.trim()))) return null
+  return parts.reduce((acc, p) => acc * 60 + parseInt(p.trim(), 10), 0)
+}
 
 interface Props {
   courseId: string
@@ -194,6 +205,103 @@ function ModuleItem({ module, courseId, onDelete, onLessonsChange }: {
   )
 }
 
+/** Editor capitoli di un video: titolo + tempo d'inizio (mm:ss).
+ *  Insert/delete immediati (come moduli/lezioni), auto-caricamento all'apertura. */
+function ChapterEditor({ lessonId }: { lessonId: string }) {
+  const supabase = createClient()
+  const [chapters, setChapters] = useState<LessonChapter[]>([])
+  const [loading, setLoading] = useState(true)
+  const [title, setTitle] = useState('')
+  const [ts, setTs] = useState('')
+  const [adding, setAdding] = useState(false)
+
+  useEffect(() => {
+    supabase
+      .from('lesson_chapters')
+      .select('*')
+      .eq('lesson_id', lessonId)
+      .order('start_seconds')
+      .then(({ data }) => {
+        setChapters((data ?? []) as LessonChapter[])
+        setLoading(false)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lessonId])
+
+  const add = async () => {
+    const start = parseTimestamp(ts)
+    if (!title.trim() || start === null) {
+      toast.error('Serve un titolo e un tempo valido (es. 24:50)')
+      return
+    }
+    setAdding(true)
+    const { data, error } = await supabase
+      .from('lesson_chapters')
+      .insert({ lesson_id: lessonId, title: title.trim(), start_seconds: start, sort_order: start })
+      .select()
+      .single()
+    if (error) { toast.error(error.message); setAdding(false); return }
+    setChapters((prev) => [...prev, data as LessonChapter].sort((a, b) => a.start_seconds - b.start_seconds))
+    setTitle('')
+    setTs('')
+    setAdding(false)
+  }
+
+  const remove = async (id: string) => {
+    const { error } = await supabase.from('lesson_chapters').delete().eq('id', id)
+    if (error) { toast.error(error.message); return }
+    setChapters((prev) => prev.filter((c) => c.id !== id))
+  }
+
+  return (
+    <div className="border-t border-surface-border pt-4">
+      <div className="flex items-center gap-2 mb-2">
+        <ListVideo className="w-4 h-4 text-white/70" />
+        <label className="label mb-0">Capitoli del video</label>
+      </div>
+      <p className="text-xs text-white/40 mb-3">
+        Suddividi il video in sezioni titolate come su YouTube. Il tempo è l&apos;inizio del capitolo (mm:ss).
+      </p>
+
+      {loading ? (
+        <p className="text-xs text-white/30">Caricamento…</p>
+      ) : (
+        <div className="space-y-1.5 mb-3">
+          {chapters.map((ch) => (
+            <div key={ch.id} className="flex items-center gap-3 px-3 py-2 rounded-[10px] bg-surface-elevated">
+              <span className="text-xs tabular-nums text-white/50 w-12 shrink-0">{formatSeconds(ch.start_seconds)}</span>
+              <span className="text-sm text-white/80 flex-1">{ch.title}</span>
+              <button onClick={() => remove(ch.id)} className="p-1 text-white/20 hover:text-red-400 transition-colors">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        <input
+          value={ts}
+          onChange={(e) => setTs(e.target.value)}
+          placeholder="mm:ss"
+          className="input text-xs w-20 py-2"
+          onKeyDown={(e) => e.key === 'Enter' && add()}
+        />
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Titolo capitolo…"
+          className="input text-xs flex-1 py-2"
+          onKeyDown={(e) => e.key === 'Enter' && add()}
+        />
+        <Button onClick={add} loading={adding} size="sm" variant="secondary">
+          <Plus className="w-3.5 h-3.5" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: string }) {
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -257,6 +365,7 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
                     }}
                   />
                 </div>
+                <ChapterEditor lessonId={lesson.id} />
               </>
             )}
 
