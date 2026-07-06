@@ -32,6 +32,7 @@ const schema = z.object({
   level: z.enum(['base', 'intermedio', 'avanzato']).optional(),
   featured: z.boolean().optional(),
   issues_certificate: z.boolean().optional(),
+  certificate_threshold_percent: z.coerce.number().min(1, 'Min 1%').max(100, 'Max 100%'),
 })
 
 type FormData = z.infer<typeof schema>
@@ -78,12 +79,14 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
       level: course.level ?? undefined,
       featured: course.featured,
       issues_certificate: course.issues_certificate,
+      certificate_threshold_percent: course.certificate_threshold_percent ?? 80,
     } : {
       type: 'webinar',
       status: 'draft',
       price_euros: 0,
       featured: false,
       issues_certificate: false,
+      certificate_threshold_percent: 80,
     },
   })
 
@@ -275,11 +278,27 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
           <input type="checkbox" {...register('issues_certificate')} className="w-4 h-4 accent-brand rounded" />
           <span className="text-sm text-white/70">Rilascia attestato al completamento del corso</span>
         </label>
-      </div>
+
+        {watch('issues_certificate') && (
+          <div className="pl-7">
+            <label className="label">Soglia di completamento per l&apos;attestato (%)</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={1}
+                max={100}
+                {...register('certificate_threshold_percent')}
+                className="input w-28 text-sm"
+              />
+              <span className="text-sm text-white/40">% delle lezioni completate</span>
+            </div>
+            {errors.certificate_threshold_percent && (
+              <p className="text-xs text-red-400 mt-1">{errors.certificate_threshold_percent.message}</p>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Colonna laterale: relatori, classificazioni, media */}
-      <div className="space-y-6">
       {/* Relatori */}
       <div className="card p-6">
         <div className="flex items-center justify-between border-b border-surface-border pb-3 mb-4">
@@ -319,7 +338,10 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
         <h5 className="font-semibold text-white border-b border-surface-border pb-3 mb-4">Classificazioni</h5>
         <TermsPicker taxonomies={taxonomies} value={termIds} onChange={setTermIds} />
       </div>
+      </div>
 
+      {/* Colonna laterale: media */}
+      <div className="space-y-6">
       {/* Thumbnail */}
       <div className="card p-6">
         <h5 className="font-semibold text-white border-b border-surface-border pb-3 mb-4">Immagine copertina</h5>
@@ -400,10 +422,12 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
       </div>
       </div>
 
-      <Button type="submit" loading={isSubmitting} size="lg" className="gap-2">
-        <Save className="w-4 h-4" />
-        {isEditing ? 'Salva modifiche' : 'Crea corso'}
-      </Button>
+      <div className="flex justify-end border-t border-surface-border pt-6">
+        <Button type="submit" loading={isSubmitting} size="lg" className="gap-2">
+          <Save className="w-4 h-4" />
+          {isEditing ? 'Salva modifiche' : 'Crea corso'}
+        </Button>
+      </div>
     </form>
   )
 }

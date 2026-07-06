@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { LogIn, Check } from 'lucide-react'
+import { LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useCart } from '@/context/CartContext'
 import type { Course } from '@/types'
@@ -71,9 +71,8 @@ export default function EnrollButton({ course, isLoggedIn }: Props) {
 
   if (inCart) {
     return (
-      <Button onClick={openCart} variant="secondary" className={ctaClass} size="lg">
-        <Check className="w-4 h-4" />
-        Nel carrello — apri
+      <Button onClick={openCart} className={ctaClass} size="lg">
+        Vai al carrello
       </Button>
     )
   }

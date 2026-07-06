@@ -179,6 +179,9 @@ export default async function CourseDetailPage({ params }: Props) {
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 mt-8 md:mt-[60px] pb-6 border-b border-surface-border">
         <span className="text-5xl lg:text-[64px] leading-none text-white">{formatPrice(course.price_cents)}</span>
         {course.price_cents > 0 && <span className="text-[18px] leading-none text-muted">IVA Inclusa</span>}
+        {!isEnrolled && course.price_cents > 0 && (
+          <span className="w-full text-[18px] leading-none text-white mt-1">Gratuito se associato Assoholding</span>
+        )}
       </div>
 
       <ul className="mt-6 space-y-[18px]">
@@ -202,6 +205,18 @@ export default async function CourseDetailPage({ params }: Props) {
         ) : (
           <EnrollButton course={course} isLoggedIn={!!profile} />
         )}
+
+        {/* Non loggato: invito ad associarsi ad Assoholding (accesso agevolato) */}
+        {!isEnrolled && !profile && (
+          <a
+            href="https://www.assoholding.it/associarsi/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-secondary w-full flex items-center justify-center gap-2 h-[65px] text-[22px] leading-none rounded-[20px] backdrop-blur-[15px] mt-3"
+          >
+            Associati ora
+          </a>
+        )}
       </div>
 
       {programPdf && (
@@ -222,8 +237,9 @@ export default async function CourseDetailPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-surface pt-16 lg:pt-24 pb-20 overflow-x-clip">
-      {/* Mobile: video full-bleed in cima a tutto, sopra il container */}
-      <div className="lg:hidden">{videoBlock}</div>
+      {/* Telefono: video full-bleed in cima. Da md in su (tablet) rientra nel
+          padding laterale del container (px-10), come il resto del contenuto. */}
+      <div className="lg:hidden md:px-10">{videoBlock}</div>
 
       <div className="container-wide mt-6 lg:mt-0">
         {course.status !== 'published' && (

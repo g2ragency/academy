@@ -55,8 +55,10 @@ export default function CoursePlayer({ course, modules, userId, poster, progress
   const markCompletedLocal = (lessonId: string) =>
     setProgress((prev) => ({ ...prev, [lessonId]: { progress_seconds: prev[lessonId]?.progress_seconds ?? 0, completed: true } }))
 
-  // Sezioni sotto — identiche alla pagina-vendita, condivise tra i due casi
-  const belowSections = (
+  // Descrizione + Relatori: vanno DENTRO la colonna sinistra (come nella
+  // pagina-vendita), altrimenti a tutta larghezza le card relatori risultano
+  // enormi (InstructorCarousel calcola le card in % del contenitore).
+  const belowPlayer = (
     <>
       {course.description && (
         <section className="mt-10 lg:mt-12">
@@ -69,17 +71,6 @@ export default function CoursePlayer({ course, modules, userId, poster, progress
         <section className="mt-10 lg:mt-12">
           <div className="border-t border-muted mb-10" />
           <InstructorCarousel instructors={instructors} />
-        </section>
-      )}
-      {relatedCourses.length > 0 && (
-        <section className="mt-16">
-          <div className="border-t border-muted mb-12" />
-          <h5 className="text-white leading-none mb-8" style={{ fontSize: 'clamp(1.125rem, 0.737rem + 1.579vw, 2rem)' }}>Corsi correlati</h5>
-          <div className="space-y-2.5 sm:space-y-5">
-            {relatedCourses.map((related) => (
-              <CourseRowCard key={related.id} course={related} />
-            ))}
-          </div>
         </section>
       )}
     </>
@@ -100,6 +91,7 @@ export default function CoursePlayer({ course, modules, userId, poster, progress
               initialProgressSeconds={progress[allLessons[0].id]?.progress_seconds ?? 0}
               initialCompleted={progress[allLessons[0].id]?.completed ?? false}
               onCompleted={() => markCompletedLocal(allLessons[0].id)}
+              belowPlayer={belowPlayer}
             />
           ) : (
             <ModulesPlayer
@@ -110,18 +102,30 @@ export default function CoursePlayer({ course, modules, userId, poster, progress
               poster={poster}
               progress={progress}
               onLessonCompleted={markCompletedLocal}
+              belowPlayer={belowPlayer}
             />
           )}
         </div>
       )}
 
-      {belowSections}
+      {/* Corsi correlati — a tutta larghezza, come "Gli altri utenti hanno seguito anche" */}
+      {relatedCourses.length > 0 && (
+        <section className="mt-16">
+          <div className="border-t border-muted mb-12" />
+          <h5 className="text-white leading-none mb-8" style={{ fontSize: 'clamp(1.125rem, 0.737rem + 1.579vw, 2rem)' }}>Corsi correlati</h5>
+          <div className="space-y-2.5 sm:space-y-5">
+            {relatedCourses.map((related) => (
+              <CourseRowCard key={related.id} course={related} />
+            ))}
+          </div>
+        </section>
+      )}
     </>
   )
 }
 
 /* ── Caso video-unico: video + sidebar CAPITOLI (seek nel video) ── */
-function SingleVideoPlayer({ course, lesson, poster, userId, initialProgressSeconds, initialCompleted, onCompleted }: {
+function SingleVideoPlayer({ course, lesson, poster, userId, initialProgressSeconds, initialCompleted, onCompleted, belowPlayer }: {
   course: Props['course']
   lesson: LessonFull
   poster?: string | null
@@ -129,6 +133,7 @@ function SingleVideoPlayer({ course, lesson, poster, userId, initialProgressSeco
   initialProgressSeconds: number
   initialCompleted: boolean
   onCompleted: () => void
+  belowPlayer?: React.ReactNode
 }) {
   const supabase = createClient()
   const playerRef = useRef<GatedVideoHandle>(null)
@@ -187,6 +192,8 @@ function SingleVideoPlayer({ course, lesson, poster, userId, initialProgressSeco
             Per ottenere l&apos;attestato guarda il video fino alla fine: alla prima visione non puoi saltare in avanti (puoi riavvolgere e accelerare).
           </p>
         )}
+
+        {belowPlayer}
       </div>
 
       <div className="lg:col-span-1">
@@ -218,7 +225,7 @@ function SingleVideoPlayer({ course, lesson, poster, userId, initialProgressSeco
 }
 
 /* ── Caso a moduli: lezione attiva inline + sidebar MODULI (cambia video senza navigare) ── */
-function ModulesPlayer({ course, modules, allLessons, userId, poster, progress, onLessonCompleted }: {
+function ModulesPlayer({ course, modules, allLessons, userId, poster, progress, onLessonCompleted, belowPlayer }: {
   course: Props['course']
   modules: (Module & { lessons: LessonFull[] })[]
   allLessons: LessonFull[]
@@ -226,6 +233,7 @@ function ModulesPlayer({ course, modules, allLessons, userId, poster, progress, 
   poster?: string | null
   progress: Record<string, { completed: boolean; progress_seconds: number }>
   onLessonCompleted: (lessonId: string) => void
+  belowPlayer?: React.ReactNode
 }) {
   // Lezione attiva: prima non completata, altrimenti la prima
   const firstIncomplete = allLessons.find((l) => !progress[l.id]?.completed) ?? allLessons[0]
@@ -264,6 +272,8 @@ function ModulesPlayer({ course, modules, allLessons, userId, poster, progress, 
           onProgressSeconds={(s) => { watchedRef.current[active.id] = s }}
           onCompleted={() => { onLessonCompleted(active.id); goToNext() }}
         />
+
+        {belowPlayer}
       </div>
 
       {/* Sidebar MODULI */}

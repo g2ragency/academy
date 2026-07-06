@@ -227,9 +227,10 @@ export default function CoursesExplorer({ courses, taxonomies, initial }: Props)
           {vistaLabel && (
             <button
               onClick={() => { setOrdina(undefined); setSoloCert(false) }}
-              className="inline-flex items-center gap-1 text-sm text-muted hover:text-white transition-colors"
+              aria-label="Rimuovi filtro"
+              className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-white transition-colors"
             >
-              <X className="w-4 h-4" /> togli
+              <X className="w-4 h-4" /> Rimuovi filtro
             </button>
           )}
         </div>

@@ -56,6 +56,8 @@ export interface Course {
   tags: string[] | null
   featured: boolean
   issues_certificate: boolean
+  /** % di completamento richiesta per rilasciare l'attestato (default 80) */
+  certificate_threshold_percent: number
   /** "Gli argomenti trattati": un elemento per bullet */
   topics: string[] | null
   /** PDF programma scaricabile (path nel bucket pubblico) */

@@ -28,7 +28,7 @@ export default function ClaimCertificateButton({ courseId }: { courseId: string 
   return (
     <Button onClick={claim} loading={loading} size="sm" className="gap-2 shrink-0">
       <Award className="w-4 h-4" />
-      Ottieni attestato
+      Richiedi attestazione
     </Button>
   )
 }
