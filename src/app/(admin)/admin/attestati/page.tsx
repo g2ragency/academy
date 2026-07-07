@@ -1,5 +1,6 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { formatDate } from '@/lib/utils'
+import ExportCsvButton from '@/components/admin/ExportCsvButton'
 import type { Certificate, Course, Profile } from '@/types'
 
 export const dynamic = 'force-dynamic'
@@ -14,9 +15,24 @@ export default async function AdminAttestatiPage() {
 
   const certs = (data ?? []) as (Certificate & { course: Pick<Course, 'title'>; profile: Pick<Profile, 'full_name' | 'email'> })[]
 
+  const csvRows = certs.map((c) => [
+    c.certificate_number,
+    c.profile?.full_name ?? '',
+    c.profile?.email ?? '',
+    c.course?.title ?? '',
+    formatDate(c.issued_at),
+  ])
+
   return (
     <div className="px-10 py-8">
-      <h4 className="font-bold text-white mb-8">Attestati emessi</h4>
+      <div className="flex flex-wrap items-baseline justify-between gap-4 mb-8">
+        <h4 className="font-bold text-white">Attestati emessi</h4>
+        <ExportCsvButton
+          filename="attestati-emessi.csv"
+          headers={['Numero', 'Utente', 'Email', 'Corso', 'Data emissione']}
+          rows={csvRows}
+        />
+      </div>
 
       {certs.length === 0 ? (
         <p className="text-white/40 text-[16px]">Nessun attestato emesso finora.</p>

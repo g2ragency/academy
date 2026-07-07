@@ -6,12 +6,13 @@
 ## ⏳ Cosa manca ORA (sintesi)
 
 **Fattibile subito (nessun blocco):**
-- Barra avanzamento **segmentata con divisori** dei capitoli — serve solo lo screenshot di riferimento (§3).
-- Vista admin **andamento corsi per-utente** — i dati esistono già (§4).
-- **Export CSV** elenco attestazioni/andamento (§4).
+- ~~Vista admin **andamento corsi per-utente**~~ — ✅ fatto (§4).
+- ~~**Export CSV** elenco attestazioni/andamento~~ — ✅ fatto (§4).
 
-**Bloccato da dettagli di Damiano (non si parte senza):**
-- **Sondaggi** tra le sezioni — formato, posizione, se bloccanti, dove salvare (§3).
+**Bloccato — serve input prima di partire:**
+- **Barra avanzamento segmentata con divisori** dei capitoli (§3) — serve una **immagine/mockup di riferimento**. In particolare va deciso: (a) i segmenti sono **uno per capitolo** o a durata fissa? (b) larghezza **proporzionale alla durata** del capitolo o uguale per tutti? (c) come appaiono i **divisori** (linea sottile / spazio vuoto / tacca)? (d) **stati** e colori per capitolo *completato* / *in riproduzione* / *non ancora raggiunto* (coerenti col gating); (e) è **cliccabile** per saltare al capitolo? Senza questi dettagli qualsiasi resa è un tiro a indovinare.
+- **Formato dell'attestato PDF** (§5) — ❓ **da verificare**: oggi il PDF è una nostra pagina HTML (stampata via browser) generata **interamente da noi** — logo Academy, nome utente, corso, docente, data. Non sappiamo se va bene così oppure se **Assoholding fornisce un template ufficiale** (PDF con logo/layout loro) che noi dobbiamo solo **compilare automaticamente** con i dati (nome, corso, data, numero). Se serve il template: va richiesto ad Assoholding + serve una libreria di generazione PDF lato server (oggi è solo `window.print()` del browser).
+- **Sondaggi** tra le sezioni — formato, posizione, se bloccanti, dove salvare (§3). *(Damiano)*
 - **Accreditamento** — cos'è, come si assegna, campi del register (§4).
 - **Associato Assoholding** (Lite/Premium/non) — schema + fonte del dato → sblocca "gratis se associato" (§6) e scorciatoia Assoholding (§5).
 - **Login passante** verso il sito Assoholding (SSO/token) (§5).
@@ -49,20 +50,20 @@
 ---
 
 ## 4. Pannello di controllo admin
-- 🟡 **Area Accreditamenti**: esiste già `admin/attestati` (elenco attestati **emessi**), ma NON è ancora ciò che serve:
-  - ✅ la **soglia** ora è configurabile per corso (default **80%**) — non più 100% fisso;
-  - ⬜ manca l'elenco **utenti che hanno raggiunto la soglia** (in corso, non solo attestati già emessi);
-  - ⬜ manca **export** (CSV/Excel);
-  - ⬜ mancano **filtri**;
-  - "accreditamento" è un concetto nuovo, distinto dall'attestato. ❓ Serve definizione: cos'è l'accreditamento, chi lo assegna, che dato è.
-- 🟡 **Tracciamento andamento corsi dei vari utenti + sondaggi**: i dati di progresso ci sono (`course_progress`), ma manca una **vista admin** per-utente / per-corso; i sondaggi non esistono ancora (vedi §3).
+- 🟡 **Area Accreditamenti**:
+  - ✅ la **soglia** attestato è configurabile per corso (default **80%**) — non più 100% fisso;
+  - ✅ nuova pagina **`/admin/andamento`**: una riga per (utente × corso) con % avanzamento, ricerca e **export CSV**;
+  - ✅ **export CSV** anche in `admin/attestati` (attestati emessi);
+  - ⬜ un elenco/filtro **specifico "accreditati"** (distinto dall'andamento generico) resta da definire — "accreditamento" è un concetto nuovo. ❓ Serve definizione: cos'è, chi lo assegna, che dato è.
+- ✅ **Tracciamento andamento corsi dei vari utenti**: fatto (`/admin/andamento`, dati da `course_progress`; la view ora è `security_invoker` → l'admin vede tutto, i non-admin solo il proprio). I **sondaggi** invece non esistono ancora (vedi §3).
 - ❓ **Campi register più specifici** (accreditamento ecc.): da fare, ma **serve la lista dei campi da Damiano** prima di toccare il form/DB.
 - ⬜ **Suddivisione utenti: Associati Lite / Associati Premium / non associati**: `profiles` non ha nessun campo di membership. Serve schema nuovo + decidere la **fonte del dato** (sync con Assoholding? assegnazione manuale admin?). ❓ dettagli.
 
 ## 5. Area riservata utente
-- ✅ **Sezione "Attestazioni"** (`/dashboard/attestati`): bottone "Richiedi attestazione" + PDF (stampa vista certificato con nome corso + utente).
+- ✅ **Sezione "Attestazioni"** (`/dashboard/attestati`): bottone "Richiedi attestazione" + generazione automatica del **numero** (`AC-{anno}-{sequenziale}`) e del contenuto (nome utente, corso, docente, data).
   - ✅ Soglia ora **configurabile per corso** (`courses.certificate_threshold_percent`, default 80%) — impostabile nell'admin quando il corso rilascia attestato; `issue_certificate` valida contro la soglia del corso (non più 100% fisso).
   - ✅ Sotto soglia: riga con **"Sei al X% — ti manca il Y% per la soglia dell'Z%"** invece del bottone.
+  - ❓ **Da verificare col cliente**: il PDF è oggi una nostra pagina stampata dal browser (design Academy). Non sappiamo se Assoholding vuole un **template ufficiale suo** da compilare automaticamente — vedi nota in cima al documento. Impatta anche la scelta tecnica (stampa browser vs libreria PDF server-side).
   - ⬜ Resta: eventuale **popup** (ora è un messaggio in pagina, non un popup) — da decidere se serve davvero un modale.
 - ⬜ **Scorciatoia ad Assoholding già loggati** (se associato → sito Assoholding con sessione attiva; altrimenti → homepage Assoholding): non fatto. ❓ Serve la parte tecnica: come si fa il login "passante" (SSO/token condiviso?), esiste un endpoint lato Assoholding? Dipende anche dal campo "associato" (§4).
 
@@ -83,9 +84,10 @@
 5. **Sondaggi**: formato, posizione, se bloccanti, dove salvare i risultati.
 6. **Barra con divisori**: screenshot di riferimento.
 7. **Differenziazione per tipologia corso** (Master ecc.): come cambia la fruizione.
+8. **Formato attestato PDF**: nostro design custom (come oggi) o template ufficiale Assoholding da compilare automaticamente?
 
-## Quick win già fattibili senza aspettare nessuno
+## Quick win — stato
 - ✅ ~~Attestazione a 80% + messaggio "manca X%"~~ — **fatto** (soglia configurabile per corso).
-- ⬜ Barra di avanzamento **segmentata** con divisori dei capitoli (§3) — manca solo lo screenshot per lo stile.
-- ⬜ Vista admin **andamento corsi per utente** (§4) — i dati esistono già.
-- ⬜ **Export CSV** dell'elenco attestazioni/andamento (§4) — fattibile sulla base attuale, si arricchisce quando si definisce l'accreditamento.
+- ✅ ~~Vista admin **andamento corsi per utente**~~ — **fatto** (`/admin/andamento`).
+- ✅ ~~**Export CSV** attestazioni/andamento~~ — **fatto** (bottone in andamento + attestati).
+- ⬜ Barra di avanzamento **segmentata** con divisori dei capitoli (§3) — **bloccata**: serve immagine/mockup di riferimento.
