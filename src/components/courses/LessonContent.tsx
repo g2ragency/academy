@@ -23,6 +23,8 @@ interface Props {
   onProgressSeconds?: (seconds: number) => void
   /** Mostra i capitoli del video sotto al player (default: sì se presenti) */
   showChapters?: boolean
+  /** Corso accreditato FPC: l'hint sotto al video spiega che conta il tempo effettivo */
+  fpcAccredited?: boolean
 }
 
 /**
@@ -40,6 +42,7 @@ export default function LessonContent({
   onCompleted,
   onProgressSeconds,
   showChapters = true,
+  fpcAccredited = false,
 }: Props) {
   const [completed, setCompleted] = useState(initialCompleted)
   const [marking, setMarking] = useState(false)
@@ -164,7 +167,11 @@ export default function LessonContent({
           {!completed && (
             <p className="mt-3 text-sm text-muted flex items-center gap-2">
               <Lock className="w-4 h-4 shrink-0" />
-              Alla prima visione non puoi saltare in avanti (puoi riavvolgere e accelerare).
+              {fpcAccredited
+                // Accelerare qui è permesso ma NON accorcia il tempo richiesto:
+                // dirlo evita l'esperienza "video finito ma lezione dopo chiusa".
+                ? 'Alla prima visione non puoi saltare in avanti. Puoi riavvolgere e accelerare, ma ai fini dei crediti vale solo il tempo di visione effettivo.'
+                : 'Alla prima visione non puoi saltare in avanti (puoi riavvolgere e accelerare).'}
             </p>
           )}
 

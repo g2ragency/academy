@@ -22,7 +22,7 @@ export default async function AttestatiPage() {
       .order('issued_at', { ascending: false }),
     supabase
       .from('enrollments')
-      .select('course_id, course:courses(id, title, slug, issues_certificate, certificate_threshold_percent)')
+      .select('course_id, course:courses(id, title, slug, issues_certificate, certificate_threshold_percent, fpc_accredited)')
       .eq('user_id', profile.id)
       .eq('status', 'active'),
     supabase
@@ -41,17 +41,43 @@ export default async function AttestatiPage() {
   const certCourses = ((enrollments ?? []) as unknown as (Pick<Enrollment, 'course_id'> & { course: Course })[])
     .filter((e) => e.course?.issues_certificate && !certifiedCourseIds.has(e.course_id))
 
+  // Corsi accreditati FPC: la % di lezioni spuntate è il metro sbagliato — lì
+  // decide il completamento VERIFICATO (tempo di visione dai log server-side).
+  // Stessa fonte dell'attestato (issue_certificate), così ciò che la pagina
+  // promette e ciò che la RPC concede non possono divergere.
+  const accredited = certCourses.filter((e) => e.course.fpc_accredited)
+  const verifiedStates = await Promise.all(
+    accredited.map((e) => supabase.rpc('course_lesson_state', { p_course_id: e.course_id }))
+  )
+  const verifiedMap = new Map(
+    accredited.map((e, i) => {
+      const rows = (verifiedStates[i].data ?? []) as { verified: boolean }[]
+      return [e.course_id, { done: rows.filter((r) => r.verified).length, total: rows.length }]
+    })
+  )
+
   const threshold = (c: Course) => c.certificate_threshold_percent ?? 80
+  const isClaimable = (e: (typeof certCourses)[number]) => {
+    if (e.course.fpc_accredited) {
+      const v = verifiedMap.get(e.course_id)
+      return !!v && v.total > 0 && v.done === v.total
+    }
+    return (progressMap.get(e.course_id) ?? 0) >= threshold(e.course)
+  }
   // Sopra soglia → attestato ottenibile
-  const claimable = certCourses.filter((e) => (progressMap.get(e.course_id) ?? 0) >= threshold(e.course))
-  // Sotto soglia → mostra quanto manca
+  const claimable = certCourses.filter(isClaimable)
+  // Sotto soglia → mostra quanto manca (per gli accreditati: contenuti verificati)
   const inProgress = certCourses
-    .filter((e) => (progressMap.get(e.course_id) ?? 0) < threshold(e.course))
-    .map((e) => ({
-      ...e,
-      progress: progressMap.get(e.course_id) ?? 0,
-      soglia: threshold(e.course),
-    }))
+    .filter((e) => !isClaimable(e))
+    .map((e) => {
+      const v = e.course.fpc_accredited ? verifiedMap.get(e.course_id) : undefined
+      return {
+        ...e,
+        progress: progressMap.get(e.course_id) ?? 0,
+        soglia: threshold(e.course),
+        verified: v ?? null,
+      }
+    })
 
   return (
     <div className="py-10">
@@ -83,10 +109,14 @@ export default async function AttestatiPage() {
                 <div className="min-w-0">
                   <p className="text-white truncate">{e.course.title}</p>
                   <p className="text-sm text-white/40 mt-0.5">
-                    Sei al {e.progress}% — ti manca il {Math.max(0, e.soglia - e.progress)}% per raggiungere la soglia del {e.soglia}%.
+                    {e.verified
+                      ? `Contenuti completati: ${e.verified.done} di ${e.verified.total} — corso accreditato, vale il tempo di visione effettivo.`
+                      : `Sei al ${e.progress}% — ti manca il ${Math.max(0, e.soglia - e.progress)}% per raggiungere la soglia del ${e.soglia}%.`}
                   </p>
                 </div>
-                <span className="shrink-0 text-sm text-white/30 tabular-nums">{e.progress}/{e.soglia}%</span>
+                <span className="shrink-0 text-sm text-white/30 tabular-nums">
+                  {e.verified ? `${e.verified.done}/${e.verified.total}` : `${e.progress}/${e.soglia}%`}
+                </span>
               </div>
             ))}
           </div>

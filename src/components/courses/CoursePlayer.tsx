@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { Lock, CheckCircle2, ListVideo, Play, HelpCircle, FileText, BookOpen } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { getMediaUrl, getProtectedMediaUrl } from '@/lib/media'
@@ -230,7 +231,9 @@ function SingleVideoPlayer({ course, lesson, poster, userId, initialProgressSeco
         {course.issues_certificate && !completed && !isEmbed && (
           <p className="mt-3 text-sm text-muted flex items-center gap-2">
             <Lock className="w-4 h-4 shrink-0" />
-            Per ottenere l&apos;attestato guarda il video fino alla fine: alla prima visione non puoi saltare in avanti (puoi riavvolgere e accelerare).
+            {course.fpc_accredited
+              ? 'Per l’attestato e i crediti serve il tempo di visione effettivo: alla prima visione non puoi saltare in avanti, e accelerare non accorcia il tempo richiesto.'
+              : 'Per ottenere l’attestato guarda il video fino alla fine: alla prima visione non puoi saltare in avanti (puoi riavvolgere e accelerare).'}
           </p>
         )}
 
@@ -295,11 +298,16 @@ function ModulesPlayer({ course, modules, allLessons, userId, poster, progress, 
 
   /** Avanza alla lezione dopo, ma solo se il server la considera sbloccata:
    *  su un corso accreditato, chi guarda a velocità doppia non matura il tempo
-   *  richiesto e resta dov'è (il player spiega perché). */
+   *  richiesto e resta dov'è — con una spiegazione, non in silenzio. */
   const goToNext = (fresh: LessonState[]) => {
     const idx = allLessons.findIndex((l) => l.id === active.id)
     const next = allLessons[idx + 1]
-    if (next && isUnlocked(next.id, fresh)) setActiveId(next.id)
+    if (!next) return
+    if (isUnlocked(next.id, fresh)) {
+      setActiveId(next.id)
+    } else if (course.fpc_accredited) {
+      toast.info('La prossima lezione si sblocca quando il tempo di visione è completo: rivedi le parti accelerate o saltate.')
+    }
   }
 
   return (
@@ -315,6 +323,7 @@ function ModulesPlayer({ course, modules, allLessons, userId, poster, progress, 
           poster={poster}
           initialCompleted={progress[active.id]?.completed ?? false}
           initialProgressSeconds={watchedRef.current[active.id] ?? progress[active.id]?.progress_seconds ?? 0}
+          fpcAccredited={course.fpc_accredited}
           onProgressSeconds={(s) => { watchedRef.current[active.id] = s }}
           onCompleted={async () => { goToNext(await onLessonCompleted(active.id)) }}
         />

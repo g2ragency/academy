@@ -61,9 +61,14 @@ const GatedVideo = forwardRef<GatedVideoHandle, Props>(function GatedVideo(
   // Ultima posizione nota: allo smontaggio il <video> può essere già sparito,
   // ma quel tick finale deve comunque dire dove eravamo arrivati.
   const lastPos = useRef(initialMaxWatched)
+  // Ultimo tick in volo. Serve a handleEnded: a fine video il browser emette
+  // `pause` PRIMA di `ended`, quindi il tick di chiusura parte da onPause —
+  // senza questo aggancio, chi ricalcola lo sblocco dopo il completamento
+  // potrebbe leggere il tempo PRIMA che l'ultimo tick sia registrato.
+  const pendingTick = useRef<Promise<unknown>>(Promise.resolve())
 
-  const sendTick = () =>
-    supabase
+  const sendTick = () => {
+    const p = supabase
       .rpc('record_learning_tick', {
         p_lesson_id: lessonId,
         p_session_id: sessionId.current,
@@ -80,6 +85,9 @@ const GatedVideo = forwardRef<GatedVideoHandle, Props>(function GatedVideo(
           onConcurrentSession?.()
         }
       })
+    pendingTick.current = Promise.resolve(p)
+    return p
+  }
 
   const startHeartbeat = () => {
     if (heartbeat.current) return
@@ -89,15 +97,16 @@ const GatedVideo = forwardRef<GatedVideoHandle, Props>(function GatedVideo(
 
   /** Ferma l'heartbeat. `release` libera anche il posto di sessione attiva,
    *  così riaprire subito non resta bloccato dal presidio.
-   *  Restituisce una promise: chi deve leggere il tempo accreditato subito dopo
-   *  (es. lo sblocco della lezione seguente) deve attendere il tick di chiusura. */
+   *  Restituisce una promise che attende anche l'ULTIMO tick già in volo
+   *  (non solo quello emesso qui): chi legge il tempo accreditato subito dopo
+   *  (lo sblocco della lezione seguente) deve vedere il segmento chiuso. */
   const stopHeartbeat = ({ release = true } = {}): Promise<unknown> => {
-    let done: Promise<unknown> = Promise.resolve()
     if (heartbeat.current) {
       clearInterval(heartbeat.current)
       heartbeat.current = null
-      done = Promise.resolve(sendTick()) // chiude il segmento col tempo residuo
+      sendTick() // chiude il segmento col tempo residuo (aggiorna pendingTick)
     }
+    let done = pendingTick.current
     if (release) {
       done = done.then(() => supabase.rpc('release_learning_session', { p_session_id: sessionId.current }))
     }

@@ -26,6 +26,9 @@ function parseTimestamp(v: string): number | null {
 interface Props {
   courseId: string
   initialModules: (Module & { lessons: Lesson[] })[]
+  /** Corso accreditato FPC: la durata dei video diventa obbligatoria (è il
+   *  metro del "completamento verificato" → sblocco e crediti) */
+  fpcAccredited?: boolean
 }
 
 const LESSON_TYPE_ICONS: Record<LessonType, React.ElementType> = {
@@ -35,7 +38,7 @@ const LESSON_TYPE_ICONS: Record<LessonType, React.ElementType> = {
   quiz: HelpCircle,
 }
 
-export default function ModulesManager({ courseId, initialModules }: Props) {
+export default function ModulesManager({ courseId, initialModules, fpcAccredited = false }: Props) {
   const [modules, setModules] = useState(initialModules)
   const [newModuleTitle, setNewModuleTitle] = useState('')
   const [addingModule, setAddingModule] = useState(false)
@@ -72,6 +75,7 @@ export default function ModulesManager({ courseId, initialModules }: Props) {
           key={module.id}
           module={module}
           courseId={courseId}
+          fpcAccredited={fpcAccredited}
           onDelete={() => deleteModule(module.id)}
           onLessonsChange={(lessons) => {
             const updated = [...modules]
@@ -100,9 +104,10 @@ export default function ModulesManager({ courseId, initialModules }: Props) {
   )
 }
 
-function ModuleItem({ module, courseId, onDelete, onLessonsChange }: {
+function ModuleItem({ module, courseId, fpcAccredited, onDelete, onLessonsChange }: {
   module: Module & { lessons: Lesson[] }
   courseId: string
+  fpcAccredited: boolean
   onDelete: () => void
   onLessonsChange: (lessons: Lesson[]) => void
 }) {
@@ -160,12 +165,30 @@ function ModuleItem({ module, courseId, onDelete, onLessonsChange }: {
         <div className="divide-y divide-surface-border">
           {lessons.sort((a, b) => a.sort_order - b.sort_order).map((lesson) => {
             const Icon = LESSON_TYPE_ICONS[lesson.type]
+            const missingDuration = fpcAccredited && lesson.type === 'video' && !(lesson.duration_seconds && lesson.duration_seconds > 0)
             return (
               <div key={lesson.id} className="flex items-center gap-3 px-4 py-3">
                 <Icon className="w-4 h-4 text-white/30 shrink-0" />
                 <span className="text-sm text-white/70 flex-1">{lesson.title}</span>
+                {missingDuration && (
+                  <span className="text-xs text-red-400" title="Su un corso accreditato ogni video deve avere la durata: è il metro del tempo di visione verificato">
+                    durata mancante
+                  </span>
+                )}
+                {lesson.type === 'video' && lesson.duration_seconds ? (
+                  <span className="text-xs text-white/30 tabular-nums">{formatSeconds(lesson.duration_seconds)}</span>
+                ) : null}
                 <span className="text-xs text-white/30 capitalize">{lesson.type}</span>
-                <LessonEditButton lesson={lesson} courseId={courseId} />
+                <LessonEditButton
+                  lesson={lesson}
+                  courseId={courseId}
+                  fpcAccredited={fpcAccredited}
+                  onSaved={(fields) => {
+                    const updated = lessons.map((l) => (l.id === lesson.id ? { ...l, ...fields } : l))
+                    setLessons(updated)
+                    onLessonsChange(updated)
+                  }}
+                />
                 <button onClick={() => deleteLesson(lesson.id)} className="p-1 text-white/20 hover:text-red-400 transition-colors">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -302,7 +325,12 @@ function ChapterEditor({ lessonId }: { lessonId: string }) {
   )
 }
 
-function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: string }) {
+function LessonEditButton({ lesson, courseId, fpcAccredited, onSaved }: {
+  lesson: Lesson
+  courseId: string
+  fpcAccredited: boolean
+  onSaved: (fields: Partial<Lesson>) => void
+}) {
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   // video_url/pdf_url contengono un URL esterno oppure un path nel bucket (risolto da getMediaUrl)
@@ -310,19 +338,31 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
   const [pdfPath, setPdfPath] = useState(lesson.pdf_url ?? '')
   const [content, setContent] = useState(lesson.content ?? '')
   const [isPreview, setIsPreview] = useState(lesson.is_preview)
+  const [durationTs, setDurationTs] = useState(lesson.duration_seconds ? formatSeconds(lesson.duration_seconds) : '')
   const supabase = createClient()
 
   const save = async () => {
+    const duration = lesson.type === 'video' ? parseTimestamp(durationTs) : null
+    if (lesson.type === 'video' && durationTs.trim() && duration === null) {
+      toast.error('Durata non valida: usa mm:ss (es. 45:30) o h:mm:ss')
+      return
+    }
+    if (fpcAccredited && lesson.type === 'video' && !duration) {
+      toast.error('Su un corso accreditato la durata del video è obbligatoria (serve a verificare il tempo di visione)')
+      return
+    }
     setSaving(true)
     try {
-      const { error } = await supabase.from('lessons').update({
+      const fields = {
         content,
         video_url: videoUrl.trim() || null,
         pdf_url: pdfPath.trim() || null,
         is_preview: isPreview,
-      }).eq('id', lesson.id)
+        ...(lesson.type === 'video' ? { duration_seconds: duration } : {}),
+      }
+      const { error } = await supabase.from('lessons').update(fields).eq('id', lesson.id)
       if (error) toast.error(error.message)
-      else { toast.success('Lezione salvata!'); setOpen(false) }
+      else { toast.success('Lezione salvata!'); onSaved(fields); setOpen(false) }
     } finally {
       setSaving(false)
     }
@@ -364,6 +404,20 @@ function LessonEditButton({ lesson, courseId }: { lesson: Lesson; courseId: stri
                       toast.success('Video caricato — ricordati di salvare')
                     }}
                   />
+                </div>
+                <div>
+                  <label className="label">Durata del video (mm:ss){fpcAccredited ? ' — obbligatoria sui corsi accreditati' : ''}</label>
+                  <input
+                    type="text"
+                    value={durationTs}
+                    onChange={(e) => setDurationTs(e.target.value)}
+                    placeholder="es. 45:30"
+                    className="input text-sm w-40"
+                  />
+                  <p className="text-xs text-white/40 mt-1.5">
+                    È il metro del tempo di visione: compare nell&apos;elenco lezioni e, sui corsi accreditati,
+                    decide quando una lezione risulta completata davvero (95% del tempo).
+                  </p>
                 </div>
                 <ChapterEditor lessonId={lesson.id} />
               </>

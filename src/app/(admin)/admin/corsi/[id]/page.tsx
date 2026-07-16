@@ -37,7 +37,7 @@ export default async function EditCorsoPage({ params }: Props) {
 
       <div>
         <h5 className="font-bold text-white mb-6">Moduli e lezioni</h5>
-        <ModulesManager courseId={course.id} initialModules={modules ?? []} />
+        <ModulesManager courseId={course.id} initialModules={modules ?? []} fpcAccredited={course.fpc_accredited} />
       </div>
     </div>
   )
