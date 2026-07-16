@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Briefcase, User } from 'lucide-react'
+import { Briefcase, CreditCard, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import AuthField from '../AuthField'
@@ -19,6 +19,13 @@ import EyeIcon from '@/components/icons/EyeIcon'
 const schema = z.object({
   full_name: z.string().min(2, 'Inserisci il tuo nome completo'),
   email: z.string().email('Email non valida'),
+  // Obbligatorio: identifica l'iscritto verso l'Ordine ed è la chiave del
+  // tracciato crediti FPC (vedi docs/planning-funzionalita.md §7).
+  tax_code: z
+    .string()
+    .trim()
+    .transform((v) => v.toUpperCase().replace(/\s/g, ''))
+    .pipe(z.string().regex(/^[A-Z0-9]{16}$/, 'Codice Fiscale non valido (16 caratteri)')),
   company: z.string().optional(),
   password: z.string().min(8, 'La password deve avere almeno 8 caratteri'),
   confirm_password: z.string(),
@@ -44,7 +51,7 @@ export default function RegistratiPage() {
       email: data.email,
       password: data.password,
       options: {
-        data: { full_name: data.full_name, company: data.company },
+        data: { full_name: data.full_name, company: data.company, tax_code: data.tax_code },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
@@ -101,6 +108,16 @@ export default function RegistratiPage() {
           placeholder="Inserisci la tua Email*"
           autoComplete="email"
           error={errors.email?.message}
+        />
+
+        <AuthField
+          {...register('tax_code')}
+          icon={<CreditCard className="w-[18px] h-[18px] sm:w-[22px] sm:h-[22px]" />}
+          placeholder="Codice Fiscale*"
+          autoComplete="off"
+          autoCapitalize="characters"
+          maxLength={16}
+          error={errors.tax_code?.message}
         />
 
         <AuthField

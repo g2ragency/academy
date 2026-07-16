@@ -8,6 +8,11 @@ export interface GatedVideoHandle {
   seekTo: (seconds: number) => void
 }
 
+/** Cadenza dell'heartbeat. Deve stare sotto MAX_CREDIT (40s) e MAX_GAP (90s)
+ *  della RPC `record_learning_tick`: così ogni tick viene accreditato per
+ *  intero e una breve latenza non viene scambiata per disconnessione. */
+const HEARTBEAT_MS = 30_000
+
 interface Props {
   /** URL nativo già risolto (signed URL del bucket o file diretto). NON per embed YouTube/Vimeo. */
   src: string
@@ -21,6 +26,8 @@ interface Props {
   initialCompleted: boolean
   onProgress?: (currentTime: number, duration: number) => void
   onCompleted?: () => void
+  /** La visione è già attiva su un'altra scheda/dispositivo: il video è stato messo in pausa */
+  onConcurrentSession?: () => void
   className?: string
 }
 
@@ -35,7 +42,7 @@ interface Props {
  * embed YouTube/Vimeo non sono controllabili dal browser e non passano di qui.
  */
 const GatedVideo = forwardRef<GatedVideoHandle, Props>(function GatedVideo(
-  { src, poster, lessonId, courseId, userId, initialMaxWatched, initialCompleted, onProgress, onCompleted, className },
+  { src, poster, lessonId, courseId, userId, initialMaxWatched, initialCompleted, onProgress, onCompleted, onConcurrentSession, className },
   ref,
 ) {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -43,6 +50,48 @@ const GatedVideo = forwardRef<GatedVideoHandle, Props>(function GatedVideo(
   const completedOnce = useRef(initialCompleted)
   const lastSaved = useRef(initialMaxWatched)
   const supabase = createClient()
+
+  // ── Heartbeat per il tracciamento tempo lato server (crediti FPC) ──
+  // Mandiamo solo un "ci sono" mentre il video è in play: quanti secondi
+  // accreditare lo decide il SERVER col proprio orologio (vedi RPC
+  // record_learning_tick). Un id di sessione per ogni montaggio del player.
+  const sessionId = useRef<string>(crypto.randomUUID())
+  const heartbeat = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const sendTick = () => {
+    supabase
+      .rpc('record_learning_tick', { p_lesson_id: lessonId, p_session_id: sessionId.current })
+      .then(({ error }) => {
+        // Il server rifiuta se la visione è già attiva altrove (blocco accessi
+        // concorrenti): fermiamo il video e avvisiamo, invece di accumulare tempo.
+        if (error?.message?.includes('SESSIONE_CONCORRENTE')) {
+          stopHeartbeat({ release: false })
+          videoRef.current?.pause()
+          onConcurrentSession?.()
+        }
+      })
+  }
+
+  const startHeartbeat = () => {
+    if (heartbeat.current) return
+    sendTick() // apre il segmento
+    heartbeat.current = setInterval(sendTick, HEARTBEAT_MS)
+  }
+
+  /** Ferma l'heartbeat. `release` libera anche il posto di sessione attiva,
+   *  così riaprire subito non resta bloccato dal presidio. */
+  const stopHeartbeat = ({ release = true } = {}) => {
+    if (heartbeat.current) {
+      clearInterval(heartbeat.current)
+      heartbeat.current = null
+      sendTick() // chiude il segmento col tempo residuo
+    }
+    if (release) {
+      supabase.rpc('release_learning_session', { p_session_id: sessionId.current }).then(() => {})
+    }
+  }
+
+  useEffect(() => () => stopHeartbeat(), [])
 
   const save = (seconds: number, markCompleted = false) => {
     supabase
@@ -99,6 +148,7 @@ const GatedVideo = forwardRef<GatedVideoHandle, Props>(function GatedVideo(
   }
 
   const handleEnded = () => {
+    stopHeartbeat()
     if (completedOnce.current) return
     completedOnce.current = true
     save(videoRef.current?.duration ?? maxWatched.current, true)
@@ -140,6 +190,13 @@ const GatedVideo = forwardRef<GatedVideoHandle, Props>(function GatedVideo(
       onTimeUpdate={handleTimeUpdate}
       onSeeking={handleSeeking}
       onEnded={handleEnded}
+      // L'heartbeat gira SOLO mentre si guarda davvero: in pausa si ferma,
+      // così il tempo fermo non finisce nella permanenza netta.
+      onPlaying={startHeartbeat}
+      // Pausa: libera anche il posto di sessione attiva.
+      onPause={() => stopHeartbeat()}
+      // Buffering: smette di contare ma TIENE il posto, sta per riprendere.
+      onWaiting={() => stopHeartbeat({ release: false })}
     />
   )
 })

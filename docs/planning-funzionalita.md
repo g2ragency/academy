@@ -12,8 +12,8 @@
 **Bloccato — serve input prima di partire:**
 - **Barra avanzamento segmentata con divisori** dei capitoli (§3) — serve una **immagine/mockup di riferimento**. In particolare va deciso: (a) i segmenti sono **uno per capitolo** o a durata fissa? (b) larghezza **proporzionale alla durata** del capitolo o uguale per tutti? (c) come appaiono i **divisori** (linea sottile / spazio vuoto / tacca)? (d) **stati** e colori per capitolo *completato* / *in riproduzione* / *non ancora raggiunto* (coerenti col gating); (e) è **cliccabile** per saltare al capitolo? Senza questi dettagli qualsiasi resa è un tiro a indovinare.
 - **Formato dell'attestato PDF** (§5) — ❓ **da verificare**: oggi il PDF è una nostra pagina HTML (stampata via browser) generata **interamente da noi** — logo Academy, nome utente, corso, docente, data. Non sappiamo se va bene così oppure se **Assoholding fornisce un template ufficiale** (PDF con logo/layout loro) che noi dobbiamo solo **compilare automaticamente** con i dati (nome, corso, data, numero). Se serve il template: va richiesto ad Assoholding + serve una libreria di generazione PDF lato server (oggi è solo `window.print()` del browser).
-- **Sondaggi** tra le sezioni — formato, posizione, se bloccanti, dove salvare (§3). *(Damiano)*
-- **Accreditamento** — cos'è, come si assegna, campi del register (§4).
+- **Sondaggi** tra le sezioni — formato, posizione, se bloccanti, dove salvare (§3). *(Damiano)* — ⚠️ ma vedi §7: ai fini crediti i pop-up di presenza sono **aboliti** dal Regolamento, quindi forse non servono più.
+- ~~**Accreditamento** — cos'è~~ → ✅ **DEFINITO**: sono i **Crediti FPC CNDCEC**, vedi **§7**. Non è più bloccato sulla definizione: è un **modulo nuovo da costruire** (tracciamento tempo server-side inalterabile + CF + blocco sessioni + sblocco sequenziale + export tracciato 9 colonne + attestato con ore/crediti). Restano solo 4 dettagli minori aperti (§7).
 - **Associato Assoholding** (Lite/Premium/non) — schema + fonte del dato → sblocca "gratis se associato" (§6) e scorciatoia Assoholding (§5).
 - **Login passante** verso il sito Assoholding (SSO/token) (§5).
 - **Differenziazione per tipologia** corso (Master ecc.) (§3).
@@ -50,11 +50,11 @@
 ---
 
 ## 4. Pannello di controllo admin
-- 🟡 **Area Accreditamenti**:
+- 🟡 **Area Accreditamenti** — ora **definita**: è il sistema **Crediti FPC CNDCEC** (vedi §7).
   - ✅ la **soglia** attestato è configurabile per corso (default **80%**) — non più 100% fisso;
   - ✅ nuova pagina **`/admin/andamento`**: una riga per (utente × corso) con % avanzamento, ricerca e **export CSV**;
   - ✅ **export CSV** anche in `admin/attestati` (attestati emessi);
-  - ⬜ un elenco/filtro **specifico "accreditati"** (distinto dall'andamento generico) resta da definire — "accreditamento" è un concetto nuovo. ❓ Serve definizione: cos'è, chi lo assegna, che dato è.
+  - ⬜ l'Area Accreditamenti vera (elenco chi ha maturato i crediti + **export nel tracciato ufficiale a 9 colonne**) → §7.
 - ✅ **Tracciamento andamento corsi dei vari utenti**: fatto (`/admin/andamento`, dati da `course_progress`; la view ora è `security_invoker` → l'admin vede tutto, i non-admin solo il proprio). I **sondaggi** invece non esistono ancora (vedi §3).
 - ❓ **Campi register più specifici** (accreditamento ecc.): da fare, ma **serve la lista dei campi da Damiano** prima di toccare il form/DB.
 - ⬜ **Suddivisione utenti: Associati Lite / Associati Premium / non associati**: `profiles` non ha nessun campo di membership. Serve schema nuovo + decidere la **fonte del dato** (sync con Assoholding? assegnazione manuale admin?). ❓ dettagli.
@@ -73,6 +73,48 @@
   - ✅ scritta "Gratuito se associato Assoholding" (sui corsi a pagamento, se non iscritto);
   - ✅ bottone **"Associati ora"** → `https://www.assoholding.it/associarsi/` (mostrato se non loggato);
   - ⬜ la **logica** "associato → gratis davvero" (prezzo azzerato/accesso) dipende dal campo membership §4 e da come si diventa associati. ❓ dettagli.
+
+---
+
+## 7. Crediti FPC CNDCEC (= l'"Accreditamento") — ⬜ da costruire, è un MODULO NUOVO
+
+> Fonte: `Regolamento crediti e-learning.docx` + tracciato `TracciatoPartecipantiEventiFPC_Excel.xls` + risposte cliente del 2026-07-16. Riguarda i **Commercialisti** (CNDCEC). Gli **Avvocati** hanno ente diverso (CNF, regole proprie) — non coperto.
+
+**Presupposti confermati:** Assoholding **è ente accreditato** (triennio). Un corso dà crediti **solo** con richiesta di accreditamento **specifica per FAD asincrona** (non basta la replica di un webinar sincrono). **Nessuna API con l'Ordine** → i dati dell'accreditamento (codice corso, materia, crediti, periodo) li inserisce **l'admin a mano** sul corso.
+
+**Regola crediti:** i crediti li fissa l'Ordine in base alle **ore** (2 ore → 2 crediti). Il credito matura sul **tempo pieno**, con **tolleranza 5%** *(provvisoria — da confermare)*. L'**80% è solo gamification** e NON vale per i crediti.
+
+### Cosa c'è già ✅
+- **Inibizione fast-forward / scrubbing** alla prima visione (`GatedVideo`) — requisito centrale della normativa, già soddisfatto.
+- **Ripresa dal punto esatto di interruzione** (`progress_seconds`).
+- Quiz (per i corsi che richiedono il test finale).
+
+### Cosa manca ⬜ (in ordine di peso)
+1. **Tracciamento tempo server-side con log INALTERABILI** — login/logout, **permanenza netta** (al netto delle disconnessioni). Oggi il progresso è scritto dal **client ed è falsificabile** → **è la condizione bloccante** per erogare crediti in regola. È il pezzo più grosso.
+2. **Autenticazione forte**: **Codice Fiscale obbligatorio** e univoco in registrazione + **blocco sessioni concorrenti** (no login simultanei).
+3. **Sblocco sequenziale dei moduli**: oggi le lezioni sono tutte cliccabili; la normativa impone che i moduli successivi si sblocchino **solo dopo il completamento verificato** dei precedenti.
+4. **Campi accreditamento sul corso** (admin): `codicecorso`, `materia` (codice libero, no elenco), `totalecreditipermateria`, periodo di disponibilità, flag "accreditato FAD asincrona", eventuale test obbligatorio.
+5. **Export tracciato ufficiale** (Excel, 9 colonne — è un export, non un'integrazione):
+   `codicecorso | codicefiscale | data | ore | minuti | superamentotest | materia | totalecreditipermateria | giornata`
+   (`data` = data di fruizione/completamento; `giornata` = una data; `ore`/`minuti` dai log)
+6. **Attestato rifatto**: uno solo, quello dell'Ordine. Nessun template ufficiale — il cliente ne ha uno proprio ma **lo rifarà**. Deve contenere: dati **ente**, dati **professionista + CF**, **ore effettive dai log**, **crediti conseguiti**. *(Il template attuale `Rota.pdf` è di un webinar sincrono: ha solo nome/data/orario, non basta.)*
+   - ✅ **Attestato a TUTTI**, anche sui corsi non accreditati (così es. un **avvocato** lo scarica e lo manda **da sé** al proprio Ordine per la convalida). **Ore effettive sempre valorizzate**; **crediti/materia/codice corso solo sui corsi accreditati** → servono **2 varianti** della stessa grafica (con/senza blocco crediti), altrimenti sui non accreditati resta un "Crediti: ___" vuoto.
+   - **Formato scelto: PDF con campi modulo (AcroForm)** riempito con **pdf-lib** (JS puro → gira su Vercel, fedeltà grafica 100%; se rifanno la grafica basta mantenere i nomi dei campi). *Scartati:* DOCX (richiede LibreOffice, non gira su Vercel), HTML (ri-disegno a mano + Chromium headless), overlay a coordinate (fragile).
+   - Campi da chiedere a chi rifà il template: `nome_cognome`, `codice_fiscale`, `titolo_corso`, `data_fruizione`, `ore_frequenza`, `crediti`, `materia`, `numero_attestato`, `codice_corso` + dati **ente** nella grafica. **Font incorporati**, A4 orizzontale.
+
+7. ⚠️ **Soglia da spostare sul TEMPO**: oggi `certificate_threshold_percent` conta le **lezioni completate** (80%); la normativa conta il **tempo netto effettivo**. Vanno resi due criteri distinti (95% del tempo per gli accreditati, % configurabile per gli altri).
+
+8. ⚠️ **Il tracciamento tempo serve su TUTTI i corsi**, non solo sugli accreditati: se ogni attestato dichiara le "ore di frequenza", quelle ore devono essere reali → il modulo di tracking è **infrastruttura di piattaforma**, non un extra del sotto-insieme FPC.
+
+> ⚠️ **I "sondaggi/pop-up" sono superati**: il nuovo Regolamento ha **abolito i test di verifica della presenza** (pop-up a comparsa) spostando tutto sul **tracciamento passivo server-side**. Quindi i sondaggi di §3 non servono ai fini crediti (restano solo se li volete per altri motivi).
+
+### Aperti ❓
+- Valori di `superamentotest` (`S`/`N`? `SI`/`NO`? e per i corsi **senza** test?)
+- Differenza tra `giornata` e `data` (entrambe date → per l'asincrono metto la stessa, salvo conferma contraria)
+- ~~Corsi NON accreditati: attestato sì/no?~~ → ✅ **risolto**: attestato **a tutti**, senza il blocco crediti (vedi punto 6)
+- **Conferma della tolleranza 5%** (è il punto su cui la normativa è severa) — il cliente deve verificare con l'Ordine
+- ⏳ **Template PDF dell'attestato** dal cliente (con campi modulo, vedi punto 6)
+- Casistiche specifiche dell'Ordine dei Commercialisti ("poi vedremo")
 
 ---
 
