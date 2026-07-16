@@ -46,7 +46,7 @@ export default async function WatchCoursePage({ params }: Props) {
     redirect(`/corsi/${params.slug}`)
   }
 
-  const [{ data: modules }, { data: progressData }, relatedCourses] = await Promise.all([
+  const [{ data: modules }, { data: progressData }, { data: lessonState }, relatedCourses] = await Promise.all([
     supabase
       .from('modules')
       .select('*, lessons(*, quiz_questions(*), chapters:lesson_chapters(*))')
@@ -57,6 +57,9 @@ export default async function WatchCoursePage({ params }: Props) {
       .select('*')
       .eq('user_id', profile.id)
       .eq('course_id', course.id),
+    // Sblocco sequenziale dei corsi accreditati: la regola vive nel server
+    // (tempo netto dai log immutabili), la pagina la legge e basta.
+    supabase.rpc('course_lesson_state', { p_course_id: course.id }),
     getRelatedCourses(course.id),
   ])
 
@@ -83,11 +86,13 @@ export default async function WatchCoursePage({ params }: Props) {
             title: course.title,
             issues_certificate: course.issues_certificate,
             description: course.description,
+            fpc_accredited: course.fpc_accredited ?? false,
           }}
           modules={(modules ?? []) as (Module & { lessons: LessonFull[] })[]}
           userId={profile.id}
           poster={getMediaUrl(course.thumbnail_url)}
           progressList={(progressData ?? []) as LessonProgress[]}
+          lessonState={lessonState ?? []}
           instructors={relatori}
           relatedCourses={relatedCourses}
         />

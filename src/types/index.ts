@@ -58,6 +58,18 @@ export interface Course {
   issues_certificate: boolean
   /** % di completamento richiesta per rilasciare l'attestato (default 80) */
   certificate_threshold_percent: number
+  /** Accreditato CNDCEC per la FAD asincrona: attiva sblocco sequenziale e crediti FPC */
+  fpc_accredited: boolean
+  /** Tracciato FPC: codicecorso (lo assegna l'Ordine) */
+  fpc_course_code: string | null
+  /** Tracciato FPC: materia (codice libero dell'Ordine) */
+  fpc_subject: string | null
+  /** Tracciato FPC: totalecreditipermateria */
+  fpc_credits: number | null
+  /** Il test finale è condizione per i crediti */
+  fpc_requires_test: boolean
+  fpc_available_from: string | null
+  fpc_available_to: string | null
   /** "Gli argomenti trattati": un elemento per bullet */
   topics: string[] | null
   /** PDF programma scaricabile (path nel bucket pubblico) */

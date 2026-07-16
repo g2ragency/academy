@@ -58,9 +58,19 @@ const GatedVideo = forwardRef<GatedVideoHandle, Props>(function GatedVideo(
   const sessionId = useRef<string>(crypto.randomUUID())
   const heartbeat = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const sendTick = () => {
+  // Ultima posizione nota: allo smontaggio il <video> può essere già sparito,
+  // ma quel tick finale deve comunque dire dove eravamo arrivati.
+  const lastPos = useRef(initialMaxWatched)
+
+  const sendTick = () =>
     supabase
-      .rpc('record_learning_tick', { p_lesson_id: lessonId, p_session_id: sessionId.current })
+      .rpc('record_learning_tick', {
+        p_lesson_id: lessonId,
+        p_session_id: sessionId.current,
+        // Il server accredita il minimo fra tempo trascorso e avanzamento di
+        // questa posizione: è ciò che impedisce di accumulare tempo in pausa.
+        p_position_seconds: videoRef.current?.currentTime ?? lastPos.current,
+      })
       .then(({ error }) => {
         // Il server rifiuta se la visione è già attiva altrove (blocco accessi
         // concorrenti): fermiamo il video e avvisiamo, invece di accumulare tempo.
@@ -70,7 +80,6 @@ const GatedVideo = forwardRef<GatedVideoHandle, Props>(function GatedVideo(
           onConcurrentSession?.()
         }
       })
-  }
 
   const startHeartbeat = () => {
     if (heartbeat.current) return
@@ -79,19 +88,23 @@ const GatedVideo = forwardRef<GatedVideoHandle, Props>(function GatedVideo(
   }
 
   /** Ferma l'heartbeat. `release` libera anche il posto di sessione attiva,
-   *  così riaprire subito non resta bloccato dal presidio. */
-  const stopHeartbeat = ({ release = true } = {}) => {
+   *  così riaprire subito non resta bloccato dal presidio.
+   *  Restituisce una promise: chi deve leggere il tempo accreditato subito dopo
+   *  (es. lo sblocco della lezione seguente) deve attendere il tick di chiusura. */
+  const stopHeartbeat = ({ release = true } = {}): Promise<unknown> => {
+    let done: Promise<unknown> = Promise.resolve()
     if (heartbeat.current) {
       clearInterval(heartbeat.current)
       heartbeat.current = null
-      sendTick() // chiude il segmento col tempo residuo
+      done = Promise.resolve(sendTick()) // chiude il segmento col tempo residuo
     }
     if (release) {
-      supabase.rpc('release_learning_session', { p_session_id: sessionId.current }).then(() => {})
+      done = done.then(() => supabase.rpc('release_learning_session', { p_session_id: sessionId.current }))
     }
+    return done
   }
 
-  useEffect(() => () => stopHeartbeat(), [])
+  useEffect(() => () => { stopHeartbeat() }, [])
 
   const save = (seconds: number, markCompleted = false) => {
     supabase
@@ -129,6 +142,7 @@ const GatedVideo = forwardRef<GatedVideoHandle, Props>(function GatedVideo(
     if (completedOnce.current || (!v.paused && !v.seeking)) {
       if (v.currentTime > maxWatched.current) maxWatched.current = v.currentTime
     }
+    lastPos.current = v.currentTime
     onProgress?.(v.currentTime, v.duration || 0)
     if (maxWatched.current - lastSaved.current >= 10) {
       lastSaved.current = maxWatched.current
@@ -147,8 +161,10 @@ const GatedVideo = forwardRef<GatedVideoHandle, Props>(function GatedVideo(
     }
   }
 
-  const handleEnded = () => {
-    stopHeartbeat()
+  const handleEnded = async () => {
+    // Attende il tick di chiusura: chi reagisce al completamento (lo sblocco
+    // della lezione successiva) deve vedere il tempo già accreditato.
+    await stopHeartbeat()
     if (completedOnce.current) return
     completedOnce.current = true
     save(videoRef.current?.duration ?? maxWatched.current, true)
@@ -195,8 +211,9 @@ const GatedVideo = forwardRef<GatedVideoHandle, Props>(function GatedVideo(
       onPlaying={startHeartbeat}
       // Pausa: libera anche il posto di sessione attiva.
       onPause={() => stopHeartbeat()}
-      // Buffering: smette di contare ma TIENE il posto, sta per riprendere.
-      onWaiting={() => stopHeartbeat({ release: false })}
+      // Nessun onWaiting: il buffering non va più intercettato qui, ci pensa il
+      // server (posizione ferma → 0 accreditato). Fermare l'heartbeat a ogni
+      // singhiozzo generava invece due chiamate per ogni blip di rete.
     />
   )
 })

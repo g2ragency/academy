@@ -33,6 +33,23 @@ const schema = z.object({
   featured: z.boolean().optional(),
   issues_certificate: z.boolean().optional(),
   certificate_threshold_percent: z.coerce.number().min(1, 'Min 1%').max(100, 'Max 100%'),
+  // Accreditamento CNDCEC (crediti FPC). Obbligatori se il corso è accreditato:
+  // senza non è esportabile nel tracciato da inviare all'Ordine.
+  fpc_accredited: z.boolean().optional(),
+  fpc_course_code: z.string().optional(),
+  fpc_subject: z.string().optional(),
+  fpc_credits: z.string().optional(),
+  fpc_requires_test: z.boolean().optional(),
+  fpc_available_from: z.string().optional(),
+  fpc_available_to: z.string().optional(),
+}).superRefine((d, ctx) => {
+  if (!d.fpc_accredited) return
+  if (!d.fpc_course_code?.trim())
+    ctx.addIssue({ code: 'custom', path: ['fpc_course_code'], message: 'Obbligatorio sui corsi accreditati' })
+  if (!d.fpc_subject?.trim())
+    ctx.addIssue({ code: 'custom', path: ['fpc_subject'], message: 'Obbligatorio sui corsi accreditati' })
+  if (!d.fpc_credits || Number(d.fpc_credits) <= 0)
+    ctx.addIssue({ code: 'custom', path: ['fpc_credits'], message: 'Indica i crediti assegnati dall\'Ordine' })
 })
 
 type FormData = z.infer<typeof schema>
@@ -80,6 +97,13 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
       featured: course.featured,
       issues_certificate: course.issues_certificate,
       certificate_threshold_percent: course.certificate_threshold_percent ?? 80,
+      fpc_accredited: course.fpc_accredited ?? false,
+      fpc_course_code: course.fpc_course_code ?? '',
+      fpc_subject: course.fpc_subject ?? '',
+      fpc_credits: course.fpc_credits != null ? String(course.fpc_credits) : '',
+      fpc_requires_test: course.fpc_requires_test ?? false,
+      fpc_available_from: course.fpc_available_from ?? '',
+      fpc_available_to: course.fpc_available_to ?? '',
     } : {
       type: 'webinar',
       status: 'draft',
@@ -87,6 +111,8 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
       featured: false,
       issues_certificate: false,
       certificate_threshold_percent: 80,
+      fpc_accredited: false,
+      fpc_requires_test: false,
     },
   })
 
@@ -98,8 +124,20 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
       .split('\n')
       .map((t) => t.trim())
       .filter(Boolean)
+    // I campi FPC hanno senso solo se il corso è accreditato: azzerarli evita
+    // che restino valori orfani se l'accreditamento viene tolto.
+    const fpc = data.fpc_accredited
+      ? {
+          fpc_course_code: data.fpc_course_code?.trim() || null,
+          fpc_subject: data.fpc_subject?.trim() || null,
+          fpc_credits: data.fpc_credits ? Number(data.fpc_credits) : null,
+          fpc_available_from: data.fpc_available_from || null,
+          fpc_available_to: data.fpc_available_to || null,
+        }
+      : { fpc_course_code: null, fpc_subject: null, fpc_credits: null, fpc_available_from: null, fpc_available_to: null }
     const payload = {
       ...fields,
+      ...fpc,
       price_cents: Math.round(price_euros * 100),
       thumbnail_url: thumbnailUrl,
       preview_video_url: previewVideoUrl,
@@ -295,6 +333,70 @@ export default function CourseForm({ course, instructors, taxonomies, initialTer
             {errors.certificate_threshold_percent && (
               <p className="text-xs text-red-400 mt-1">{errors.certificate_threshold_percent.message}</p>
             )}
+          </div>
+        )}
+      </div>
+
+      {/* Accreditamento CNDCEC (crediti FPC) */}
+      <div className="card p-6 space-y-4">
+        <h5 className="font-semibold text-white border-b border-surface-border pb-3">Accreditamento (crediti FPC)</h5>
+
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" {...register('fpc_accredited')} className="w-4 h-4 accent-brand rounded" />
+          <span className="text-sm text-white/70">Accreditato dal CNDCEC per la FAD asincrona</span>
+        </label>
+        <p className="text-xs text-white/40 -mt-2 pl-7">
+          Non basta che il webinar dal vivo fosse accreditato: serve una richiesta specifica per la modalità
+          asincrona. Attiva lo <strong>sblocco sequenziale</strong> delle lezioni e il conteggio dei crediti.
+        </p>
+
+        {watch('fpc_accredited') && (
+          <div className="pl-7 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                {...register('fpc_course_code')}
+                id="fpc_course_code"
+                label="Codice corso"
+                placeholder="lo assegna l'Ordine"
+                error={errors.fpc_course_code?.message}
+              />
+              <Input
+                {...register('fpc_subject')}
+                id="fpc_subject"
+                label="Materia"
+                placeholder="es. D.1.2"
+                error={errors.fpc_subject?.message}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                {...register('fpc_credits')}
+                id="fpc_credits"
+                type="number"
+                step="0.5"
+                min="0"
+                label="Crediti assegnati"
+                placeholder="es. 2"
+                error={errors.fpc_credits?.message}
+              />
+              <div className="flex items-end">
+                <label className="flex items-center gap-3 cursor-pointer pb-2.5">
+                  <input type="checkbox" {...register('fpc_requires_test')} className="w-4 h-4 accent-brand rounded" />
+                  <span className="text-sm text-white/70">Test finale obbligatorio</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Input {...register('fpc_available_from')} id="fpc_from" type="date" label="Disponibile dal" />
+              <Input {...register('fpc_available_to')} id="fpc_to" type="date" label="Disponibile fino al" />
+            </div>
+
+            <p className="text-xs text-white/40">
+              Questi valori finiscono nel tracciato da inviare all&apos;Ordine. Perché il tempo sia verificabile,
+              ogni lezione video del corso deve avere la <strong>durata</strong> compilata.
+            </p>
           </div>
         )}
       </div>

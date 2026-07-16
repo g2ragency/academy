@@ -15,12 +15,28 @@ import type { Course, Instructor, Lesson, LessonChapter, LessonProgress, Module,
 
 type LessonFull = Lesson & { quiz_questions?: QuizQuestion[]; chapters?: LessonChapter[] }
 
+/** Esito di `course_lesson_state`: cosa risulta completato DAVVERO (tempo dai
+ *  log, non il flag scritto dal client) e cosa è sbloccato. */
+export interface LessonState {
+  lesson_id: string
+  verified: boolean
+  unlocked: boolean
+}
+
 interface Props {
-  course: { id: string; slug: string; title: string; issues_certificate: boolean; description: string | null }
+  course: {
+    id: string
+    slug: string
+    title: string
+    issues_certificate: boolean
+    description: string | null
+    fpc_accredited: boolean
+  }
   modules: (Module & { lessons: LessonFull[] })[]
   userId: string
   poster?: string | null
   progressList: LessonProgress[]
+  lessonState: LessonState[]
   instructors: Instructor[]
   relatedCourses: Course[]
 }
@@ -39,12 +55,31 @@ const LESSON_ICON: Record<LessonType, React.ElementType> = {
  *   MODULI con i video dentro; cliccare cambia la lezione SENZA navigare.
  * Sotto (condiviso): descrizione, relatori, corsi correlati — come la pagina-vendita.
  */
-export default function CoursePlayer({ course, modules, userId, poster, progressList, instructors, relatedCourses }: Props) {
+export default function CoursePlayer({ course, modules, userId, poster, progressList, lessonState, instructors, relatedCourses }: Props) {
+  const supabase = createClient()
+
+  // `lessons.sort_order` riparte da 0 in OGNI modulo, quindi ordinare le lezioni
+  // sul solo sort_order globale le interlaccia fra moduli diversi. L'ordine vero
+  // è: moduli (già ordinati dalla query) e, dentro ciascuno, le sue lezioni.
   const allLessons = useMemo(
-    () => modules.flatMap((m) => m.lessons ?? []).sort((a, b) => a.sort_order - b.sort_order),
+    () => modules.flatMap((m) => [...(m.lessons ?? [])].sort((a, b) => a.sort_order - b.sort_order)),
     [modules],
   )
   const singleVideo = allLessons.length === 1 && allLessons[0]?.type === 'video' && !!allLessons[0]?.video_url
+
+  // Sblocco sequenziale: la regola sta nel server (course_lesson_state), qui la
+  // si legge soltanto — ricalcolarla in TypeScript vorrebbe dire tenerne due
+  // versioni allineate a mano.
+  const [state, setState] = useState<LessonState[]>(lessonState)
+  const isUnlocked = (lessonId: string, from: LessonState[] = state) =>
+    from.find((s) => s.lesson_id === lessonId)?.unlocked ?? true
+  /** Ricalcola lo sblocco dopo un completamento. Restituisce lo stato fresco:
+   *  chi decide subito dove andare non può aspettare il re-render. */
+  const refreshState = async (): Promise<LessonState[]> => {
+    const { data } = await supabase.rpc('course_lesson_state', { p_course_id: course.id })
+    if (data) setState(data as LessonState[])
+    return (data as LessonState[]) ?? state
+  }
 
   // Progresso per lezione, in stato (aggiornato al completamento per riflettere subito le spunte)
   const [progress, setProgress] = useState<Record<string, { completed: boolean; progress_seconds: number }>>(() => {
@@ -54,6 +89,11 @@ export default function CoursePlayer({ course, modules, userId, poster, progress
   })
   const markCompletedLocal = (lessonId: string) =>
     setProgress((prev) => ({ ...prev, [lessonId]: { progress_seconds: prev[lessonId]?.progress_seconds ?? 0, completed: true } }))
+
+  const handleLessonCompleted = async (lessonId: string) => {
+    markCompletedLocal(lessonId)
+    return refreshState()
+  }
 
   // Descrizione + Relatori: vanno DENTRO la colonna sinistra (come nella
   // pagina-vendita), altrimenti a tutta larghezza le card relatori risultano
@@ -101,7 +141,8 @@ export default function CoursePlayer({ course, modules, userId, poster, progress
               userId={userId}
               poster={poster}
               progress={progress}
-              onLessonCompleted={markCompletedLocal}
+              isUnlocked={isUnlocked}
+              onLessonCompleted={handleLessonCompleted}
               belowPlayer={belowPlayer}
             />
           )}
@@ -225,18 +266,20 @@ function SingleVideoPlayer({ course, lesson, poster, userId, initialProgressSeco
 }
 
 /* ── Caso a moduli: lezione attiva inline + sidebar MODULI (cambia video senza navigare) ── */
-function ModulesPlayer({ course, modules, allLessons, userId, poster, progress, onLessonCompleted, belowPlayer }: {
+function ModulesPlayer({ course, modules, allLessons, userId, poster, progress, isUnlocked, onLessonCompleted, belowPlayer }: {
   course: Props['course']
   modules: (Module & { lessons: LessonFull[] })[]
   allLessons: LessonFull[]
   userId: string
   poster?: string | null
   progress: Record<string, { completed: boolean; progress_seconds: number }>
-  onLessonCompleted: (lessonId: string) => void
+  isUnlocked: (lessonId: string, from?: LessonState[]) => boolean
+  onLessonCompleted: (lessonId: string) => Promise<LessonState[]>
   belowPlayer?: React.ReactNode
 }) {
-  // Lezione attiva: prima non completata, altrimenti la prima
-  const firstIncomplete = allLessons.find((l) => !progress[l.id]?.completed) ?? allLessons[0]
+  // Lezione attiva: la prima non completata fra quelle sbloccate, altrimenti la prima
+  const firstIncomplete =
+    allLessons.find((l) => !progress[l.id]?.completed && isUnlocked(l.id)) ?? allLessons[0]
   const [activeId, setActiveId] = useState<string | undefined>(firstIncomplete?.id)
   const active = allLessons.find((l) => l.id === activeId) ?? allLessons[0]
 
@@ -250,10 +293,13 @@ function ModulesPlayer({ course, modules, allLessons, userId, poster, progress, 
 
   if (!active) return null
 
-  const goToNext = () => {
+  /** Avanza alla lezione dopo, ma solo se il server la considera sbloccata:
+   *  su un corso accreditato, chi guarda a velocità doppia non matura il tempo
+   *  richiesto e resta dov'è (il player spiega perché). */
+  const goToNext = (fresh: LessonState[]) => {
     const idx = allLessons.findIndex((l) => l.id === active.id)
     const next = allLessons[idx + 1]
-    if (next) setActiveId(next.id)
+    if (next && isUnlocked(next.id, fresh)) setActiveId(next.id)
   }
 
   return (
@@ -270,8 +316,15 @@ function ModulesPlayer({ course, modules, allLessons, userId, poster, progress, 
           initialCompleted={progress[active.id]?.completed ?? false}
           initialProgressSeconds={watchedRef.current[active.id] ?? progress[active.id]?.progress_seconds ?? 0}
           onProgressSeconds={(s) => { watchedRef.current[active.id] = s }}
-          onCompleted={() => { onLessonCompleted(active.id); goToNext() }}
+          onCompleted={async () => { goToNext(await onLessonCompleted(active.id)) }}
         />
+
+        {course.fpc_accredited && (
+          <p className="mt-3 text-sm text-muted flex items-center gap-2">
+            <Lock className="w-4 h-4 shrink-0" />
+            Corso accreditato: le lezioni si sbloccano una alla volta, dopo aver guardato per intero la precedente.
+          </p>
+        )}
 
         {belowPlayer}
       </div>
@@ -299,20 +352,33 @@ function ModulesPlayer({ course, modules, allLessons, userId, poster, progress, 
               <div key={module.id}>
                 <p className="text-xs uppercase tracking-wide text-white/40 mb-1.5">{module.title}</p>
                 <ul className="space-y-0.5 -mx-2">
-                  {(module.lessons ?? []).sort((a, b) => a.sort_order - b.sort_order).map((lesson) => {
+                  {[...(module.lessons ?? [])].sort((a, b) => a.sort_order - b.sort_order).map((lesson) => {
                     const isActive = lesson.id === active.id
                     const isDone = progress[lesson.id]?.completed ?? false
+                    const locked = !isUnlocked(lesson.id)
                     const Icon = LESSON_ICON[lesson.type] ?? Play
                     return (
                       <li key={lesson.id}>
                         <button
                           onClick={() => setActiveId(lesson.id)}
+                          disabled={locked}
+                          title={locked ? 'Completa prima le lezioni precedenti' : undefined}
                           className={`w-full flex items-center gap-3 px-2 py-2.5 rounded-[10px] text-left transition-colors ${
-                            isActive ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white hover:bg-white/5'
+                            locked
+                              ? 'text-white/25 cursor-not-allowed'
+                              : isActive
+                                ? 'bg-white/10 text-white'
+                                : 'text-white/60 hover:text-white hover:bg-white/5'
                           }`}
                         >
                           <span className="shrink-0">
-                            {isDone ? <CheckCircle2 className="w-4 h-4 fill-white text-black" /> : <Icon className={`w-4 h-4 ${isActive ? 'fill-current' : ''}`} />}
+                            {locked ? (
+                              <Lock className="w-4 h-4" />
+                            ) : isDone ? (
+                              <CheckCircle2 className="w-4 h-4 fill-white text-black" />
+                            ) : (
+                              <Icon className={`w-4 h-4 ${isActive ? 'fill-current' : ''}`} />
+                            )}
                           </span>
                           <span className="flex-1 text-sm leading-snug line-clamp-2">{lesson.title}</span>
                           {lesson.duration_seconds ? (
