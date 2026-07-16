@@ -29,7 +29,10 @@ const schema = z.object({
   status: z.enum(['draft', 'published', 'archived']),
   price_euros: z.coerce.number().min(0),
   duration_minutes: z.coerce.number().optional(),
-  level: z.enum(['base', 'intermedio', 'avanzato']).optional(),
+  // '' = "Non specificato" (prima opzione del select). Senza `.or(z.literal(''))`
+  // lo schema rifiutava '' — e siccome il select non mostra errori, il salvataggio
+  // si bloccava in silenzio su ogni corso senza livello.
+  level: z.enum(['base', 'intermedio', 'avanzato']).or(z.literal('')).optional(),
   featured: z.boolean().optional(),
   issues_certificate: z.boolean().optional(),
   certificate_threshold_percent: z.coerce.number().min(1, 'Min 1%').max(100, 'Max 100%'),

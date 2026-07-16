@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, BookOpen, Users, UserCheck, Tags, Award, Shapes, ArrowLeft, ShoppingBag, ExternalLink, Activity } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Users, UserCheck, Tags, Award, Shapes, ArrowLeft, ShoppingBag, ExternalLink, Activity, Stamp } from 'lucide-react'
 
 /** Ordini/rimborsi/pagamenti falliti sono gestiti su Stripe (link esterno). */
 const STRIPE_ORDERS_URL = 'https://dashboard.stripe.com/payments'
@@ -14,6 +14,7 @@ const NAV = [
   { href: '/admin/docenti', label: 'Docenti', icon: UserCheck },
   { href: '/admin/tassonomie', label: 'Tassonomie', icon: Tags },
   { href: '/admin/attestati', label: 'Attestati', icon: Award },
+  { href: '/admin/accreditamenti', label: 'Accreditamenti', icon: Stamp },
   { href: '/admin/andamento', label: 'Andamento', icon: Activity },
   { href: '/admin/utenti', label: 'Utenti', icon: Users },
 ]

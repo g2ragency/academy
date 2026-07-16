@@ -13,7 +13,7 @@
 - **Barra avanzamento segmentata con divisori** dei capitoli (§3) — serve una **immagine/mockup di riferimento**. In particolare va deciso: (a) i segmenti sono **uno per capitolo** o a durata fissa? (b) larghezza **proporzionale alla durata** del capitolo o uguale per tutti? (c) come appaiono i **divisori** (linea sottile / spazio vuoto / tacca)? (d) **stati** e colori per capitolo *completato* / *in riproduzione* / *non ancora raggiunto* (coerenti col gating); (e) è **cliccabile** per saltare al capitolo? Senza questi dettagli qualsiasi resa è un tiro a indovinare.
 - **Formato dell'attestato PDF** (§5) — ❓ **da verificare**: oggi il PDF è una nostra pagina HTML (stampata via browser) generata **interamente da noi** — logo Academy, nome utente, corso, docente, data. Non sappiamo se va bene così oppure se **Assoholding fornisce un template ufficiale** (PDF con logo/layout loro) che noi dobbiamo solo **compilare automaticamente** con i dati (nome, corso, data, numero). Se serve il template: va richiesto ad Assoholding + serve una libreria di generazione PDF lato server (oggi è solo `window.print()` del browser).
 - **Sondaggi** tra le sezioni — formato, posizione, se bloccanti, dove salvare (§3). *(Damiano)* — ⚠️ ma vedi §7: ai fini crediti i pop-up di presenza sono **aboliti** dal Regolamento, quindi forse non servono più.
-- ~~**Accreditamento** — cos'è~~ → ✅ **DEFINITO**: sono i **Crediti FPC CNDCEC**, vedi **§7**. Non è più bloccato sulla definizione: è un **modulo nuovo da costruire** (tracciamento tempo server-side inalterabile + CF + blocco sessioni + sblocco sequenziale + export tracciato 9 colonne + attestato con ore/crediti). Restano solo 4 dettagli minori aperti (§7).
+- ~~**Accreditamento** — cos'è~~ → ✅ **DEFINITO** e in gran parte **COSTRUITO**: sono i **Crediti FPC CNDCEC**, vedi **§7**. Fatte le **Fasi 1-5** (tempo server-side inalterabile, CF + blocco sessioni concorrenti, sblocco sequenziale, campi accreditamento, export tracciato). Resta **l'attestato con ore/crediti** (⏸️ bloccato: serve il template dal cliente) e la raccolta del **CF degli utenti storici**.
 - **Associato Assoholding** (Lite/Premium/non) — schema + fonte del dato → sblocca "gratis se associato" (§6) e scorciatoia Assoholding (§5).
 - **Login passante** verso il sito Assoholding (SSO/token) (§5).
 - **Differenziazione per tipologia** corso (Master ecc.) (§3).
@@ -88,15 +88,19 @@
 - **Inibizione fast-forward / scrubbing** alla prima visione (`GatedVideo`) — requisito centrale della normativa, già soddisfatto.
 - **Ripresa dal punto esatto di interruzione** (`progress_seconds`).
 - Quiz (per i corsi che richiedono il test finale).
+- ✅ **FASE 1 — Tracciamento tempo server-side con log inalterabili** (`learning_time_log`): RLS senza policy di scrittura → si scrive solo dalla RPC `record_learning_tick`; INSERT/UPDATE/DELETE diretti respinti (verificato). Il tempo lo calcola il **server col proprio orologio**, il client manda solo un "ci sono".
+- ✅ **FASE 2 — CF obbligatorio** (univoco, normalizzato, con vincolo di formato) **+ blocco sessioni concorrenti** (`learning_active_session`): la seconda scheda viene respinta e il player si mette in pausa da solo.
+- ✅ **FASE 3 — Sblocco sequenziale** (solo corsi accreditati): una lezione si apre solo dopo il **completamento verificato** delle precedenti. "Verificato" = **tempo netto dai log ≥ 95% della durata** (video) o **quiz superato**: marcare `completed` dal client **non** sblocca nulla (verificato). Il presidio vero è nel tick — su lezione bloccata non si accumula tempo; il lucchetto in UI è cortesia.
+- ✅ **FASE 4 — Campi accreditamento sul corso** (admin): flag FAD asincrona, codice corso, materia, crediti, periodo, test obbligatorio. Vincolo DB: un corso accreditato senza codice/materia/crediti **non è salvabile** (sarebbe inesportabile).
+- ✅ **FASE 5 — Export tracciato** a 9 colonne: nuova pagina **`/admin/accreditamenti`** (elenco per corso di chi ha maturato i crediti + **motivo** per chi no) con export CSV con le intestazioni esatte del modello.
+
+> ⚠️ **Il tracciato è CSV, non .xls.** Il modello dell'Ordine è un `.xls`; esportiamo un CSV con le stesse 9 intestazioni (Excel lo apre nativamente, si incolla nel modello). Se il portale pretende il file `.xls` originale serve una libreria (`exceljs`/`xlsx`): **da chiarire col cliente**.
 
 ### Cosa manca ⬜ (in ordine di peso)
-1. **Tracciamento tempo server-side con log INALTERABILI** — login/logout, **permanenza netta** (al netto delle disconnessioni). Oggi il progresso è scritto dal **client ed è falsificabile** → **è la condizione bloccante** per erogare crediti in regola. È il pezzo più grosso.
-2. **Autenticazione forte**: **Codice Fiscale obbligatorio** e univoco in registrazione + **blocco sessioni concorrenti** (no login simultanei).
-3. **Sblocco sequenziale dei moduli**: oggi le lezioni sono tutte cliccabili; la normativa impone che i moduli successivi si sblocchino **solo dopo il completamento verificato** dei precedenti.
-4. **Campi accreditamento sul corso** (admin): `codicecorso`, `materia` (codice libero, no elenco), `totalecreditipermateria`, periodo di disponibilità, flag "accreditato FAD asincrona", eventuale test obbligatorio.
-5. **Export tracciato ufficiale** (Excel, 9 colonne — è un export, non un'integrazione):
-   `codicecorso | codicefiscale | data | ore | minuti | superamentotest | materia | totalecreditipermateria | giornata`
-   (`data` = data di fruizione/completamento; `giornata` = una data; `ore`/`minuti` dai log)
+5b. ⚠️ **Gli utenti storici non hanno il Codice Fiscale**: senza CF non si finisce nel tracciato (l'export li elenca col motivo "Codice Fiscale mancante"). Serve decidere **come farglielo compilare** — richiesta bloccante al primo accesso? banner nell'area riservata? Da fare.
+
+5c. ⚠️ **Su un corso accreditato ogni lezione video deve avere la `durata` compilata**: senza durata il "completamento verificato" non ha un metro e ricade sul flag scritto dal client. Oggi c'è solo un avviso testuale nel form admin; andrebbe reso un controllo vero (o la durata letta dal file video).
+
 6. **Attestato rifatto**: uno solo, quello dell'Ordine. Nessun template ufficiale — il cliente ne ha uno proprio ma **lo rifarà**. Deve contenere: dati **ente**, dati **professionista + CF**, **ore effettive dai log**, **crediti conseguiti**. *(Il template attuale `Rota.pdf` è di un webinar sincrono: ha solo nome/data/orario, non basta.)*
    - ✅ **Attestato a TUTTI**, anche sui corsi non accreditati (così es. un **avvocato** lo scarica e lo manda **da sé** al proprio Ordine per la convalida). **Ore effettive sempre valorizzate**; **crediti/materia/codice corso solo sui corsi accreditati** → servono **2 varianti** della stessa grafica (con/senza blocco crediti), altrimenti sui non accreditati resta un "Crediti: ___" vuoto.
    - **Formato scelto: PDF con campi modulo (AcroForm)** riempito con **pdf-lib** (JS puro → gira su Vercel, fedeltà grafica 100%; se rifanno la grafica basta mantenere i nomi dei campi). *Scartati:* DOCX (richiede LibreOffice, non gira su Vercel), HTML (ri-disegno a mano + Chromium headless), overlay a coordinate (fragile).
@@ -109,7 +113,8 @@
 > ⚠️ **I "sondaggi/pop-up" sono superati**: il nuovo Regolamento ha **abolito i test di verifica della presenza** (pop-up a comparsa) spostando tutto sul **tracciamento passivo server-side**. Quindi i sondaggi di §3 non servono ai fini crediti (restano solo se li volete per altri motivi).
 
 ### Aperti ❓
-- Valori di `superamentotest` (`S`/`N`? `SI`/`NO`? e per i corsi **senza** test?)
+- Valori di `superamentotest` (`S`/`N`? `SI`/`NO`? e per i corsi **senza** test?) — **per ora esportiamo `S`/`N`**, con `N` anche sui corsi senza test
+- Il tracciato va consegnato in **`.xls`** (modello ufficiale) o basta il **CSV** con le stesse colonne?
 - Differenza tra `giornata` e `data` (entrambe date → per l'asincrono metto la stessa, salvo conferma contraria)
 - ~~Corsi NON accreditati: attestato sì/no?~~ → ✅ **risolto**: attestato **a tutti**, senza il blocco crediti (vedi punto 6)
 - **Conferma della tolleranza 5%** (è il punto su cui la normativa è severa) — il cliente deve verificare con l'Ordine
